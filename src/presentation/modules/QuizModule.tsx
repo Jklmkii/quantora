@@ -42,7 +42,8 @@ export const QuizModule: React.FC = () => {
     decimalSeparator,
     language,
     blitzHighScore,
-    bossesDefeated,
+    highestBossLevelCleared,
+    bossCoins,
     spacedRepetition,
     recordSpacedAnswer,
   } = useAppStore(
@@ -53,7 +54,8 @@ export const QuizModule: React.FC = () => {
       decimalSeparator: s.settings.decimalSeparator,
       language: s.settings.language || 'pt',
       blitzHighScore: s.profile?.stats?.blitzHighScore || 0,
-      bossesDefeated: s.profile?.stats?.bossesDefeated || 0,
+      highestBossLevelCleared: s.profile?.stats?.highestBossLevelCleared || 0,
+      bossCoins: s.profile?.stats?.bossCoins || 0,
       spacedRepetition: s.spacedRepetition,
       recordSpacedAnswer: s.recordSpacedAnswer,
     }))
@@ -495,7 +497,7 @@ export const QuizModule: React.FC = () => {
     const sobrevRecorde = quizProgress.survival?.recordCount || 0;
 
     return (
-      <div className="flex flex-col items-center gap-6 max-w-xl mx-auto pb-24 md:pb-12 select-none animate-in fade-in">
+      <div className="flex flex-col items-center gap-6 max-w-2xl mx-auto pb-36 md:pb-16 select-none animate-in fade-in">
         {/* Title & Subtitle */}
         <div className="flex flex-col items-center text-center mt-2">
           <h1 className="text-4xl sm:text-5xl font-black tracking-widest bg-gradient-to-r from-cyan-400 via-indigo-300 to-fuchsia-400 bg-clip-text text-transparent font-mono drop-shadow-[0_4px_12px_rgba(99,102,241,0.25)]">
@@ -662,7 +664,7 @@ export const QuizModule: React.FC = () => {
             </div>
           </button>
 
-          {/* Batalha de Chefe (Boss Rush) Card */}
+          {/* Batalha de Chefe (Níveis & Forja) Card */}
           <button
             type="button"
             onClick={() => setScreen('boss_rush')}
@@ -674,20 +676,20 @@ export const QuizModule: React.FC = () => {
             <div>
               <div className="flex items-center justify-center gap-1.5">
                 <h3 className="text-lg font-black text-white">Batalha de Chefe</h3>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
-                  Boss Rush
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  Níveis & Forja
                 </span>
               </div>
               <p className="text-xs font-medium text-slate-400 mt-0.5">
-                Derrote Lord Mathgoth com acertos críticos em &lt;3s
+                Enfrente 10 chefes épicos com poderes e forja de runas
               </p>
             </div>
             <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-800/80 px-1 text-slate-400">
-              <span className="flex items-center gap-1 text-rose-400">
-                <Crown size={14} /> 100 HP · 3 Escudos
+              <span className="flex items-center gap-1 text-purple-300">
+                <Crown size={14} className="text-amber-400" /> Nv. Máx: {highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}
               </span>
-              <span className="font-mono text-purple-300">
-                Derrotados: {bossesDefeated}
+              <span className="font-mono text-amber-300 flex items-center gap-1">
+                🪙 {bossCoins} {bossCoins === 1 ? 'moeda' : 'moedas'}
               </span>
             </div>
           </button>

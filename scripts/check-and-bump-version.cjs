@@ -109,43 +109,23 @@ async function main() {
   } else if (existingTags.includes(targetTag)) {
     console.log(`Release tag ${targetTag} already exists. Finding next available patch version...`);
 
-    if (versionParts.length >= 4) {
-      const currentBuild = versionParts[3] || 0;
-      const regex = new RegExp(`^v?${currentMajor}\\.${currentMinor}\\.${currentPatch}\\.(\\d+)$`);
-      let maxBuild = currentBuild;
-      for (const tag of existingTags) {
-        const match = tag.match(regex);
-        if (match) {
-          const b = parseInt(match[1], 10);
-          if (b > maxBuild) maxBuild = b;
-        }
+    // Scan all existing tags for matching major.minor.*
+    const regex = new RegExp(`^v?${currentMajor}\\.${currentMinor}\\.(\\d+)$`);
+    let maxPatch = currentPatch;
+    for (const tag of existingTags) {
+      const match = tag.match(regex);
+      if (match) {
+        const p = parseInt(match[1], 10);
+        if (p > maxPatch) maxPatch = p;
       }
-
-      const nextBuild = maxBuild + 1;
-      targetVersion = `${currentMajor}.${currentMinor}.${currentPatch}.${nextBuild}`;
-      targetTag = `v${targetVersion}`;
-      wasBumped = true;
-
-      console.log(`Auto-bumping 4-part patch version from ${pkg.version} to ${targetVersion} (${targetTag}).`);
-    } else {
-      // Scan all existing tags for matching major.minor.*
-      const regex = new RegExp(`^v?${currentMajor}\\.${currentMinor}\\.(\\d+)$`);
-      let maxPatch = currentPatch;
-      for (const tag of existingTags) {
-        const match = tag.match(regex);
-        if (match) {
-          const p = parseInt(match[1], 10);
-          if (p > maxPatch) maxPatch = p;
-        }
-      }
-
-      const nextPatch = maxPatch + 1;
-      targetVersion = `${currentMajor}.${currentMinor}.${nextPatch}`;
-      targetTag = `v${targetVersion}`;
-      wasBumped = true;
-
-      console.log(`Auto-bumping patch version from ${pkg.version} to ${targetVersion} (${targetTag}).`);
     }
+
+    const nextPatch = maxPatch + 1;
+    targetVersion = `${currentMajor}.${currentMinor}.${nextPatch}`;
+    targetTag = `v${targetVersion}`;
+    wasBumped = true;
+
+    console.log(`Auto-bumping patch version from ${pkg.version} to ${targetVersion} (${targetTag}).`);
   } else {
     console.log(`Release tag ${targetTag} is new and ready for publication.`);
   }

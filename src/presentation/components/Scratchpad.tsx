@@ -48,7 +48,7 @@ const STROKE_WIDTH_OPTIONS = [
 ];
 
 export const Scratchpad: React.FC<ScratchpadProps> = ({
-  className = '',
+  className: _className = '',
   defaultOpen = false,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -172,27 +172,6 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
       redrawAll();
     }
   }, [redrawAll]);
-
-  const handleToggle = useCallback(() => {
-    setIsOpen((prev) => {
-      const next = !prev;
-      if (next) {
-        notifyScratchpadUse();
-      }
-      return next;
-    });
-
-    try {
-      const store = useAppStore.getState() as unknown as {
-        toggleScratchpad?: () => void;
-      };
-      if (typeof store.toggleScratchpad === 'function') {
-        store.toggleScratchpad();
-      }
-    } catch {
-      // Graceful fallback
-    }
-  }, [notifyScratchpadUse]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -410,28 +389,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
 
   return (
     <>
-      {/* 1. Floating Pencil Button */}
-      <button
-        type="button"
-        onClick={handleToggle}
-        aria-label={isOpen ? 'Minimizar Lousa de Rascunho' : 'Abrir Lousa de Rascunho'}
-        title="Lousa de Rascunho (abrir / minimizar)"
-        className={`fixed bottom-6 right-6 z-40 hidden md:flex items-center justify-center p-3.5 md:p-4 rounded-full shadow-2xl transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 ${
-          isOpen
-            ? 'bg-slate-800 text-amber-400 hover:bg-slate-700 ring-2 ring-amber-400/60 shadow-amber-500/10'
-            : 'bg-gradient-to-tr from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 hover:scale-105 hover:shadow-amber-500/25 active:scale-95'
-        } ${className}`}
-      >
-        <Pencil className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:rotate-12" />
-        {strokesCount > 0 && !isOpen && (
-          <span
-            className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-indigo-500 rounded-full border-2 border-slate-900 animate-pulse"
-            title="Rascunho ativo salvo"
-          />
-        )}
-      </button>
-
-      {/* 2. Scratchpad Overlay (kept in DOM with `hidden` when minimized to preserve canvas state) */}
+      {/* Scratchpad Overlay (kept in DOM with `hidden` when minimized to preserve canvas state) */}
       <div
         className={
           isOpen

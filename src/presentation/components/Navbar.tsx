@@ -109,7 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none truncate">
                 Quantora
               </h1>
-              <p className="hidden sm:block text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">
+              <p className="hidden xl:block text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">
                 {t.app_subtitle}
               </p>
             </div>
@@ -125,14 +125,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all touch-target ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all touch-target ${
                     isActive
                       ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
+                  title={tab.label}
+                  aria-label={tab.label}
                 >
                   {tab.icon}
-                  <span>{tab.label}</span>
+                  <span className={isActive ? 'inline' : 'hidden lg:inline'}>{tab.label}</span>
                   {tab.badge !== undefined && (
                     <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold">
                       {tab.badge}
@@ -143,8 +145,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
             })}
           </nav>
 
-          {/* Quick Actions (Profile, Theme & Settings) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Quick Actions (Profile, Scratchpad, Theme & Settings) */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {/* Daily Challenge Status Badge */}
             <button
               type="button"
@@ -166,8 +168,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
               ) : (
                 <Calendar size={14} className="text-amber-500 shrink-0 animate-bounce" />
               )}
-              <span className="hidden sm:inline">
+              <span className="hidden xl:inline">
                 {isDailyCompleted ? t.daily_completed : t.daily_pending}
+              </span>
+              <span className="hidden sm:inline xl:hidden">
+                {isDailyCompleted ? 'Diário ✓' : 'Diário !'}
               </span>
               {!isDailyCompleted && (
                 <span className="sm:hidden text-[11px] font-extrabold text-amber-500">
@@ -190,6 +195,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                 <span className="flex items-center text-orange-500 font-extrabold text-[11px] ml-0.5">
                   🔥{profile.streakDays}
                 </span>
+              )}
+            </button>
+
+            {/* Scratchpad Button (Desktop & Tablet Quick Action) */}
+            <button
+              type="button"
+              onClick={toggleScratchpad}
+              className={`relative p-2 sm:p-2.5 rounded-xl border transition-colors touch-target flex items-center justify-center ${
+                isScratchpadOpen
+                  ? 'border-amber-400 bg-amber-500/20 text-amber-400'
+                  : 'border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800'
+              }`}
+              title="Lousa de Rascunho"
+              aria-label="Lousa de Rascunho"
+            >
+              <Pencil size={17} className={isScratchpadOpen ? 'rotate-12 text-amber-500' : ''} />
+              {hasScratchpadStrokes && !isScratchpadOpen && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               )}
             </button>
 

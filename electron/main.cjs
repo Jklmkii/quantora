@@ -11,10 +11,10 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1050,
-    height: 750,
-    minWidth: 450,
-    minHeight: 600,
+    width: 1100,
+    height: 780,
+    minWidth: 420,
+    minHeight: 580,
     title: 'Quantora',
     icon: path.join(__dirname, '../build/icon.ico'),
     backgroundColor: '#0f172a',

@@ -2,7 +2,7 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
-## [1.2.9.1] — Boss Battle por Níveis, Resposta Certa, Moedas de Upgrade & Haptics Android (2026-09-12)
+## [1.2.10] — Responsividade da Janela, Boss Battle por Níveis, Moedas & Haptics Android (2026-09-12)
 
 ### ⚔️ Batalha de Chefe & Progressão
 - **Fases Discretas Independentes ("1 Fase, 1 Tentativa"):** Substituição do rush contínuo/chefe estático por níveis selecionáveis individualmente. Vida do chefe escala por $\text{HP}(L) = \lfloor 100 \cdot (1 + 0,35 \cdot (L - 1)) \rceil$.

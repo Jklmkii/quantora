@@ -67,7 +67,7 @@ export function App() {
   }, [theme]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white transition-colors duration-200 overflow-x-hidden">
       {/* Updater Toast Banner */}
       <UpdateBanner />
 
@@ -81,7 +81,7 @@ export function App() {
       <Navbar onOpenSettings={() => setIsSettingsOpen(true)} />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-6 md:pt-8 pb-24 md:pb-12">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-6 md:pt-8 pb-36 md:pb-16">
         <Suspense fallback={<ModuleSkeleton />}>
           {activeTab === 'bhaskara' && <BhaskaraModule />}
           {(activeTab === 'regra_simples' || activeTab === 'regra_composta') && (
