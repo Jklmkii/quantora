@@ -25,6 +25,11 @@ import {
   createInitialCard,
   processCardAnswer,
 } from '../core/quiz/spacedRepetition';
+import {
+  coinsForLevel,
+  costForUpgrade,
+  BASE_VICTORY_XP,
+} from '../core/quiz/bossEngine';
 
 export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'quiz' | 'history' | 'settings';
 
@@ -54,7 +59,18 @@ interface AppState {
 
   // Blitz & Boss
   recordBlitzResult: (score: number, maxCombo: number, correctCount: number, xpEarned: number) => void;
-  recordBossVictory: (timeSeconds: number, shieldsRemaining: number, xpEarned: number) => void;
+  highestBossLevelCleared: number;
+  bossCoins: number;
+  damageUpgradeLevel: number;
+  recordBossVictory: (
+    levelOrTime: number,
+    arg2?: number,
+    arg3?: number,
+    arg4?: number,
+    arg5?: number
+  ) => void;
+  purchaseDamageUpgrade: () => boolean;
+  resetBossProgress: () => void;
 
   // Settings
   settings: AppSettings;
@@ -116,6 +132,9 @@ const DEFAULT_PROFILE: UserProfile = {
     bossesDefeated: 0,
     flawlessBossVictories: 0,
     criticalHits: 0,
+    highestBossLevelCleared: 0,
+    bossCoins: 0,
+    damageUpgradeLevel: 0,
   },
 };
 
@@ -308,16 +327,60 @@ export const useAppStore = create<AppState>()(
         });
       },
 
-      recordBossVictory: (_timeSeconds, shieldsRemaining, xpEarned) => {
+      highestBossLevelCleared: 0,
+      bossCoins: 0,
+      damageUpgradeLevel: 0,
+
+      recordBossVictory: (arg1, arg2, arg3, arg4, arg5) => {
         set((state) => {
           const prevProf = state.profile || DEFAULT_PROFILE;
           const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
 
+          let level = 1;
+          let _timeSeconds = 0;
+          let shieldsRemaining = 3;
+          let xpEarned = BASE_VICTORY_XP;
+          let coinsEarned: number | undefined;
+
+          if (arg4 !== undefined) {
+            // Full signature: (level, timeSeconds, shieldsRemaining, xpEarned, coinsEarned)
+            level = Math.max(1, Math.round(arg1));
+            _timeSeconds = arg2 ?? 0;
+            shieldsRemaining = arg3 ?? 3;
+            xpEarned = arg4;
+            coinsEarned = arg5;
+          } else if (arg3 !== undefined) {
+            // Legacy signature: (timeSeconds, shieldsRemaining, xpEarned)
+            _timeSeconds = arg1;
+            shieldsRemaining = arg2 ?? 3;
+            xpEarned = arg3;
+            level = 1;
+          } else if (arg2 !== undefined) {
+            // Signature: (level, coinsEarned)
+            level = Math.max(1, Math.round(arg1));
+            coinsEarned = arg2;
+          } else {
+            // Signature: (level)
+            level = Math.max(1, Math.round(arg1));
+          }
+
+          void _timeSeconds;
+          const actualCoins = coinsEarned !== undefined ? coinsEarned : coinsForLevel(level);
           const isFlawless = shieldsRemaining >= 3;
+
+          const newHighestLevel = Math.max(
+            state.highestBossLevelCleared || 0,
+            prevStats.highestBossLevelCleared || 0,
+            level
+          );
+          const newBossCoins = (state.bossCoins || 0) + actualCoins;
+
           const newStats = {
             ...prevStats,
             bossesDefeated: (prevStats.bossesDefeated || 0) + 1,
             flawlessBossVictories: (prevStats.flawlessBossVictories || 0) + (isFlawless ? 1 : 0),
+            highestBossLevelCleared: newHighestLevel,
+            bossCoins: newBossCoins,
           };
 
           const newTotalXp = (prevProf.totalXp || 0) + Math.max(0, xpEarned);
@@ -337,6 +400,8 @@ export const useAppStore = create<AppState>()(
           }
 
           return {
+            highestBossLevelCleared: newHighestLevel,
+            bossCoins: newBossCoins,
             profile: {
               ...candidate,
               totalXp: newTotalXp + bonusXp,
@@ -345,6 +410,57 @@ export const useAppStore = create<AppState>()(
             toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
           };
         });
+      },
+
+      purchaseDamageUpgrade: () => {
+        let purchased = false;
+        set((state) => {
+          const currentUpgradeLevel = state.damageUpgradeLevel || 0;
+          const cost = costForUpgrade(currentUpgradeLevel);
+          const currentCoins = state.bossCoins || 0;
+
+          if (currentCoins < cost) {
+            return {};
+          }
+
+          purchased = true;
+          const nextUpgradeLevel = currentUpgradeLevel + 1;
+          const nextCoins = currentCoins - cost;
+
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+
+          return {
+            bossCoins: nextCoins,
+            damageUpgradeLevel: nextUpgradeLevel,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                bossCoins: nextCoins,
+                damageUpgradeLevel: nextUpgradeLevel,
+              },
+            },
+          };
+        });
+        return purchased;
+      },
+
+      resetBossProgress: () => {
+        set((state) => ({
+          highestBossLevelCleared: 0,
+          bossCoins: 0,
+          damageUpgradeLevel: 0,
+          profile: {
+            ...state.profile,
+            stats: {
+              ...state.profile?.stats,
+              highestBossLevelCleared: 0,
+              bossCoins: 0,
+              damageUpgradeLevel: 0,
+            },
+          },
+        }));
       },
 
       addXp: (amount) => {
@@ -671,7 +787,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'quantora-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 3,
+      version: 4,
       migrate: (persistedState: any, version: number) => {
         const state = persistedState as any;
         if (!version || version < 2) {
@@ -705,6 +821,16 @@ export const useAppStore = create<AppState>()(
               cards: {},
               globalQuestionsAnswered: 0,
             };
+          }
+        }
+        if (!version || version < 4) {
+          if (state.highestBossLevelCleared === undefined) state.highestBossLevelCleared = 0;
+          if (state.bossCoins === undefined) state.bossCoins = 0;
+          if (state.damageUpgradeLevel === undefined) state.damageUpgradeLevel = 0;
+          if (state?.profile?.stats) {
+            if (state.profile.stats.highestBossLevelCleared === undefined) state.profile.stats.highestBossLevelCleared = 0;
+            if (state.profile.stats.bossCoins === undefined) state.profile.stats.bossCoins = 0;
+            if (state.profile.stats.damageUpgradeLevel === undefined) state.profile.stats.damageUpgradeLevel = 0;
           }
         }
         return state;

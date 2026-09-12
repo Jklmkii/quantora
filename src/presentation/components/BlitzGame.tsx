@@ -21,6 +21,7 @@ import {
   type BlitzQuestion,
   type BlitzState,
 } from '../../core/quiz/blitzEngine';
+import { hapticComboTick } from '../../core/platform/haptics';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -207,6 +208,10 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
       const { nextState, xpEarned } = processAnswer(state, isCorrect);
       setAccumulatedXp((prev) => prev + xpEarned);
       setState(nextState);
+
+      if (isCorrect) {
+        hapticComboTick(nextState.combo);
+      }
 
       if (nextState.isGameOver || nextState.timeLeft <= 0) {
         const finalXp = calculateBlitzXp(nextState.score, getComboMultiplier(nextState.maxCombo));

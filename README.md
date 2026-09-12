@@ -40,26 +40,28 @@ Disponível como **Web App (PWA)**, **Executável Nativo do Windows (.exe)** e *
 - **Resolução Passo a Passo:** Demonstração do produto das frações até o isolamento de $x$.
 
 ### 4. 🎮 Modos de Treino, Jogos & Desafios
-- **Treino Mental & Sobrevivência:** Modo Sobrevivência progressivo full-mix e Caderno de Erros com Repetição Espaçada adaptativa (algoritmo Leitner amortecido com gatilho dual).
+- **Treino Mental & Sobrevivência:** Modo Sobrevivência progressivo full-mix e Caderno de Erros com Repetição Espaçada adaptativa (algoritmo Leitner amortecido com gatilho dual e normalização comutativa de fatos).
 - **Desafio Diário (Daily Challenge):** Questão determinística única mundial gerada a partir da data via hash FNV-1a e PRNG Mulberry32, concedendo +150 XP e avanço de ofensiva (*streak*).
-- **Modo Blitz (60 Segundos):** Corrida contra o relógio (+2s acerto / -3s erro) com multiplicadores de combo ($1\times \to 2\times \to 3\times$).
-- **Batalha de Chefe (Boss Rush):** Chefe com 100 HP, 3 escudos para o jogador, acertos críticos em respostas rápidas (<3s) e bônus de vitória perfeita (*Flawless*).
+- **Modo Blitz (60 Segundos):** Corrida contra o relógio (+2s acerto / -3s erro) com multiplicadores de combo ($1\times \to 2\times \to 3\times$) e feedback tátil dinâmico.
+- **Batalha de Chefe por Níveis ("1 Fase, 1 Tentativa"):** Fases independentes com vida progressiva ($\text{HP}(L) = \lfloor 100 \cdot (1 + 0,35 \cdot (L - 1)) \rceil$), 3 escudos restaurados por tentativa, drops de Moedas de Chefe, Forja de Upgrades permanentes de dano e balão didático `Certo: X` ao errar.
 
 ### 5. 📝 Lousa de Rascunho Digital (Scratchpad)
 - Camada flutuante em HTML5 Canvas transparente sobre qualquer módulo.
-- Caneta com 6 cores contrastantes, 3 espessuras de traço, paleta sanfona recolhível para mobile, borracha e botão unificado de fechar preservando desenhos na memória.
+- Caneta com 6 cores contrastantes, 3 espessuras de traço, paleta sanfona recolhível para mobile, botão satélite circular dedicado no dock móvel, borracha e botão unificado de fechar preservando desenhos na memória.
 
 ### 6. 🏅 Gamificação & Perfil do Jogador
 - Fórmula quadrática de XP: $XP_{req}(L) = 50 \cdot L \cdot (L - 1)$.
 - 6 Patentes históricas em PT e EN (*Aprendiz* a *Lenda dos Números*).
 - 16 Conquistas desbloqueáveis com animação de troféu e efeito de confetes.
 - Ofensiva diária (*Streak*) estritamente atrelada ao relógio local do dispositivo.
+- Vitrine de recordes no perfil (Sobrevivência, Blitz e Maior Nível de Chefe Concluído).
 
 ### 7. 💾 Histórico Local, Backup & Modos de Tema
-- Armazenamento 100% privado e local no dispositivo via Zustand e `localStorage`.
+- Armazenamento 100% privado e local no dispositivo via Zustand (migração v4) e `localStorage`.
 - Busca rápida e filtros por tipo (`'bhaskara'`, `'regra-de-tres'`, `'physics'`).
 - Exportação e importação de histórico em **JSON** e **CSV**.
 - Suporte fluido a temas Claro, Escuro e Sistema, além de internacionalização em Português e Inglês.
+- Feedback tátil nativo Android via `@capacitor/haptics` (Blitz, Chefe e Fixação Ativa).
 
 ---
 
@@ -67,10 +69,10 @@ Disponível como **Web App (PWA)**, **Executável Nativo do Windows (.exe)** e *
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Canvas-Confetti.
 - **Motor Matemático & Físico:** `big.js` (eliminando erros de precisão de ponto flutuante IEEE 754).
-- **Gerenciamento de Estado:** Zustand com persistência e validador de schema.
+- **Gerenciamento de Estado:** Zustand 5.0 com persistência local e validador de schema.
 - **Desktop:** Electron 44, Electron-Builder, Electron-Updater.
-- **Mobile:** Capacitor 8.5, Android SDK 36, Gradle 8.x, Java 21.
-- **Qualidade & Testes:** Vitest (357 testes unitários em 18 suítes), Oxlint (76 arquivos).
+- **Mobile:** Capacitor 8.5, `@capacitor/haptics`, Android SDK 36, Gradle 8.x, Java 21.
+- **Qualidade & Testes:** Vitest (391 testes unitários em 22 suítes), Oxlint (82 arquivos).
 
 ---
 
@@ -91,7 +93,7 @@ npm run dev
 npm run electron:dev
 ```
 
-### 4. Executar Testes Unitários (357 Testes / 18 Suítes)
+### 4. Executar Testes Unitários (391 Testes / 22 Suítes)
 ```bash
 npx vitest run
 ```

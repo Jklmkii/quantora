@@ -203,6 +203,10 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
   * `fix:` for bug fixes.
   * `test:` for expanding unit or stress tests.
   * `refactor:` for code restructuring without behavior changes.
+* **Version Bumping & Cadence Conventions (`check-and-bump-version.cjs`):**
+  * **Auto-Patch (Default):** Merges comuns em `main` com tag existente disparam automaticamente bump de patch (`x.y.z -> x.y.(z+1)`).
+  * **Gatilho de Minor (`#minor`):** Inclua o marcador `#minor` no título ou corpo do commit/PR para avançar a versão minor (`x.y.z -> x.(y+1).0`), indicado para novos modos de jogo, módulos matemáticos ou recursos substanciais.
+  * **Gatilho de Major (`#major`):** Inclua o marcador `#major` no título ou corpo do commit/PR para avançar a versão major (`x.y.z -> (x+1).0.0`), reservado para reestruturações arquiteturais ou quebras de compatibilidade.
 * Provide a concise, bulleted summary of:
   1. What was changed.
   2. Why the change was made.

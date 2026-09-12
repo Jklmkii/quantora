@@ -23,6 +23,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
 import { DailyChallengeCard } from '../components/DailyChallengeCard';
 import { selectNextDueCard, getDueCards } from '../../core/quiz/spacedRepetition';
+import { hapticMasteryBadge } from '../../core/platform/haptics';
 import type { QuizDifficultyMode, QuizQuestion, QuizTrackSelector, SpacedCard } from '../../types';
 
 // Code-splitting: Lazy load heavy game modes on demand
@@ -113,6 +114,16 @@ export const QuizModule: React.FC = () => {
     selectedTrack === 'sobrevivencia'
       ? quizProgress.survival?.recordCount || 0
       : quizProgress.tracks?.[selectedTrack]?.recordCount || 0;
+
+  // Haptic feedback no momento em que o badge de Fixação Ativa aparece
+  const prevSpacedBadgeRef = useRef<boolean>(false);
+  useEffect(() => {
+    const isBadgeVisible = screen === 'playing' && Boolean(currentQuestion?.isSpacedReview);
+    if (isBadgeVisible && !prevSpacedBadgeRef.current) {
+      hapticMasteryBadge();
+    }
+    prevSpacedBadgeRef.current = isBadgeVisible;
+  }, [screen, currentQuestion?.id, currentQuestion?.isSpacedReview]);
 
   // Compute total time based on difficulty and count number
   const computeTimeLimit = useCallback((mode: QuizDifficultyMode, count: number): number => {

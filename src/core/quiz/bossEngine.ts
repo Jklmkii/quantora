@@ -1,6 +1,7 @@
 import { parseBig } from '../math/precision';
 
 export const BOSS_INITIAL_HP = 100;
+export const BOSS_HP_GROWTH_PER_LEVEL = 0.35;
 export const PLAYER_INITIAL_SHIELDS = 3;
 export const ROUND_TIME_LIMIT_SECONDS = 10;
 export const CRITICAL_TIME_THRESHOLD_SECONDS = 3;
@@ -10,6 +11,38 @@ export const STANDARD_DAMAGE_MIN = 15;
 export const STANDARD_DAMAGE_MAX = 20;
 export const CRITICAL_DAMAGE_MIN = 30;
 export const CRITICAL_DAMAGE_MAX = 35;
+
+export const COINS_BASE = 10;
+export const COINS_PER_LEVEL = 5;
+export const BASE_UPGRADE_COST = 30;
+export const UPGRADE_COST_MULTIPLIER = 1.5;
+export const BONUS_PER_UPGRADE_LEVEL = 3;
+
+/**
+ * Computes boss HP for a given discrete level (Level 1: 100, Level 2: 135, Level 3: 170...).
+ */
+export function getBossHpForLevel(level: number = 1): number {
+  const safeLevel = Math.max(1, Math.round(level));
+  return Math.round(BOSS_INITIAL_HP * (1 + BOSS_HP_GROWTH_PER_LEVEL * (safeLevel - 1)));
+}
+
+/**
+ * Computes the number of boss coins rewarded for defeating a given level.
+ * coinsForLevel(level) = 10 + level * 5
+ */
+export function coinsForLevel(level: number = 1): number {
+  const safeLevel = Math.max(1, Math.round(level));
+  return COINS_BASE + safeLevel * COINS_PER_LEVEL;
+}
+
+/**
+ * Computes the cost in coins to purchase the next damage upgrade level.
+ * costForUpgrade(level) = Math.round(30 * (1.5 ** level))
+ */
+export function costForUpgrade(upgradeLevel: number = 0): number {
+  const safeLevel = Math.max(0, Math.round(upgradeLevel));
+  return Math.round(BASE_UPGRADE_COST * Math.pow(UPGRADE_COST_MULTIPLIER, safeLevel));
+}
 
 export type BossQuestionCategory = 'equation' | 'mental_math' | 'powers' | 'roots' | 'mixed';
 
@@ -54,8 +87,10 @@ export interface BossRoundResult {
 }
 
 export interface BossBattleState {
+  level: number;
   bossHp: number;
   bossMaxHp: number;
+  damageUpgradeLevel: number;
   shields: number;
   maxShields: number;
   round: number;
@@ -98,14 +133,15 @@ function rollDamage(min: number, max: number, customRoll?: number): number {
 
 /**
  * Calculates damage dealt to the boss or player shield based on answer accuracy and response time.
- * - Standard Hit (3s - 10s): 15-20 damage to boss, 0 shield damage
- * - Critical Hit (< 3s): 30-35 damage to boss, 0 shield damage, isCritical = true
+ * - Standard Hit (3s - 10s): 15-20 damage (+ upgrade bonus) to boss, 0 shield damage
+ * - Critical Hit (< 3s): 30-35 damage (+ upgrade bonus) to boss, 0 shield damage, isCritical = true
  * - Timeout (> 10s) or Wrong Answer: 0 damage to boss, 1 shield damage
  */
 export function calculateBossDamage(
   isCorrect: boolean,
   responseTimeSeconds: number,
-  customRoll?: number
+  customRoll?: number,
+  damageUpgradeLevel: number = 0
 ): BossDamageResult {
   if (!isCorrect) {
     return {
@@ -125,19 +161,21 @@ export function calculateBossDamage(
     };
   }
 
+  const bonusDamage = Math.max(0, Math.round(damageUpgradeLevel)) * BONUS_PER_UPGRADE_LEVEL;
+
   if (responseTimeSeconds < CRITICAL_TIME_THRESHOLD_SECONDS) {
-    const damage = rollDamage(CRITICAL_DAMAGE_MIN, CRITICAL_DAMAGE_MAX, customRoll);
+    const baseDamage = rollDamage(CRITICAL_DAMAGE_MIN, CRITICAL_DAMAGE_MAX, customRoll);
     return {
-      damage,
+      damage: baseDamage + bonusDamage,
       isCritical: true,
       shieldDamage: 0,
       reason: 'critical',
     };
   }
 
-  const damage = rollDamage(STANDARD_DAMAGE_MIN, STANDARD_DAMAGE_MAX, customRoll);
+  const baseDamage = rollDamage(STANDARD_DAMAGE_MIN, STANDARD_DAMAGE_MAX, customRoll);
   return {
-    damage,
+    damage: baseDamage + bonusDamage,
     isCritical: false,
     shieldDamage: 0,
     reason: 'standard',
@@ -661,12 +699,22 @@ function formatSuperscript(exp: number): string {
 }
 
 /**
- * Creates a fresh initial Boss Battle state.
+ * Creates a fresh initial Boss Battle state for a given level and upgrade tier.
+ * Shields always reset to full (PLAYER_INITIAL_SHIELDS = 3).
  */
-export function createInitialBossBattleState(): BossBattleState {
+export function createInitialBossBattleState(
+  level: number = 1,
+  damageUpgradeLevel: number = 0
+): BossBattleState {
+  const safeLevel = Math.max(1, Math.round(level));
+  const hp = getBossHpForLevel(safeLevel);
+  const safeUpgrade = Math.max(0, Math.round(damageUpgradeLevel));
+
   return {
-    bossHp: BOSS_INITIAL_HP,
-    bossMaxHp: BOSS_INITIAL_HP,
+    level: safeLevel,
+    bossHp: hp,
+    bossMaxHp: hp,
+    damageUpgradeLevel: safeUpgrade,
     shields: PLAYER_INITIAL_SHIELDS,
     maxShields: PLAYER_INITIAL_SHIELDS,
     round: 1,
@@ -692,14 +740,16 @@ export function processRound(
   state: BossBattleState,
   userAnswer: number | string,
   responseTimeSeconds: number,
-  customDamageRoll?: number
+  customDamageRoll?: number,
+  damageUpgradeLevel?: number
 ): { nextState: BossBattleState; roundResult: BossRoundResult } {
   if (state.status !== 'fighting') {
     throw new Error(`A batalha já foi finalizada com status: ${state.status}`);
   }
 
+  const upgradeLevel = damageUpgradeLevel ?? state.damageUpgradeLevel ?? 0;
   const isCorrect = checkAnswerCorrectness(userAnswer, state.currentQuestion.correctAnswer);
-  const damageResult = calculateBossDamage(isCorrect, responseTimeSeconds, customDamageRoll);
+  const damageResult = calculateBossDamage(isCorrect, responseTimeSeconds, customDamageRoll, upgradeLevel);
 
   const bossHpBefore = state.bossHp;
   const shieldsBefore = state.shields;
@@ -739,6 +789,8 @@ export function processRound(
 
   const nextState: BossBattleState = {
     ...state,
+    level: state.level ?? 1,
+    damageUpgradeLevel: upgradeLevel,
     bossHp: newBossHp,
     shields: newShields,
     round: status === 'fighting' ? state.round + 1 : state.round,

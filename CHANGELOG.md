@@ -2,6 +2,45 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.9.1] — Boss Battle por Níveis, Resposta Certa, Moedas de Upgrade & Haptics Android (2026-09-12)
+
+### ⚔️ Batalha de Chefe & Progressão
+- **Fases Discretas Independentes ("1 Fase, 1 Tentativa"):** Substituição do rush contínuo/chefe estático por níveis selecionáveis individualmente. Vida do chefe escala por $\text{HP}(L) = \lfloor 100 \cdot (1 + 0,35 \cdot (L - 1)) \rceil$.
+- **Escudos Restaurados por Nível:** Cada fase iniciada restaura integralmente os 3 escudos do jogador (`PLAYER_INITIAL_SHIELDS`), permitindo foco total em cada desafio.
+- **Feedback Didático de Resposta Correta:** Ao errar uma pergunta ou estourar o cronômetro, o HUD exibe o balão `Certo: X` com estilização visual destacada (`correction`), associado ao haptic de dano.
+- **Moedas de Chefe & Forja de Upgrades:** Moedas concedidas por vitória ($\text{Moedas}(L) = 10 + L \cdot 5$) gastáveis na Forja integrada para comprar bônus permanente de dano (+3 de dano aditivo por nível em acertos normais e críticos). Custo evolui exponencialmente ($\lfloor 30 \cdot 1,5^U \rfloor$).
+- **Vitrine de Recordes:** Recorde de maior nível de chefe superado (`highestBossLevelCleared`) exibido no `ProfileModal.tsx`.
+
+### 📱 Experiência Mobile & Sensorial
+- **Feedback Tátil Nativo Android com `@capacitor/haptics`:** Vibrações táteis sincronizadas para combos do Blitz (`hapticComboTick`), combate do Chefe (`hapticBossHit` e `hapticBossDamageTaken`) e transição do badge de Fixação Ativa no Quiz (`hapticMasteryBadge`).
+
+### 🤖 Automação & CI/CD
+- **Versionamento Semântico (#minor/#major):** Suporte nativo a tags de minor e major no script `check-and-bump-version.cjs` e alinhamento de repositório padrão para `quantora`.
+
+### 🧪 Suíte de Testes & Qualidade
+- **391 Testes Unitários Aprovados:** 22 suítes de teste executando 100% verde em Vitest.
+- **Zero Avisos no Linter:** Oxlint aprovado com 0 erros e 0 avisos em 82 arquivos analisados.
+
+---
+
+## [1.2.8] — Repetição Espaçada, Rede CI/CD Permanente & Purga MatSpeed (2026-09-12)
+
+### 🧠 Pedagogia & Retenção de Aprendizado
+- **Motor de Repetição Espaçada (Leitner Amortecido):** Implementação de sistema adaptativo de repetição espaçada estilo Anki (`src/core/quiz/spacedRepetition.ts`). Normalização comutativa de fatos matemáticos (`7 × 8` == `8 × 7`), 5 caixas de maturidade e gatilho dual de revisão (contagem de operações globais ou tempo real decorrido).
+- **Caderno de Erros (Lobby do Quiz):** Painel dedicado exibindo operações devidas para revisão com contadores em tempo real e modo de "Prática Focada" 100% determinístico.
+- **Economia de XP Anti-Exploit:** Curva de XP achatada com prevenção contra fazendas de erros intencionais (+10 XP base, +5 XP de resiliência nas Caixas 1–2) e bônus de graduação de maestria de +50 XP concedido uma única vez ao atingir a Caixa 5 (`hasGraduated: true`).
+- **Badges de Fixação no Jogo:** Indicadores visuais dinâmicos no HUD para operações devidas (`⚡ Fixação Ativa · Caixa N`) e comemoração de graduação de memória.
+
+### 🏛️ Interface & Design System
+- **Lobby Consolidado em Sobrevivência:** Redesenho completo do Lobby do Quiz com Card Hero Full-Width centralizado em estilo glassmorphism ciano-índigo, integrando o modo Sobrevivência progressivo e unificado.
+- **Purga Completa de Branding de Terceiros:** Eliminação total de referências a "MatSpeed" no i18n (`quiz_lobby_title`, `quiz_lobby_subtitle`), componentes e comentários de código.
+- **Remoção de Trilhas Isoladas:** Limpeza do grid 2x2 antigo e botão avulso de regra de três, expurgando variáveis órfãs (`somaNivel`, `subNivel`, `multNivel`, `divNivel`).
+
+### 🔒 Segurança & Infraestrutura CI/CD
+- **Rede Permanente de Segurança CodeQL:** Workflow automatizado `.github/workflows/codeql.yml` com a suíte `security-extended` do GitHub para análise estática contínua de vulnerabilidades em JS/TS e Actions.
+- **Dependabot Ativo:** Configuração `.github/dependabot.yml` com monitoramento automatizado semanal de dependências npm e atualizações de actions do GitHub.
+- **Correção da Pipeline de Auto-Merge:** Hardening de `auto-merge-jules.yml` contra injeção em forks e execução não autorizada de scripts em dependências (`npm ci --ignore-scripts`).
+
 ---
 
 ## [1.2.3] — HUD Mobile Flutuante, Botão Satélite de Rascunho & Pipeline Unificada do APK (2026-09-11)

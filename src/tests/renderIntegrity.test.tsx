@@ -248,8 +248,16 @@ describe('Render Integrity — BossBattle (HP do Chefe e Escudos)', () => {
     vi.useRealTimers();
   });
 
-  test('Renderiza o Chefe com HP e tempo de rodada', () => {
+  test('Renderiza a Tela de Seleção de Níveis e Arsenal do Chefe', () => {
     render(<BossBattle />);
+
+    expect(screen.getByText(/Arsenal & Forja de Dano/i)).toBeDefined();
+    expect(screen.getByText(/Selecione a Fase/i)).toBeDefined();
+    expect(screen.getAllByText(/Nível 1/i).length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('Renderiza o Chefe em combate com HP e tempo de rodada', () => {
+    render(<BossBattle initialScreen="battle" />);
 
     // Chefe inicial e HP
     expect(screen.getByText(/Lord Mathgoth/i)).toBeDefined();
@@ -262,7 +270,7 @@ describe('Render Integrity — BossBattle (HP do Chefe e Escudos)', () => {
   });
 
   test('Permite responder e processa a rodada de combate', async () => {
-    render(<BossBattle />);
+    render(<BossBattle initialScreen="battle" />);
 
     // Procura os botões das alternativas numéricas de resposta
     const optionButtons = screen.getAllByRole('button').filter((btn) =>

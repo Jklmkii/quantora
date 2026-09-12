@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Award, Flame, Zap, Shield, CheckCircle2, Trophy, Lock } from 'lucide-react';
+import { X, Award, Flame, Zap, Shield, CheckCircle2, Trophy, Lock, Crown } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { calculateLevelInfo, ACHIEVEMENTS } from '../../core/gamification/leveling';
@@ -22,9 +22,10 @@ const FILTER_TABS: Array<{ key: FilterCategory; labelPt: string; labelEn: string
 ];
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
-  const { profile, language } = useAppStore(
+  const { profile, highestBossLevelCleared, language } = useAppStore(
     useShallow((s) => ({
       profile: s.profile,
+      highestBossLevelCleared: s.highestBossLevelCleared ?? s.profile?.stats?.highestBossLevelCleared ?? 0,
       language: s.settings.language || 'pt',
     }))
   );
@@ -113,7 +114,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           </div>
 
           {/* Highlights Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
             {/* Streak */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
               <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-1.5">
@@ -163,6 +164,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               </span>
               <span className="text-[11px] text-slate-400 font-medium">
                 {t.stat_survival_record}
+              </span>
+            </div>
+
+            {/* Boss Record */}
+            <div className="col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center mb-1.5">
+                <Crown size={18} />
+              </div>
+              <span className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                Nv. {highestBossLevelCleared}
+              </span>
+              <span className="text-[11px] text-slate-400 font-medium">
+                {t.stat_boss_record || 'Recorde no Chefe'}
               </span>
             </div>
           </div>

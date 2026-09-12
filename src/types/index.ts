@@ -190,6 +190,9 @@ export interface UserProfileStats {
   bossesDefeated?: number;
   flawlessBossVictories?: number;
   criticalHits?: number;
+  highestBossLevelCleared?: number;
+  bossCoins?: number;
+  damageUpgradeLevel?: number;
 }
 
 export interface DailyChallengeState {
@@ -212,6 +215,9 @@ export interface BossRushStats {
   bossesDefeated: number;
   bestTimeSeconds: number;
   flawlessVictories: number;
+  highestBossLevelCleared?: number;
+  bossCoins?: number;
+  damageUpgradeLevel?: number;
 }
 
 export interface UserProfile {
