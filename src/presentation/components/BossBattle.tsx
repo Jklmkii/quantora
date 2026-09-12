@@ -20,6 +20,7 @@ import {
   Coins,
   Lock,
   CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import {
   createInitialBossBattleState,
@@ -202,29 +203,26 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           setTimeout(() => setFlashColor(null), 400);
         }
       } else {
-        // Wrong or timeout: player recoil + red flash + shield loss text + correct answer feedback
+        // Wrong or timeout: player recoil + red flash + shield loss text at boss portrait
         hapticBossDamageTaken();
         setIsPlayerRecoiling(true);
         setFlashColor('red');
         addFloatingText('-1 ESCUDO!', 'shield_loss');
-        const correctVal =
-          battleState.currentQuestion.formattedCorrectAnswer ||
-          battleState.currentQuestion.correctAnswer;
-        addFloatingText(`Certo: ${correctVal}`, 'correction');
         setTimeout(() => {
           setIsPlayerRecoiling(false);
           setFlashColor(null);
         }, 600);
       }
 
-      // Short cinematic delay to allow floating text and HP bar to animate smoothly
+      // Dynamic cinematic delay: fast (800ms) on hit to maintain rhythm, extended (1500ms) on error to absorb correct answer
+      const nextDelay = roundResult.isCorrect ? 800 : 1500;
       setTimeout(() => {
         setBattleState(nextState);
         setSelectedOption(null);
         setManualInput('');
         setElapsedThisRound(0);
         setIsResolving(false);
-      }, 1000);
+      }, nextDelay);
     },
     [isResolving, battleState, damageUpgradeLevel, addFloatingText]
   );
@@ -857,7 +855,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                       : ft.type === 'shield_loss'
                       ? 'bg-red-600 text-white border border-red-300'
                       : ft.type === 'correction'
-                      ? 'bg-amber-400 text-slate-950 border-2 border-amber-200 font-black shadow-lg shadow-amber-500/50'
+                      ? 'bg-emerald-500 text-slate-950 border-2 border-emerald-300 font-black shadow-lg shadow-emerald-500/50'
                       : 'bg-emerald-500 text-slate-950 font-extrabold'
                   }`}
                 >
@@ -1015,60 +1013,116 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
           {/* 4 MULTIPLE CHOICE OPTIONS */}
           {!isManualInputMode ? (
-            <div className="w-full grid grid-cols-2 gap-3 mt-1">
-              {battleState.currentQuestion.options.map((option, idx) => {
-                const isSelected = selectedOption === option;
-                return (
-                  <button
-                    key={`${battleState.currentQuestion.id}_opt_${option}_${idx}`}
-                    type="button"
-                    disabled={isResolving}
-                    onClick={() => {
-                      setSelectedOption(option);
-                      handleAnswerSubmit(option);
-                    }}
-                    className={`relative py-3.5 px-4 rounded-2xl font-mono text-lg font-black transition-all duration-150 flex items-center justify-center border shadow-md active:scale-95 disabled:opacity-75 cursor-pointer ${
-                      isSelected
-                        ? 'bg-amber-500 border-amber-400 text-slate-950 scale-105 ring-2 ring-amber-400/50'
-                        : 'bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-white hover:border-slate-500'
-                    }`}
-                  >
-                    <span className="absolute top-1.5 left-2 text-[10px] font-sans font-bold text-slate-400">
-                      [{idx + 1}]
-                    </span>
-                    <span>{option}</span>
-                  </button>
-                );
-              })}
+            <div className="w-full flex flex-col gap-2.5 mt-1">
+              {/* Dual Reinforcement Correction Banner anchored right above options */}
+              {isResolving && lastRoundResult && !lastRoundResult.isCorrect && (
+                <div className="w-full py-2 px-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/70 text-emerald-300 text-xs sm:text-sm font-mono font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.25)] animate-in fade-in zoom-in-95">
+                  <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                  <span>
+                    Resposta certa:{' '}
+                    <strong className="text-emerald-300 font-extrabold text-sm sm:text-base">
+                      {battleState.currentQuestion.formattedCorrectAnswer ||
+                        battleState.currentQuestion.correctAnswer}
+                    </strong>
+                  </span>
+                </div>
+              )}
+
+              <div className="w-full grid grid-cols-2 gap-3">
+                {battleState.currentQuestion.options.map((option, idx) => {
+                  const isSelected = selectedOption === option;
+                  const isCorrect = option === battleState.currentQuestion.correctAnswer;
+
+                  let optionStyle =
+                    'bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-white hover:border-slate-500';
+
+                  if (isResolving && lastRoundResult) {
+                    if (isCorrect) {
+                      // Correct option is ALWAYS highlighted in vibrant emerald green with ring and glow
+                      optionStyle =
+                        'bg-emerald-950/90 border-emerald-500 text-emerald-200 ring-2 ring-emerald-500/60 shadow-[0_0_20px_rgba(16,185,129,0.35)] scale-[1.02] font-black';
+                    } else if (isSelected && !lastRoundResult.isCorrect) {
+                      // Player's incorrect selection is highlighted in red (rose)
+                      optionStyle =
+                        'bg-rose-950/80 border-rose-500 text-rose-300 ring-2 ring-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.3)] font-bold';
+                    } else {
+                      // Other non-matching options fade into background
+                      optionStyle = 'bg-slate-900/40 border-slate-800 text-slate-600 opacity-40';
+                    }
+                  } else if (isSelected) {
+                    optionStyle =
+                      'bg-indigo-600/30 border-indigo-500 text-white scale-105 ring-2 ring-indigo-400/50';
+                  }
+
+                  return (
+                    <button
+                      key={`${battleState.currentQuestion.id}_opt_${option}_${idx}`}
+                      type="button"
+                      disabled={isResolving}
+                      onClick={() => {
+                        setSelectedOption(option);
+                        handleAnswerSubmit(option);
+                      }}
+                      className={`relative py-3.5 px-4 rounded-2xl font-mono text-lg font-black transition-all duration-200 flex items-center justify-center gap-1.5 border shadow-md disabled:cursor-not-allowed cursor-pointer ${optionStyle}`}
+                    >
+                      <span className="absolute top-1.5 left-2 text-[10px] font-sans font-bold text-slate-400">
+                        [{idx + 1}]
+                      </span>
+                      <span>{option}</span>
+                      {isResolving && lastRoundResult && isCorrect && (
+                        <CheckCircle2 size={16} className="text-emerald-400 shrink-0 ml-1" />
+                      )}
+                      {isResolving && lastRoundResult && isSelected && !lastRoundResult.isCorrect && (
+                        <XCircle size={16} className="text-rose-400 shrink-0 ml-1" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             /* MANUAL NUMERIC INPUT MODE */
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (manualInput.trim()) {
-                  handleAnswerSubmit(manualInput);
-                }
-              }}
-              className="w-full flex gap-2 mt-1"
-            >
-              <input
-                type="text"
-                autoFocus
-                value={manualInput}
-                disabled={isResolving}
-                onChange={(e) => setManualInput(e.target.value)}
-                placeholder="Digite sua resposta..."
-                className="flex-1 py-3 px-4 rounded-2xl bg-slate-950 border border-slate-700 font-mono text-lg font-black text-white focus:outline-none focus:border-amber-400 text-center"
-              />
-              <button
-                type="submit"
-                disabled={isResolving || !manualInput.trim()}
-                className="py-3 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-black text-sm flex items-center gap-1 transition-all cursor-pointer"
+            <div className="w-full flex flex-col gap-2.5 mt-1">
+              {/* Dual Reinforcement Correction Banner in manual mode */}
+              {isResolving && lastRoundResult && !lastRoundResult.isCorrect && (
+                <div className="w-full py-2 px-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/70 text-emerald-300 text-xs sm:text-sm font-mono font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.25)] animate-in fade-in zoom-in-95">
+                  <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                  <span>
+                    Resposta certa:{' '}
+                    <strong className="text-emerald-300 font-extrabold text-sm sm:text-base">
+                      {battleState.currentQuestion.formattedCorrectAnswer ||
+                        battleState.currentQuestion.correctAnswer}
+                    </strong>
+                  </span>
+                </div>
+              )}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (manualInput.trim()) {
+                    handleAnswerSubmit(manualInput);
+                  }
+                }}
+                className="w-full flex gap-2"
               >
-                <Swords size={16} /> Atacar
-              </button>
-            </form>
+                <input
+                  type="text"
+                  autoFocus
+                  value={manualInput}
+                  disabled={isResolving}
+                  onChange={(e) => setManualInput(e.target.value)}
+                  placeholder="Digite sua resposta..."
+                  className="flex-1 py-3 px-4 rounded-2xl bg-slate-950 border border-slate-700 font-mono text-lg font-black text-white focus:outline-none focus:border-amber-400 text-center"
+                />
+                <button
+                  type="submit"
+                  disabled={isResolving || !manualInput.trim()}
+                  className="py-3 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-black text-sm flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  <Swords size={16} /> Atacar
+                </button>
+              </form>
+            </div>
           )}
 
           {/* Toggle between 4 options and manual input */}

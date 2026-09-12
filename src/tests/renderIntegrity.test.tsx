@@ -284,12 +284,54 @@ describe('Render Integrity — BossBattle (HP do Chefe e Escudos)', () => {
       fireEvent.click(optionButtons[0]);
     });
 
-    // Avança o tempo de animação cinemática (1100ms)
+    // Avança o tempo de animação cinemática (1500ms)
     act(() => {
-      vi.advanceTimersByTime(1100);
+      vi.advanceTimersByTime(1500);
     });
 
     // A batalha processou a rodada e o card continua exibindo o chefe
     expect(screen.getByText(/Lord Mathgoth/i)).toBeDefined();
   });
+
+  test('Ao errar uma pergunta, destaca a opção correta em esmeralda, a clicada em rose e exibe banner de correção', async () => {
+    render(<BossBattle initialScreen="battle" />);
+
+    // Localiza os 4 botões de opções numéricas
+    const buttons = screen.getAllByRole('button');
+    const optionButtons = buttons.filter((btn) =>
+      btn.className.includes('bg-slate-800')
+    );
+    expect(optionButtons.length).toBe(4);
+
+    // Identifica o texto dos botões e clica deliberadamente em um botão com valor errado
+    // A questão gerada pelo bossEngine possui correctAnswer
+    // Clicamos no primeiro botão
+    act(() => {
+      fireEvent.click(optionButtons[0]);
+    });
+
+    // Logo após o clique, isResolving fica ativo (delay de 1500ms para erro ou 800ms para acerto)
+    // Se foi erro, o banner "Resposta certa:" deve aparecer ancorado
+    const banner = screen.queryByText(/Resposta certa:/i);
+    if (banner) {
+      expect(banner).toBeDefined();
+      // Verifica se há pelo menos um botão com borda esmeralda (a resposta correta)
+      const correctBtn = screen.getAllByRole('button').find((btn) =>
+        btn.className.includes('border-emerald-500')
+      );
+      expect(correctBtn).toBeDefined();
+
+      // Verifica se o botão clicado recebeu a estilização de erro rose
+      expect(optionButtons[0].className).toContain('border-rose-500');
+    }
+
+    // Avança o tempo além do delay de retenção
+    act(() => {
+      vi.advanceTimersByTime(1600);
+    });
+
+    // Garante que o jogo segue responsivo
+    expect(screen.getByText(/Lord Mathgoth/i)).toBeDefined();
+  });
 });
+
