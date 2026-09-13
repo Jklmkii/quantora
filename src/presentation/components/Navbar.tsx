@@ -87,7 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
     <>
       {/* Top Header Bar (Desktop & Mobile) */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md pt-safe">
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 h-16 flex items-center justify-between gap-2 sm:gap-3 lg:gap-4 min-w-0">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 min-w-0">
           {/* Brand */}
           <div className="flex items-center gap-2.5 min-w-0 shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/90 dark:bg-slate-900 border border-indigo-500/30 overflow-hidden flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
@@ -137,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                   aria-label={tab.label}
                 >
                   {tab.icon}
-                  <span className={isActive ? 'inline' : 'hidden xl:inline'}>{tab.label}</span>
+                  <span className={isActive ? 'inline' : 'hidden lg:inline'}>{tab.label}</span>
                   {tab.badge !== undefined && (
                     <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold">
                       {tab.badge}
