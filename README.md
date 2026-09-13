@@ -62,17 +62,19 @@ Disponível como **Web App (PWA)**, **Executável Nativo do Windows (.exe)** e *
 - Exportação e importação de histórico em **JSON** e **CSV**.
 - Suporte fluido a temas Claro, Escuro e Sistema, além de internacionalização em Português e Inglês.
 - Feedback tátil nativo Android via `@capacitor/haptics` (Blitz, Chefe e Fixação Ativa).
+- Sistema de Feedback Sonoro Multiplataforma (SFX) via `audio.ts` (Web, Electron, Android) com 6 sons ultraleves procedurais, slider percentual de volume e toggle de mudo.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Canvas-Confetti.
+- **Áudio & Feedback Sonoro:** Web Audio API / HTML5 Audio (< 85 KB de assets procedurais em `.ogg` e `.wav`).
 - **Motor Matemático & Físico:** `big.js` (eliminando erros de precisão de ponto flutuante IEEE 754).
 - **Gerenciamento de Estado:** Zustand 5.0 com persistência local e validador de schema.
-- **Desktop:** Electron 44, Electron-Builder, Electron-Updater.
+- **Desktop:** Electron 44, Electron-Builder (NSIS oneClick silencioso), Electron-Updater.
 - **Mobile:** Capacitor 8.5, `@capacitor/haptics`, Android SDK 36, Gradle 8.x, Java 21.
-- **Qualidade & Testes:** Vitest (391 testes unitários em 22 suítes), Oxlint (82 arquivos).
+- **Qualidade & Testes:** Vitest (401 testes unitários em 23 suítes), Oxlint (85 arquivos).
 
 ---
 
@@ -93,7 +95,7 @@ npm run dev
 npm run electron:dev
 ```
 
-### 4. Executar Testes Unitários (391 Testes / 22 Suítes)
+### 4. Executar Testes Unitários (401 Testes / 23 Suítes)
 ```bash
 npx vitest run
 ```

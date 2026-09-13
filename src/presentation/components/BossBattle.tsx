@@ -25,8 +25,6 @@ import {
 import {
   createInitialBossBattleState,
   processRound,
-  ROUND_TIME_LIMIT_SECONDS,
-  CRITICAL_TIME_THRESHOLD_SECONDS,
   getBossHpForLevel,
   coinsForLevel,
   costForUpgrade,
@@ -35,6 +33,8 @@ import {
   STANDARD_DAMAGE_MAX,
   CRITICAL_DAMAGE_MIN,
   CRITICAL_DAMAGE_MAX,
+  getRoundTimeLimitForLevel,
+  getCriticalTimeThresholdForLevel,
 } from '../../core/quiz/bossEngine';
 import type { BossBattleState, BossRoundResult } from '../../core/quiz/bossEngine';
 import { hapticBossHit, hapticBossDamageTaken } from '../../core/platform/haptics';
@@ -118,9 +118,14 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const isRageMode = battleState.bossHp <= battleState.bossMaxHp * 0.4 && battleState.bossHp > 0;
 
   // Time calculations
-  const timeLeft = Math.max(0, ROUND_TIME_LIMIT_SECONDS - elapsedThisRound);
-  const timerPercentage = Math.max(0, Math.min(100, (timeLeft / ROUND_TIME_LIMIT_SECONDS) * 100));
-  const isCriticalWindow = elapsedThisRound < CRITICAL_TIME_THRESHOLD_SECONDS;
+  const currentLevel = battleState.level ?? 1;
+  const currentRoundTimeLimit =
+    battleState.currentQuestion?.timeLimitSeconds || getRoundTimeLimitForLevel(currentLevel);
+  const currentCriticalThreshold = getCriticalTimeThresholdForLevel(currentLevel);
+
+  const timeLeft = Math.max(0, currentRoundTimeLimit - elapsedThisRound);
+  const timerPercentage = Math.max(0, Math.min(100, (timeLeft / currentRoundTimeLimit) * 100));
+  const isCriticalWindow = elapsedThisRound < currentCriticalThreshold;
 
   // Start battle for a specific discrete level
   const startBattle = useCallback(
@@ -168,7 +173,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       }
 
       const responseTime = Math.min(
-        ROUND_TIME_LIMIT_SECONDS + 0.1,
+        currentRoundTimeLimit + 0.1,
         roundStartTimeRef.current > 0 ? (Date.now() - roundStartTimeRef.current) / 1000 : 0
       );
 
@@ -228,13 +233,13 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         setIsResolving(false);
       }, nextDelay);
     },
-    [isResolving, battleState, damageUpgradeLevel, addFloatingText]
+    [isResolving, battleState, damageUpgradeLevel, addFloatingText, currentRoundTimeLimit]
   );
 
-  // Handle timeout when 10 seconds elapse
+  // Handle timeout when round time elapses
   const handleTimeout = useCallback(() => {
     if (isResolving || battleState.status !== 'fighting') return;
-    // Answering with a dummy non-matching value after 10s triggers timeout penalty
+    // Answering with a dummy non-matching value after round time triggers timeout penalty
     handleAnswerSubmit(-999999);
   }, [isResolving, battleState.status, handleAnswerSubmit]);
 
@@ -250,9 +255,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
     timerRef.current = window.setInterval(() => {
       const elapsed = (Date.now() - startTime) / 1000;
-      if (elapsed >= ROUND_TIME_LIMIT_SECONDS) {
+      if (elapsed >= currentRoundTimeLimit) {
         if (timerRef.current) clearInterval(timerRef.current);
-        setElapsedThisRound(ROUND_TIME_LIMIT_SECONDS);
+        setElapsedThisRound(currentRoundTimeLimit);
         handleTimeout();
       } else {
         setElapsedThisRound(elapsed);
@@ -262,7 +267,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [screen, battleState.status, isResolving, battleState.round, handleTimeout]);
+  }, [screen, battleState.status, isResolving, battleState.round, currentRoundTimeLimit, handleTimeout]);
 
   // Victory Handler: persist rewards (coins, level cleared, XP) to global store once
   useEffect(() => {
@@ -338,7 +343,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <button
               type="button"
               onClick={onExit}
-              className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-slate-900 transition-colors cursor-pointer"
+              className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-900 transition-colors cursor-pointer"
             >
               <ChevronLeft size={16} /> {t.back_to_lobby || 'Voltar ao Treino'}
             </button>
@@ -347,8 +352,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           )}
 
           {/* Coins Balance */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-black text-sm shadow-xs">
-            <Coins size={18} className="text-amber-400" />
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-100 border border-amber-300 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-400 font-black text-sm shadow-xs">
+            <Coins size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
               {bossCoins} {t.boss_coins || 'Moedas'}
             </span>
@@ -381,43 +386,43 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         </div>
 
         {/* Arsenal & Damage Forge (Shop) */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/90 text-white border border-amber-500/30 shadow-xl flex flex-col gap-4">
+        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white border border-amber-300 dark:border-amber-500/30 shadow-xl flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Swords size={20} />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                   {t.boss_arsenal_title || 'Arsenal & Forja de Dano'}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 dark:border-transparent dark:bg-amber-500/20 dark:text-amber-300 font-bold">
                     Nv. {damageUpgradeLevel}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {t.boss_damage_bonus || 'Bônus de dano permanente em todos os golpes'}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <span className="text-xs text-slate-400 block font-medium">Bônus Atual</span>
-              <span className="text-lg font-black text-amber-400 font-mono">
+              <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Bônus Atual</span>
+              <span className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">
                 +{currentBonus} DANO
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs">
+          <div className="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-xs">
             <div>
-              <span className="text-slate-400 block font-medium">Golpe Crítico (&lt;3s):</span>
-              <span className="text-sm font-black text-amber-300 font-mono mt-0.5 block">
+              <span className="text-slate-500 dark:text-slate-400 block font-medium">Golpe Crítico (&lt;3s):</span>
+              <span className="text-sm font-black text-amber-700 dark:text-amber-300 font-mono mt-0.5 block">
                 {CRITICAL_DAMAGE_MIN + currentBonus} ~ {CRITICAL_DAMAGE_MAX + currentBonus} dano
               </span>
             </div>
             <div>
-              <span className="text-slate-400 block font-medium">Golpe Padrão (&ge;3s):</span>
-              <span className="text-sm font-black text-emerald-400 font-mono mt-0.5 block">
+              <span className="text-slate-500 dark:text-slate-400 block font-medium">Golpe Padrão (&ge;3s):</span>
+              <span className="text-sm font-black text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 block">
                 {STANDARD_DAMAGE_MIN + currentBonus} ~ {STANDARD_DAMAGE_MAX + currentBonus} dano
               </span>
             </div>
@@ -425,9 +430,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
           {/* Upgrade Purchase Button */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-            <div className="text-xs text-slate-400 text-center sm:text-left">
+            <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
               <span>Próximo nível (+3 de dano): </span>
-              <strong className="text-amber-300 font-mono font-bold">{nextCost} Moedas</strong>
+              <strong className="text-amber-700 dark:text-amber-300 font-mono font-bold">{nextCost} Moedas</strong>
             </div>
 
             <button
@@ -441,7 +446,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               className={`w-full sm:w-auto py-2.5 px-5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 canAfford
                   ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98]'
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                  : 'bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50 cursor-not-allowed font-bold'
               }`}
             >
               <Sparkles size={16} />
@@ -455,11 +460,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         {/* Levels Selection Grid */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm font-black uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-300 flex items-center gap-2">
               <Trophy size={16} className="text-amber-500" />
               {t.boss_levels_title || 'Selecione a Fase'}
             </h3>
-            <span className="text-xs font-bold text-slate-400">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
               Recorde: Nível {highestBossLevelCleared}
             </span>
           </div>
@@ -477,41 +482,41 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   key={lvl}
                   className={`relative p-4 rounded-2xl border-2 flex flex-col justify-between gap-3 transition-all ${
                     isCurrent
-                      ? 'bg-slate-900 text-white border-amber-500/80 shadow-lg shadow-amber-500/20 ring-2 ring-amber-500/30'
+                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-amber-500 shadow-lg shadow-amber-500/20 ring-2 ring-amber-500/30'
                       : isCleared
-                      ? 'bg-slate-900/90 text-white border-emerald-500/40 hover:border-emerald-500/70'
-                      : 'bg-slate-950/40 text-slate-500 border-slate-800/80 opacity-65'
+                      ? 'bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white border-emerald-500/60 hover:border-emerald-500'
+                      : 'bg-slate-100 dark:bg-slate-950/40 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800/80 opacity-70'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-base font-black text-white">
+                        <span className="text-base font-black text-slate-900 dark:text-white">
                           Nível {lvl}
                         </span>
                         {isCleared && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center gap-1">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 dark:border-transparent dark:bg-emerald-500/20 dark:text-emerald-300 font-bold flex items-center gap-1">
                             <CheckCircle2 size={11} /> Vencido
                           </span>
                         )}
                         {isCurrent && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold animate-pulse">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 dark:border-transparent dark:bg-amber-500/20 dark:text-amber-300 font-bold animate-pulse">
                             Disponível
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 mt-0.5">
                         <Heart size={12} className="text-red-500 fill-red-500" /> {hp} HP
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-xl border border-amber-500/20">
-                      <Coins size={13} /> +{coinsReward}
+                    <div className="flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 px-2 py-1 rounded-xl border border-amber-300 dark:border-amber-500/20">
+                      <Coins size={13} className="text-amber-600 dark:text-amber-400" /> +{coinsReward}
                     </div>
                   </div>
 
                   {isLocked ? (
-                    <div className="w-full py-2 px-3 rounded-xl bg-slate-800/60 text-slate-400 text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-700/40">
+                    <div className="w-full py-2 px-3 rounded-xl bg-slate-200/80 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-xs font-bold flex items-center justify-center gap-1.5 border border-slate-300 dark:border-slate-700/40">
                       <Lock size={14} /> Vença o Nível {lvl - 1}
                     </div>
                   ) : (
@@ -521,7 +526,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                       className={`w-full py-2 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         isCurrent
                           ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-md shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98]'
-                          : 'bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-800 hover:text-slate-950 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:hover:text-white dark:border-slate-600'
                       }`}
                     >
                       <Swords size={14} />
@@ -982,13 +987,13 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               }`}
               style={{ width: `${timerPercentage}%` }}
             />
-            {/* 3s Critical Threshold Marker */}
+            {/* Critical Threshold Marker */}
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-yellow-400/60 z-20 pointer-events-none"
               style={{
-                left: `${((ROUND_TIME_LIMIT_SECONDS - CRITICAL_TIME_THRESHOLD_SECONDS) / ROUND_TIME_LIMIT_SECONDS) * 100}%`,
+                left: `${((currentRoundTimeLimit - currentCriticalThreshold) / currentRoundTimeLimit) * 100}%`,
               }}
-              title="Limite de Golpe Crítico (3s)"
+              title={`Limite de Golpe Crítico (< ${currentCriticalThreshold}s)`}
             />
           </div>
         </div>

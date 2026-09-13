@@ -158,8 +158,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                 onClick={() => setActiveTab('quiz')}
                 className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all touch-target shadow-xs cursor-pointer ${
                   isDailyCompleted
-                    ? 'border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/70'
-                    : 'border-amber-300 dark:border-amber-800/60 bg-amber-50/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100/70'
+                    ? 'border-emerald-300 bg-emerald-100 text-emerald-800 hover:bg-emerald-200/80 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40'
+                    : 'border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200/80 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-400 dark:hover:bg-amber-900/40'
                 }`}
                 title={
                   isDailyCompleted
@@ -169,9 +169,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                 aria-label={t.daily_challenge_title}
               >
                 {isDailyCompleted ? (
-                  <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                  <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                 ) : (
-                  <Calendar size={14} className="text-amber-500 shrink-0 animate-bounce" />
+                  <Calendar size={14} className="text-amber-600 dark:text-amber-400 shrink-0 animate-bounce" />
                 )}
                 <span className="hidden xl:inline">
                   {isDailyCompleted ? t.daily_completed : t.daily_pending}
@@ -180,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                   {isDailyCompleted ? 'Diário ✓' : 'Diário !'}
                 </span>
                 {!isDailyCompleted && (
-                  <span className="sm:hidden text-[11px] font-extrabold text-amber-500">
+                  <span className="sm:hidden text-[11px] font-extrabold text-amber-700 dark:text-amber-400">
                     !
                   </span>
                 )}
@@ -190,14 +190,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(true)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-200/80 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-bold text-xs hover:bg-amber-100/70 transition-all touch-target shadow-xs cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200/80 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-900/40 font-bold text-xs transition-all touch-target shadow-xs cursor-pointer"
                 title={`${levelInfo.title} • ${profile?.totalXp || 0} XP (${t.profile_title})`}
                 aria-label={t.profile_title}
               >
-                <Trophy size={14} className="text-amber-500 shrink-0" />
+                <Trophy size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>{t.level_prefix} {levelInfo.level}</span>
                 {(profile?.streakDays || 1) > 1 && (
-                  <span className="flex items-center text-orange-500 font-extrabold text-[11px] ml-0.5">
+                  <span className="flex items-center text-orange-600 dark:text-orange-400 font-extrabold text-[11px] ml-0.5">
                     🔥{profile.streakDays}
                   </span>
                 )}
