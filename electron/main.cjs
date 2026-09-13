@@ -112,6 +112,17 @@ app.whenReady().then(() => {
       }
 
       const filePath = filePaths[0];
+
+      // File size check (5MB limit) to prevent memory exhaustion DoS
+      const stats = await fs.promises.stat(filePath);
+      const MAX_FILE_SIZE = 5 * 1024 * 1024;
+      if (stats.size > MAX_FILE_SIZE) {
+        return {
+          success: false,
+          error: 'O arquivo é muito grande (limite de 5MB).',
+        };
+      }
+
       const rawContent = await fs.promises.readFile(filePath, 'utf8');
 
       // Strict Schema Validation
