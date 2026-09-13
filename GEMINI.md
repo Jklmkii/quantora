@@ -118,6 +118,13 @@ for a segunda, a ação está errada mesmo que tecnicamente siga os passos descr
 - Se a Jules retornar algo incompleto ou fora do escopo, reavaliar a complexidade real (pode
   ter sido subestimada) e decidir se o Antigravity assume o restante.
 
+## 10. Demandas em Lote e Fatiamento Obrigatório (Redução do Uso de Tokens do Antigravity)
+- O objetivo primordial da governança com a Jules é **diminuir diretamente o uso de tokens e preservar a cota do Antigravity**, transferindo a carga cognitiva e a geração de código de baixa e média complexidade para a cota diária dedicada da Jules (100 tarefas/dia).
+- Quando o usuário enviar mais de um script ou requisito na mesma mensagem/sessão:
+  1. O Antigravity **NUNCA deve agrupar o lote em um único plano de execução local** para "resolver tudo de uma vez", pois isso consome tokens massivos do Antigravity na análise, refatoração e testes de tarefas fáceis.
+  2. O Antigravity **DEVE fatiar o lote**: isolar os scripts de complexidade Baixa ou Média e despachá-los imediatamente para a Jules via API.
+  3. **Concorrência de Arquivos no Lote:** Caso dois scripts toquem o mesmo arquivo (ex: um altera classes visuais e outro altera lógica no mesmo componente), a execução DEVE ser **sequencial**: delegar o script Baixo/Médio para a Jules primeiro via API, aguardar a conclusão e merge do PR, atualizar o repositório local (`git pull`) e só então o Antigravity assume a tarefa de maior complexidade. Agrupar as tarefas para executar localmente sob pretexto de evitar a espera pelo arquivo comum é considerado bypass proibido de tokens.
+
 ## Registro no Obsidian
 Referenciar este arquivo em `Sistemas & Integracoes/Antigravity & Cotas de IA.md` — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe
