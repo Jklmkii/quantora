@@ -68,13 +68,13 @@ Disponível como **Web App (PWA)**, **Executável Nativo do Windows (.exe)** e *
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Canvas-Confetti.
+- **Frontend:** React 19, TypeScript ~7.0.2, Vite, Tailwind CSS v4, Lucide Icons, HTML5 Canvas nativo (`ConfettiCanvas`).
 - **Áudio & Feedback Sonoro:** Web Audio API / HTML5 Audio (< 85 KB de assets procedurais em `.ogg` e `.wav`).
 - **Motor Matemático & Físico:** `big.js` (eliminando erros de precisão de ponto flutuante IEEE 754).
 - **Gerenciamento de Estado:** Zustand 5.0 com persistência local e validador de schema.
 - **Desktop:** Electron 44, Electron-Builder (NSIS oneClick silencioso), Electron-Updater.
 - **Mobile:** Capacitor 8.5, `@capacitor/haptics`, Android SDK 36, Gradle 8.x, Java 21.
-- **Qualidade & Testes:** Vitest (401 testes unitários em 23 suítes), Oxlint (85 arquivos).
+- **Qualidade & Testes:** Vitest (408 testes unitários em 24 suítes), Oxlint (87 arquivos).
 
 ---
 
@@ -95,7 +95,7 @@ npm run dev
 npm run electron:dev
 ```
 
-### 4. Executar Testes Unitários (401 Testes / 23 Suítes)
+### 4. Executar Testes Unitários (408 Testes / 24 Suítes)
 ```bash
 npx vitest run
 ```
@@ -110,8 +110,8 @@ npm run lint
 npm run electron:build
 ```
 Os arquivos gerados estarão na pasta `release/`:
-* `Quantora-Setup-1.2.1.exe` (Instalador tradicional NSIS)
-* `Quantora-1.2.1-portable.exe` (Executável portátil autônomo)
+* `Quantora-Setup-1.2.22.exe` (Instalador tradicional NSIS)
+* `Quantora-1.2.22-portable.exe` (Executável portátil autônomo)
 
 Você também pode baixar os executáveis prontos diretamente na página de [Releases do GitHub](https://github.com/Jklmkii/quantora/releases).
 

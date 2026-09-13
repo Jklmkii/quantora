@@ -23,7 +23,7 @@ Welcome, Agent! This document provides an architectural map, operational convent
 
 | Subsystem | Technologies / Libraries | Directory Path |
 | :--- | :--- | :--- |
-| **Frontend Framework** | React `^19.2.8`, TypeScript `~6.0.2`, Vite `^8.2.2` | `src/` |
+| **Frontend Framework** | React `^19.2.8`, TypeScript `~7.0.2`, Vite `^8.2.2` | `src/` |
 | **Styling & Icons** | Tailwind CSS `^4.3.3`, `@tailwindcss/vite`, Lucide React | `src/index.css`, `src/presentation/` |
 | **State & Persistence** | Zustand `^5.0.15` (`persist` middleware, `localStorage`) | `src/store/useAppStore.ts` |
 | **Math Engines** | Pure TypeScript, `big.js ^7.0.1` | `src/core/math/` |
@@ -32,8 +32,8 @@ Welcome, Agent! This document provides an architectural map, operational convent
 | **Training & Mini-Games** | Pure TypeScript (Mulberry32 PRNG, Blitz, Boss Rush) | `src/core/daily/`, `src/core/quiz/` |
 | **Data Integrity** | Schema validation for history & local storage | `src/core/storage/historyValidator.ts` |
 | **Internationalization** | In-house reactive i18n (`pt` and `en`) | `src/core/i18n/translations.ts` |
-| **Test Suite** | Vitest `^5.0.0` (357 tests across 18 test suites) | `src/tests/` |
-| **Linter** | Oxlint `^1.79.0` (76 files analyzed) | `.oxlintrc.json` |
+| **Test Suite** | Vitest `^5.0.0` (408 tests across 24 test suites) | `src/tests/` |
+| **Linter** | Oxlint `^1.79.0` (87 files analyzed) | `.oxlintrc.json` |
 
 ---
 
@@ -101,7 +101,7 @@ quantora/
 │   │       └── HistoryModule.tsx
 │   ├── store/
 │   │   └── useAppStore.ts        # Central Zustand store with localStorage persistence
-│   ├── tests/                    # 18 unit test files (Vitest - 357 tests)
+│   ├── tests/                    # 24 unit test files (Vitest - 408 tests)
 │   ├── types/
 │   │   └── index.ts              # Global TypeScript interfaces and types
 │   ├── App.tsx                   # Root component, theme provider & tab routing

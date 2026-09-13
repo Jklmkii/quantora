@@ -2,6 +2,36 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.22] — Expansão de Testes Unitários de Física & Deduplicação de Utilitários (2026-09-13)
+
+### 🧪 Qualidade, Testes & Code Health (Automação Jules AI)
+- **Cobertura de Re-exports do Módulo de Física (`src/core/physics/index.test.ts`):** Nova suíte de testes garantindo a estabilidade e integridade de exportação pública de todas as funções matemáticas e físicas.
+- **Testes de Fallback para Entradas Inválidas (`src/tests/physics.test.ts`):** Adição de cenários de teste para conversões `convertMSToKmH` e `convertKmHToMS` assegurando retorno seguro `'0'` para entradas espúrias.
+- **Utilitário Comum de Embaralhamento de Arrays (`src/utils/array.ts`):** Extração da função pura `shuffleArray` deduplicando a lógica do motor de chefes (`bossEngine.ts`).
+- **Suíte Vitest Expandida:** 408 testes unitários passando em 24 suítes (100% verde) e 87 arquivos validados pelo Oxlint com zero avisos.
+
+---
+
+## [1.2.21] — Expansão da Navbar sem Scrollbar & Tema Claro nos Modos de Treino (2026-09-13)
+
+### 🎨 Interface, Navegação & Ergonomia Visual
+- **Expansão da Navbar sem Scrollbar (`Navbar.tsx` & `index.css`):** Contêiner principal expandido de `max-w-7xl` para `w-full px-4 sm:px-6 lg:px-8`, acomodando confortavelmente todas as 7 abas e utilitários. Adicionada classe utilitária `.no-scrollbar` e breakpoint de rótulos reajustado de `xl:` para `lg:`.
+- **Tema Claro em Modos de Treino & Quiz (`QuizModule.tsx`, `DailyChallengeCard.tsx`):** Cores de alto contraste e legibilidade WCAG AA aplicadas em cards, seletores de dificuldade e displays no tema claro.
+- **Concordância Gramatical no Caderno de Erros (`QuizModule.tsx`):** Correção da flexão dinâmica para o singular na contagem de fatos matemáticos pendentes (`${dueCount} ${dueCount === 1 ? 'fato matemático' : 'fatos matemáticos'} aguardando fixação`).
+
+---
+
+## [1.2.20] — Contraste WCAG AA no Tema Claro & Escalonamento Pedagógico no Boss Battle (2026-09-12)
+
+### 🎨 Acessibilidade & Interface
+- **Contraste WCAG AA no Tema Claro (`Navbar.tsx`, `BossBattle.tsx`):** Eliminação de elementos translúcidos sobre fundo branco; badges e botões com preenchimento sólido de alta legibilidade.
+
+### 🎮 Batalha de Chefe & Pedagogia
+- **Escalonamento por Nível (`bossEngine.ts`):** Filtragem de conteúdo pedagógico por faixa de nível, tempo de rodada dinâmico ($\max(8, 16 - L)$s) e janela crítica adaptativa ($\max(2.0, \text{round}(\text{tempo} \times 0.3, 1))$s).
+- **Suíte Vitest Expandida:** 5 novos testes em `bossLevels.test.ts`, elevando o total global para 406 testes unitários em 23 suítes (100% verde).
+
+---
+
 ## [1.2.19] — Sistema de Feedback Sonoro Multiplataforma (SFX) & Áudio Resiliente (2026-09-12)
 
 ### 🔊 Feedback Sonoro & Motor de Áudio
