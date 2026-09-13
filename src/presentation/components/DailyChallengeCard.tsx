@@ -248,13 +248,15 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
                 type="button"
                 onClick={() => setShowExplanation((prev) => !prev)}
                 className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 text-xs font-bold text-slate-300 transition-colors"
+                aria-expanded={showExplanation}
+                aria-controls="explanation-content"
               >
                 <span>Passo a Passo da Resolução</span>
                 {showExplanation ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
 
               {showExplanation && (
-                <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex flex-col gap-2 text-xs font-mono text-slate-300 leading-relaxed animate-in slide-in-from-top-2 duration-200">
+                <div id="explanation-content" className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex flex-col gap-2 text-xs font-mono text-slate-300 leading-relaxed animate-in slide-in-from-top-2 duration-200">
                   {challenge.explanation.map((step, idx) => {
                     const parts = step.split(/(\*\*.*?\*\*)/g);
                     return (

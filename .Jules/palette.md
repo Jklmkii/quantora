@@ -1,3 +1,3 @@
-## 2026-09-10 - Added Keyboard Focus States to StepByStep Component
-**Learning:** Keyboard accessibility is often overlooked in highly custom UI components built with Tailwind. The use of `focus:outline-none` without providing an alternative `focus-visible` state makes it difficult for keyboard users to navigate interactive elements. Providing clear focus rings (e.g., `focus-visible:ring-2`) is a crucial and easily implemented UX improvement for accessibility.
-**Action:** Always verify that interactive elements, especially custom buttons that remove default outlines, have a clear `focus-visible` style to ensure proper keyboard navigation support.
+## 2025-02-12 - Added ARIA attributes to DailyChallengeCard explanation toggle
+**Learning:** Found an accessibility issue where the "Passo a Passo da Resolução" button did not provide standard ARIA states (`aria-expanded` and `aria-controls`), which makes it harder for screen-reader users to understand the component's state (opened/closed).
+**Action:** Applied `aria-expanded` reflecting the UI state and `aria-controls` referencing the ID of the expanded content to ensure correct screen reader announcements. This should be a reusable pattern for all custom accordion-like toggles in the application.
