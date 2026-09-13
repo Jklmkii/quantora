@@ -54,5 +54,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr review ${{ github.event.pull_request.number }} --approve --body "Aprovado automaticamente após 100% de aprovação na suíte de testes e verificação estrita de identidade."
-          gh pr merge ${{ github.event.pull_request.number }} --merge
+          gh pr review ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --approve --body "Aprovado automaticamente após 100% de aprovação na suíte de testes e verificação estrita de identidade."
+          gh pr merge ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --merge
