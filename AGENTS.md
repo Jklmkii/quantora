@@ -224,5 +224,7 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 ## 🔗 Navegação na Documentação (Obsidian)
 * [[Quantora - Visao Geral]]
 * [[Dashboard]]
+* [[GEMINI]]
+* [[Antigravity & Cotas de IA]]
 * [[README]]
 * [[Suite de Testes & Qualidade]]
