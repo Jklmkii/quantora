@@ -2,6 +2,17 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.15] — Instalador NSIS Silencioso (oneClick) & Governança Agêntica GEMINI.md (2026-09-12)
+
+### 💻 Desktop (Electron) & Instalador Windows
+- **Instalador NSIS Silencioso (`oneClick: true`):** Eliminação do assistente interativo ("Escolha uma opção de instalação") durante atualizações automáticas via `electron-updater` (`quitAndInstall()`). A instalação ocorre em segundo plano com barra de progresso nativa rápida, instalando no diretório do usuário (`perMachine: false`, `allowToChangeInstallationDirectory: false`) sem janelas de diálogo desnecessárias.
+- **Identidade Visual no Instalador:** Ícones personalizados do instalador, desinstalador e cabeçalho (`installerIcon`, `uninstallerIcon`, `installerHeaderIcon`) utilizando o asset oficial `build/icon.ico`.
+
+### 🪐 Governança Agêntica & Automação
+- **Diretrizes Prioritárias Antigravity (`GEMINI.md`):** Matriz determinística de complexidade em 4 faixas, roteamento de tarefas, contador persistente de cota da Jules (`.antigravity/jules-quota.json`) e protocolo de prevenção de concorrência com marcação de status em andamento.
+
+---
+
 ## [1.2.14] — Espaçamento e Divisores da Navbar & Respiro no HUD do Boss Battle (2026-09-12)
 
 ### 🎨 Interface, Navegação & Ergonomia Visual
