@@ -514,14 +514,14 @@ export const QuizModule: React.FC = () => {
         </div>
 
         {/* Difficulty Selectors (Pills) */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-inner">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-inner">
           <button
             type="button"
             onClick={() => setDifficultyMode('tranquilo')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target ${
               difficultyMode === 'tranquilo'
-                ? 'bg-slate-800 text-emerald-400 border border-emerald-500/50 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-emerald-100 dark:bg-slate-800 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/50 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <span>🌱</span> {t.diff_casual}
@@ -532,8 +532,8 @@ export const QuizModule: React.FC = () => {
             onClick={() => setDifficultyMode('velocidade')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target ${
               difficultyMode === 'velocidade'
-                ? 'bg-amber-400/10 text-amber-400 border border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.25)]'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-amber-100 dark:bg-amber-400/10 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.25)]'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <span>⚡</span> {t.diff_speed}
@@ -544,8 +544,8 @@ export const QuizModule: React.FC = () => {
             onClick={() => setDifficultyMode('brutal')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target ${
               difficultyMode === 'brutal'
-                ? 'bg-red-500/10 text-red-400 border border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.25)]'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400 border border-red-300 dark:border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.25)]'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <span>🔥</span> {t.diff_brutal}
@@ -556,7 +556,7 @@ export const QuizModule: React.FC = () => {
         <button
           type="button"
           onClick={() => handleStartTrack('sobrevivencia')}
-          className="w-full p-7 rounded-3xl bg-gradient-to-br from-indigo-950/70 via-slate-900 to-purple-950/60 hover:from-indigo-900/70 hover:to-purple-900/70 border border-indigo-500/40 hover:border-cyan-400/80 transition-all flex flex-col items-center text-center gap-3.5 group shadow-2xl hover:shadow-indigo-500/20 active:scale-[0.99] touch-target cursor-pointer relative overflow-hidden"
+          className="w-full p-7 rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950/70 dark:via-slate-900 dark:to-purple-950/60 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/70 dark:hover:to-purple-900/70 border border-indigo-200 dark:border-indigo-500/40 hover:border-indigo-300 dark:hover:border-cyan-400/80 transition-all flex flex-col items-center text-center gap-3.5 group shadow-indigo-900/5 dark:shadow-2xl hover:shadow-indigo-500/20 active:scale-[0.99] touch-target cursor-pointer relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/20 transition-all" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-fuchsia-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-fuchsia-500/20 transition-all" />
@@ -567,51 +567,51 @@ export const QuizModule: React.FC = () => {
 
           <div>
             <div className="flex items-center justify-center gap-2">
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-wide">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-wide">
                 {t.track_survival}
               </h2>
-              <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-cyan-300 border border-indigo-500/30">
+              <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-cyan-300 border border-indigo-200 dark:border-indigo-500/30">
                 Full-Mix
               </span>
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-300 mt-1 max-w-md">
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 mt-1 max-w-md">
               {t.track_survival_sub}
             </p>
           </div>
 
-          <div className="w-full flex items-center justify-between text-xs font-bold pt-3 border-t border-slate-800/80 px-2 text-slate-300">
-            <span className="flex items-center gap-1.5 text-indigo-300">
-              <Trophy size={15} className="text-amber-400" /> {t.record_prefix}: {t.account_prefix} #{sobrevRecorde}
+          <div className="w-full flex items-center justify-between text-xs font-bold pt-3 border-t border-slate-200 dark:border-slate-800/80 px-2 text-slate-600 dark:text-slate-300">
+            <span className="flex items-center gap-1.5 text-indigo-700 dark:text-indigo-300">
+              <Trophy size={15} className="text-amber-500 dark:text-amber-400" /> {t.record_prefix}: {t.account_prefix} #{sobrevRecorde}
             </span>
-            <span className="font-mono text-cyan-300">
+            <span className="font-mono text-cyan-700 dark:text-cyan-300">
               {quizProgress.survival?.highScore || 0} {t.xp_survival}
             </span>
           </div>
         </button>
 
         {/* 2. CARD DO CADERNO DE ERROS (Repetição Espaçada & Active Recall) */}
-        <div className="w-full p-5 rounded-3xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all flex flex-col gap-3 shadow-xl">
+        <div className="w-full p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col gap-3 shadow-sm dark:shadow-xl">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-cyan-100 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 flex items-center justify-center shrink-0">
                 <BookOpen size={20} />
               </div>
               <div className="text-left">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-black text-white">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
                     {t.spaced_notebook_title}
                   </h3>
                   {dueCount > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-bold animate-pulse">
+                    <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30 text-[10px] font-mono font-bold animate-pulse">
                       {dueCount} {t.spaced_due_badge}
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
                       <CheckCircle2 size={10} /> 100% em dia
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                   {dueCount > 0
                     ? `${dueCount} ${dueCount === 1 ? 'fato matemático' : 'fatos matemáticos'} aguardando fixação`
                     : t.spaced_all_caught_up}
