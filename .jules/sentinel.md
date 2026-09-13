@@ -1,4 +1,4 @@
-## 2026-09-10 - [electron shell.openExternal Vulnerability]
-**Vulnerability:** Calling shell.openExternal with an unvalidated user-controlled URL.
-**Learning:** This is a common Electron anti-pattern that can lead to local RCE or NTLM credential relay (via UNC paths) since it delegates execution to the OS shell.
-**Prevention:** Always validate and restrict the protocol (e.g., allow only http: or https:) before passing URLs to shell.openExternal.
+## 2025-02-27 - [Add file size check to electron dialog:openFile]
+**Vulnerability:** Missing file size limit in electron main process `fs.promises.readFile` file loader, leading to potential Out Of Memory / Denial of Service attacks when loading maliciously large files.
+**Learning:** Even though the web frontend checks file sizes, the Electron main process must enforce limits too as it loads files directly into Node context.
+**Prevention:** Always `stat` file sizes before `readFile` when accepting user input in electron IPC handlers.
