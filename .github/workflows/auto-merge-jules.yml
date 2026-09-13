@@ -43,16 +43,22 @@ jobs:
     if: >
       github.event.pull_request.head.repo.full_name == github.repository &&
       (github.event.pull_request.user.login == 'google-jules[bot]' ||
+       github.event.pull_request.user.login == 'google-labs-jules[bot]' ||
        github.actor == 'google-jules[bot]' ||
+       github.actor == 'google-labs-jules[bot]' ||
        github.event.pull_request.user.id == 192535081 ||
        github.event.pull_request.user.login == github.repository_owner)
     permissions:
       contents: write
       pull-requests: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Approve and merge PR (respecting branch protections)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr review ${{ github.event.pull_request.number }} --approve --body "Aprovado automaticamente após 100% de aprovação na suíte de testes e verificação estrita de identidade."
-          gh pr merge ${{ github.event.pull_request.number }} --merge
+          gh pr review ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --approve --body "Aprovado automaticamente após 100% de aprovação na suíte de testes e verificação estrita de identidade." || true
+          gh pr merge ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --merge
+

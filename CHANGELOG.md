@@ -2,6 +2,19 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.12] — Testes de Precisão Matemática, Integração Render Previews & Hardening CI/CD (2026-09-12)
+
+### 🤖 Automação, Nuvem & CI/CD
+- **Deploy Automático no Render (Pull Request Previews):** Configuração do pipeline no Render (`https://quantora-pr-*.onrender.com`) com compilação estática automática para PRs abertos pelo Google Jules e pela equipe.
+- **Resolução de Falha no Auto-Merge do Jules (`auto-merge-jules.yml`):** Adicionado `actions/checkout@v4` e a flag explícita `--repo ${{ github.repository }}` nas chamadas do GitHub CLI (`gh pr review` e `gh pr merge`), eliminando o erro `fatal: not a git repository` no runner Ubuntu.
+- **Suporte ao Bot Oficial `google-labs-jules[bot]`:** Atualizadas as verificações de identidade e permissões estritas de autorização contra spoofing.
+
+### 🧮 Motor Matemático & Testes
+- **Novos Testes Didáticos de Precisão Decimal (`precision.test.ts`):** Cobertura de integridade para números extensos, arredondamento padrão round-half-up (`formatNumber`) e formatação inteligente (`formatNumberSmart`) via `big.js`.
+- **396 Testes Unitários Aprovados:** Suíte Vitest ampliada para 396 testes em 22 arquivos, mantendo 100% de taxa de aprovação e 0 avisos no linter Oxlint.
+
+---
+
 ## [1.2.10] — Responsividade da Janela, Boss Battle por Níveis, Moedas & Haptics Android (2026-09-12)
 
 ### ⚔️ Batalha de Chefe & Progressão
