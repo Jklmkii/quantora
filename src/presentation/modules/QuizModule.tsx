@@ -608,7 +608,7 @@ export const QuizModule: React.FC = () => {
                 </div>
                 <p className="text-[11px] font-medium text-slate-400 mt-0.5">
                   {dueCount > 0
-                    ? `${dueCount} fatos matemáticos aguardando fixação`
+                    ? `${dueCount} ${dueCount === 1 ? 'fato matemático' : 'fatos matemáticos'} aguardando fixação`
                     : t.spaced_all_caught_up}
                 </p>
               </div>
