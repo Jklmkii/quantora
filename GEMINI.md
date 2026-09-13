@@ -113,9 +113,54 @@ Ao delegar uma tarefa para o Google Jules:
 
 ---
 
+## 🛑 8. Separação entre Código e Vault & Proibição Estrita de Bypass (v3)
+
+A regra de delegação de tarefas de complexidade **Baixa** e **Média** para a Jules visa a preservação de cotas e o aproveitamento do ecossistema agêntico. A sua aplicação é mandatória e não pode ser driblada por conveniência operacional.
+
+### A. Separação Funcional: Código vs. Documentação
+* **Código:** Quando uma tarefa é classificada como Baixa ou Média (com cota da Jules disponível), a criação, edição e teste do código da aplicação competem **exclusivamente à Jules** via Pull Request.
+* **Obsidian Vault:** A Jules não tem (e não deve ter) acesso ao cofre local do Obsidian. A documentação no Vault (`Changelog & Historico de Bugs.md`, `Historico de Prompts & Demandas.md`, etc.) é **sempre atribuição do Antigravity**, em 100% dos prompts do projeto.
+* **Independência:** O fato de o Antigravity ter que registrar o trabalho no Vault **jamais justifica assumir a escrita do código**. O Antigravity delega o código à Jules, aguarda o PR/merge e, em seguida, faz a documentação no Vault citando o PR da Jules como fonte.
+
+### B. Proibição Expressa dos Três Motivos de Bypass
+Fica expressamente **proibido** ao Antigravity executar localmente tarefas Baixas ou Médias alegando qualquer um dos seguintes motivos:
+1. *"A conversa está ocorrendo em tempo real no chat"* (desativaria a delegação exatamente quando o usuário mais utiliza o sistema).
+2. *"Localmente é mais rápido / a Jules demorará 5 a 15 minutos"* (localmente sempre será mais rápido; usar isso como critério anularia 100% das delegações e destruiria o propósito de economizar cota).
+3. *"Preciso atualizar o Vault de qualquer forma"* (mistura responsabilidades que são independentes).
+
+Se nenhuma outra razão técnica substancial existir além dessas três, a tarefa **DEVE** ser compulsoriamente delegada à Jules.
+
+### C. Comunicação Assíncrona Transparente
+Ao despachar uma tarefa para a Jules durante uma sessão interativa, o Antigravity deve comunicar o fato de forma clara e direta ao usuário:
+> *"A tarefa foi classificada como [Baixa/Média] e despachada para o Google Jules (Sessão `ID`). A execução assíncrona leva em média de 5 a 15 minutos. Notificarei assim que o PR for submetido e validado pelo CI."*
+
+A espera assíncrona é parte integral da arquitetura; ela não deve ser escondida nem contornada com execução local não autorizada.
+
+### D. Única Exceção Legítima
+A única exceção aceitável para o Antigravity assumir diretamente uma tarefa Baixa ou Média com cota disponível é a **ordem direta, explícita e inequívoca do usuário** na conversa (ex.: *"faça você mesmo agora"*, *"não mande para a Jules"*, *"é urgente, resolva direto"*). Nesse caso, a exceção deve ser expressamente registrada no Vault citando a instrução do usuário.
+
+---
+
+## 🔎 9. Inspeção Mandatória do Diff Real Antes de Documentar (Adendo v3)
+
+O Antigravity nunca deve redigir a documentação final de uma tarefa delegada baseando-se unicamente no prompt original, no plano teórico ou na descrição textual do PR gerada pela Jules.
+
+### Protocolo de Auditoria Pré-Documentação:
+1. **Inspeção do Diff Real (`git show` / `git diff`):** Inspecionar detalhadamente as linhas e arquivos efetivamente alterados no commit ou PR mergeado.
+2. **Confrontação de Escopo:** Comparar o diff real contra o escopo encomendado:
+   * Todos os arquivos necessários foram tocados?
+   * Houve alterações inesperadas ou ausência de partes da especificação?
+   * A abordagem técnica respeitou os padrões do projeto (ex.: `big.js`, classes do Tailwind, ausência de regressões)?
+3. **Documentação Fidedigna:** O registro no `Changelog & Historico de Bugs.md` e no `Historico de Prompts & Demandas.md` deve descrever rigorosamente o que **de fato** foi alterado no código, apontando eventuais divergências ou limites da entrega.
+4. **Resgate ou Complementação:** Caso a Jules tenha entregue uma solução parcial ou divergente, o Antigravity não deve encerrar o ticket como se estivesse completo. Deve acionar o mecanismo de resgate/complementação local, finalizar o escopo pendente e apenas então promover o status para `✅ CONCLUÍDO`.
+5. **Evidências Reais de Validação:** Manter a prática de registrar saídas e métricas reais de execução (como o relatório do Vitest, contagem de testes e status de build), garantindo auditoria verificável.
+
+---
+
 ## 🔗 Links Relacionados
 * [[Antigravity & Cotas de IA]]
 * [[Credenciais & Tokens]]
 * [[Historico de Prompts & Demandas]]
 * [[AGENTS]]
 * [[Decisoes & Estado Atual]]
+
