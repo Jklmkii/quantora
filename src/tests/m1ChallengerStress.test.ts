@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  validateHistoryItem,
   validateHistorySchema,
   VALID_TYPES,
 } from '../core/storage/historyValidator';
@@ -19,6 +18,8 @@ import type {
   EnergyChartData,
   UserProfileStats,
 } from '../types';
+
+const validateHistoryItem = (item: any) => validateHistorySchema([item]).valid === true;
 
 describe('Empirical Challenger 2 — Milestone M1 Stress Testing Suite', () => {
   describe('1. historyValidator: VALID_TYPES Integrity & Exhaustiveness', () => {

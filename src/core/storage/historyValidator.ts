@@ -16,7 +16,7 @@ export const VALID_TYPES: readonly CalculationType[] = [
 /**
  * Validates a single history item structure.
  */
-export function validateHistoryItem(item: unknown): boolean {
+function validateHistoryItem(item: unknown): boolean {
   if (!item || typeof item !== 'object') {
     return false;
   }
