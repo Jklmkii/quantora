@@ -2,6 +2,21 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.14] — Espaçamento e Divisores da Navbar & Respiro no HUD do Boss Battle (2026-09-12)
+
+### 🎨 Interface, Navegação & Ergonomia Visual
+- **Espaçamento Modular e Divisores na Navbar (`Navbar.tsx`):** Eliminação de elementos colados. Container principal ampliado com `gap-3 sm:gap-4 lg:gap-6`, divisor visual vertical de 1px entre marca e navegação, e cluster de ações da direita bipartido entre Badges de Status (Diário e Nível/Streak) e Ferramentas Utilitárias (Lousa, Tema, Configurações) com divisor sutil intermediário e `cursor-pointer`.
+- **Eliminação de Clipping no Boss Battle (`BossBattle.tsx`):** Respiro superior ampliado com `pt-4 sm:pt-6` e `mt-6 sm:mt-8`, e textos flutuantes reancorados em `-top-12 sm:-top-14`, evitando corte superior de `-1 ESCUDO!` sob containers com `overflow-hidden`.
+
+---
+
+## [1.2.13] — Proteção contra DoS OOM no Carregador de Arquivos do Electron (2026-09-12)
+
+### 🛡️ Segurança & Desktop (Electron)
+- **Validação de Limite de Arquivo no IPC (`electron/main.cjs`):** Verificação via `fs.promises.stat` antes da leitura com limite de 5MB, prevenindo exaustão de memória e DoS no processo principal (PR #25 via Jules Sentinel).
+
+---
+
 ## [1.2.12] — Testes de Precisão Matemática, Integração Render Previews & Hardening CI/CD (2026-09-12)
 
 ### 🤖 Automação, Nuvem & CI/CD

@@ -841,11 +841,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         )}
 
         {/* BOSS SECTION */}
-        <div className="w-full flex flex-col items-center gap-3 z-10">
+        <div className="w-full flex flex-col items-center gap-3 z-10 pt-4 sm:pt-6">
           {/* Boss Identity & Avatar */}
-          <div className="relative flex flex-col items-center">
+          <div className="relative flex flex-col items-center mt-6 sm:mt-8">
             {/* Floating Damage Text */}
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
+            <div className="absolute -top-12 sm:-top-14 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
               {floatingTexts.map((ft) => (
                 <div
                   key={ft.id}

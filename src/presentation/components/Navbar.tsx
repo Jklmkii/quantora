@@ -87,7 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
     <>
       {/* Top Header Bar (Desktop & Mobile) */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md pt-safe">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-3 sm:gap-4 lg:gap-6">
           {/* Brand */}
           <div className="flex items-center gap-2.5 min-w-0 shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/90 dark:bg-slate-900 border border-indigo-500/30 overflow-hidden flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
@@ -115,8 +115,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
             </div>
           </div>
 
+          {/* Subtle Vertical Divider between Brand and Nav */}
+          <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
+
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800/60">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shrink-0">
             {tabs.map((tab) => {
               const isActive =
                 activeTab === tab.id ||
@@ -145,100 +148,109 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
             })}
           </nav>
 
-          {/* Quick Actions (Profile, Scratchpad, Theme & Settings) */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {/* Daily Challenge Status Badge */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('quiz')}
-              className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all touch-target shadow-xs ${
-                isDailyCompleted
-                  ? 'border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/70'
-                  : 'border-amber-300 dark:border-amber-800/60 bg-amber-50/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100/70'
-              }`}
-              title={
-                isDailyCompleted
-                  ? t.daily_completed_tooltip
-                  : t.daily_pending_tooltip
-              }
-              aria-label={t.daily_challenge_title}
-            >
-              {isDailyCompleted ? (
-                <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-              ) : (
-                <Calendar size={14} className="text-amber-500 shrink-0 animate-bounce" />
-              )}
-              <span className="hidden xl:inline">
-                {isDailyCompleted ? t.daily_completed : t.daily_pending}
-              </span>
-              <span className="hidden sm:inline xl:hidden">
-                {isDailyCompleted ? 'Diário ✓' : 'Diário !'}
-              </span>
-              {!isDailyCompleted && (
-                <span className="sm:hidden text-[11px] font-extrabold text-amber-500">
-                  !
+          {/* Quick Actions (Badges + Utility Tools) */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Gamification & Status Badges Group */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Daily Challenge Status Badge */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('quiz')}
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all touch-target shadow-xs cursor-pointer ${
+                  isDailyCompleted
+                    ? 'border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/70'
+                    : 'border-amber-300 dark:border-amber-800/60 bg-amber-50/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100/70'
+                }`}
+                title={
+                  isDailyCompleted
+                    ? t.daily_completed_tooltip
+                    : t.daily_pending_tooltip
+                }
+                aria-label={t.daily_challenge_title}
+              >
+                {isDailyCompleted ? (
+                  <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                ) : (
+                  <Calendar size={14} className="text-amber-500 shrink-0 animate-bounce" />
+                )}
+                <span className="hidden xl:inline">
+                  {isDailyCompleted ? t.daily_completed : t.daily_pending}
                 </span>
-              )}
-            </button>
-
-            {/* Profile Level Chip */}
-            <button
-              type="button"
-              onClick={() => setIsProfileOpen(true)}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-200/80 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-bold text-xs hover:bg-amber-100/70 transition-all touch-target shadow-xs"
-              title={`${levelInfo.title} • ${profile?.totalXp || 0} XP (${t.profile_title})`}
-              aria-label={t.profile_title}
-            >
-              <Trophy size={14} className="text-amber-500 shrink-0" />
-              <span>{t.level_prefix} {levelInfo.level}</span>
-              {(profile?.streakDays || 1) > 1 && (
-                <span className="flex items-center text-orange-500 font-extrabold text-[11px] ml-0.5">
-                  🔥{profile.streakDays}
+                <span className="hidden sm:inline xl:hidden">
+                  {isDailyCompleted ? 'Diário ✓' : 'Diário !'}
                 </span>
-              )}
-            </button>
+                {!isDailyCompleted && (
+                  <span className="sm:hidden text-[11px] font-extrabold text-amber-500">
+                    !
+                  </span>
+                )}
+              </button>
 
-            {/* Scratchpad Button (Desktop & Tablet Quick Action) */}
-            <button
-              type="button"
-              onClick={toggleScratchpad}
-              className={`relative p-2 sm:p-2.5 rounded-xl border transition-colors touch-target flex items-center justify-center ${
-                isScratchpadOpen
-                  ? 'border-amber-400 bg-amber-500/20 text-amber-400'
-                  : 'border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800'
-              }`}
-              title="Lousa de Rascunho"
-              aria-label="Lousa de Rascunho"
-            >
-              <Pencil size={17} className={isScratchpadOpen ? 'rotate-12 text-amber-500' : ''} />
-              {hasScratchpadStrokes && !isScratchpadOpen && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              )}
-            </button>
+              {/* Profile Level Chip */}
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(true)}
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-200/80 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-bold text-xs hover:bg-amber-100/70 transition-all touch-target shadow-xs cursor-pointer"
+                title={`${levelInfo.title} • ${profile?.totalXp || 0} XP (${t.profile_title})`}
+                aria-label={t.profile_title}
+              >
+                <Trophy size={14} className="text-amber-500 shrink-0" />
+                <span>{t.level_prefix} {levelInfo.level}</span>
+                {(profile?.streakDays || 1) > 1 && (
+                  <span className="flex items-center text-orange-500 font-extrabold text-[11px] ml-0.5">
+                    🔥{profile.streakDays}
+                  </span>
+                )}
+              </button>
+            </div>
 
-            {/* Theme Toggle Button */}
-            <button
-              type="button"
-              onClick={cycleTheme}
-              className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center"
-              title={`${t.theme_prefix}: ${settings.theme} (${t.theme_cycle_tooltip})`}
-              aria-label={t.theme}
-            >
-              {settings.theme === 'light' && <Sun size={17} />}
-              {settings.theme === 'dark' && <Moon size={17} />}
-              {settings.theme === 'system' && <Laptop size={17} />}
-            </button>
+            {/* Subtle Divider between Status Badges and Tools */}
+            <div className="hidden sm:block h-5 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
 
-            {/* Settings Modal Button */}
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center"
-              title={t.settings_title}
-              aria-label={t.settings_title}
-            >
-              <Settings size={17} />
-            </button>
+            {/* Utility Tools Group */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Scratchpad Button (Desktop & Tablet Quick Action) */}
+              <button
+                type="button"
+                onClick={toggleScratchpad}
+                className={`relative p-2 sm:p-2.5 rounded-xl border transition-colors touch-target flex items-center justify-center cursor-pointer ${
+                  isScratchpadOpen
+                    ? 'border-amber-400 bg-amber-500/20 text-amber-400'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800'
+                }`}
+                title="Lousa de Rascunho"
+                aria-label="Lousa de Rascunho"
+              >
+                <Pencil size={17} className={isScratchpadOpen ? 'rotate-12 text-amber-500' : ''} />
+                {hasScratchpadStrokes && !isScratchpadOpen && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                )}
+              </button>
+
+              {/* Theme Toggle Button */}
+              <button
+                type="button"
+                onClick={cycleTheme}
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer"
+                title={`${t.theme_prefix}: ${settings.theme} (${t.theme_cycle_tooltip})`}
+                aria-label={t.theme}
+              >
+                {settings.theme === 'light' && <Sun size={17} />}
+                {settings.theme === 'dark' && <Moon size={17} />}
+                {settings.theme === 'system' && <Laptop size={17} />}
+              </button>
+
+              {/* Settings Modal Button */}
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer"
+                title={t.settings_title}
+                aria-label={t.settings_title}
+              >
+                <Settings size={17} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
