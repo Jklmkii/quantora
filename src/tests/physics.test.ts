@@ -27,12 +27,14 @@ describe('Physics Module - Unit Tests', () => {
       expect(Number(kmhToMs(72).toString())).toBe(20);
       expect(convertKmHToMS(108)).toBe('30.00');
       expect(Number(kmhToMs(0).toString())).toBe(0);
+      expect(convertKmHToMS('invalid')).toBe('0');
     });
 
     it('converts m/s to km/h accurately', () => {
       expect(Number(msToKmh(20).toString())).toBe(72);
       expect(convertMSToKmH(30)).toBe('108.00');
       expect(Number(msToKmh(0).toString())).toBe(0);
+      expect(convertMSToKmH('invalid')).toBe('0');
     });
 
     it('formats values with units correctly', () => {
