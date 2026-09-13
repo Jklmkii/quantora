@@ -1,3 +1,4 @@
+import { shuffleArray } from '../../utils/array';
 import { parseBig } from '../math/precision';
 
 export const BOSS_INITIAL_HP = 100;
@@ -152,14 +153,6 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function shuffleArray<T>(array: T[]): T[] {
-  const copy = [...array];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
 
 function rollDamage(min: number, max: number, customRoll?: number): number {
   if (customRoll !== undefined) {
