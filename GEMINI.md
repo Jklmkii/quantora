@@ -108,6 +108,9 @@ for a segunda, a ação está errada mesmo que tecnicamente siga os passos descr
 - Antes de começar, conferir esse arquivo por entradas em andamento que toquem os mesmos
   arquivos/módulos. Se houver conflito, aguardar a conclusão antes de prosseguir.
 - Ao concluir (após a seção 6), atualizar para `✅ CONCLUÍDO`.
+- **Inclusão Obrigatória de Scripts nos Relatórios:** Quando a tarefa for disparada por um
+  arquivo da pasta `scripts/`, incluir o nome e a transcrição / diretrizes do script tanto no
+  relatório de resposta no chat quanto no registro documental de `Historico de Prompts & Demandas.md`.
 
 ## 9. Acompanhamento de Delegação
 - Registrar o session ID retornado pela API da Jules e monitorar o progresso (`GET

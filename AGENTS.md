@@ -179,6 +179,10 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
        * **Completeness:** Validação contra requisitos e testes unitários.
        * **Merge / Release Assessment:** Estado de prontidão para commit, release e compilação.
   4. `📊 Resultado & Verificação` (status da compilação, testes unitários aprovados e versão publicada).
+* **Inclusão Obrigatória de Scripts nos Relatórios (Regra Mandatória):**
+  Sempre que o usuário solicitar verificar ou executar um script a partir da aba/pasta `scripts/` (ex: "verifique a aba de script para executá-la", "pegue o novo script"):
+  - **No Relatório de Resposta no Chat:** Incluir expressamente o nome do script e a transcrição / síntese dos seus requisitos e diretrizes no corpo da resposta para confirmação e rastreabilidade imediata do usuário.
+  - **No Registro do Vault (`Historico de Prompts & Demandas.md`):** Anexar a íntegra do script original sob a seção `💬 Requisito / Texto Original do Usuário (Ipsis Litteris)`, garantindo que o teor do arquivo fique eternamente auditável e preservado no cofre mesmo após eventual exclusão do arquivo bruto da pasta `scripts/`.
 * **Filtro Mandatório Contra Conteúdos Off-Topic:**
   É terminantemente proibido registrar ou manter no Obsidian conteúdos que não façam parte do desenvolvimento deste programa, como dúvidas gerais, conversas casuais, pesquisas, explicações teóricas ou outros assuntos off-topic.
 * **Exclusão Somente sob Permissão Expressa do Usuário (Regra Mandatória):**
