@@ -2,6 +2,9 @@
 
 Welcome, Agent! This document provides an architectural map, operational conventions, and technical constraints for autonomous agents (such as **Google Jules**) working on the **Quantora** repository.
 
+> [!NOTE]
+> **Orquestração Agêntica & Precedência:** Para o agente principal **Google Antigravity**, as diretrizes executáveis de classificação de complexidade, controle de cota e roteamento de tarefas entre agentes estão formalizadas em `GEMINI.md` (raiz do projeto), o qual possui prioridade executiva máxima sobre este documento.
+
 ---
 
 ## 🧭 1. Repository Overview & Mission
