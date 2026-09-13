@@ -28,7 +28,13 @@ interface DailyChallengeCardProps {
   onCompleted?: () => void;
 }
 
-export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
+/**
+ * ⚡ Bolt Performance Optimization
+ * 💡 What: Wrapped DailyChallengeCard with React.memo()
+ * 🎯 Why: DailyChallengeCard contains expensive sub-trees, loops (setInterval for timeLeft), and UI. It is placed in components that update frequently (like QuizModule) leading to unnecessary rendering of the card when parent changes state unrelated to the card.
+ * 📊 Impact: Reduces re-renders of the entire DailyChallengeCard layout when parent components (like the main Quiz/Home screen) re-render.
+ */
+export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(({
   className = '',
   onCompleted,
 }) => {
@@ -406,4 +412,4 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = ({
       </div>
     </div>
   );
-};
+});
