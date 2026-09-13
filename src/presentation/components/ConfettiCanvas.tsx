@@ -42,6 +42,17 @@ export const ConfettiCanvas: React.FC<ConfettiCanvasProps> = ({
   useEffect(() => {
     if (!active) return;
 
+    // Accessibility: Check for prefers-reduced-motion
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      if (onComplete) onComplete();
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
