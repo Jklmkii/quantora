@@ -87,7 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
     <>
       {/* Top Header Bar (Desktop & Mobile) */}
       <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md pt-safe">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-3 sm:gap-4 lg:gap-6">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 h-16 flex items-center justify-between gap-2 sm:gap-3 lg:gap-4 min-w-0">
           {/* Brand */}
           <div className="flex items-center gap-2.5 min-w-0 shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/90 dark:bg-slate-900 border border-indigo-500/30 overflow-hidden flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
@@ -119,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
           <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shrink-0">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shrink min-w-0 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => {
               const isActive =
                 activeTab === tab.id ||
@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all touch-target ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 lg:px-3 lg:py-1.5 xl:px-3.5 xl:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all touch-target shrink-0 ${
                     isActive
                       ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -137,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
                   aria-label={tab.label}
                 >
                   {tab.icon}
-                  <span className={isActive ? 'inline' : 'hidden lg:inline'}>{tab.label}</span>
+                  <span className={isActive ? 'inline' : 'hidden xl:inline'}>{tab.label}</span>
                   {tab.badge !== undefined && (
                     <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold">
                       {tab.badge}
@@ -208,12 +208,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
             <div className="hidden sm:block h-5 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
 
             {/* Utility Tools Group */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {/* Scratchpad Button (Desktop & Tablet Quick Action) */}
               <button
                 type="button"
                 onClick={toggleScratchpad}
-                className={`relative p-2 sm:p-2.5 rounded-xl border transition-colors touch-target flex items-center justify-center cursor-pointer ${
+                className={`relative p-2 sm:p-2.5 rounded-xl border transition-colors touch-target flex items-center justify-center cursor-pointer shrink-0 ${
                   isScratchpadOpen
                     ? 'border-amber-400 bg-amber-500/20 text-amber-400'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800'
@@ -231,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
               <button
                 type="button"
                 onClick={cycleTheme}
-                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer shrink-0"
                 title={`${t.theme_prefix}: ${settings.theme} (${t.theme_cycle_tooltip})`}
                 aria-label={t.theme}
               >
@@ -244,7 +244,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
               <button
                 type="button"
                 onClick={onOpenSettings}
-                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer shrink-0"
                 title={t.settings_title}
                 aria-label={t.settings_title}
               >
