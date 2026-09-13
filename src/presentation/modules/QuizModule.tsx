@@ -24,6 +24,7 @@ import { useTranslation } from '../../core/i18n/translations';
 import { DailyChallengeCard } from '../components/DailyChallengeCard';
 import { selectNextDueCard, getDueCards } from '../../core/quiz/spacedRepetition';
 import { hapticMasteryBadge } from '../../core/platform/haptics';
+import { playMasteryBadge, playRare67 } from '../../core/platform/audio';
 import type { QuizDifficultyMode, QuizQuestion, QuizTrackSelector, SpacedCard } from '../../types';
 
 // Code-splitting: Lazy load heavy game modes on demand
@@ -123,6 +124,7 @@ export const QuizModule: React.FC = () => {
     const isBadgeVisible = screen === 'playing' && Boolean(currentQuestion?.isSpacedReview);
     if (isBadgeVisible && !prevSpacedBadgeRef.current) {
       hapticMasteryBadge();
+      playMasteryBadge();
     }
     prevSpacedBadgeRef.current = isBadgeVisible;
   }, [screen, currentQuestion?.id, currentQuestion?.isSpacedReview]);
@@ -287,6 +289,9 @@ export const QuizModule: React.FC = () => {
 
     if (correct) {
       if ('vibrate' in navigator) navigator.vibrate?.(40);
+      if (parsedCorrect.eq(67)) {
+        playRare67();
+      }
 
       const ratio = totalTime === Infinity ? 0 : timeLeft / totalTime;
       const isAgile = totalTime !== Infinity && ratio >= 0.6;

@@ -22,6 +22,7 @@ import {
   type BlitzState,
 } from '../../core/quiz/blitzEngine';
 import { hapticComboTick } from '../../core/platform/haptics';
+import { playComboTick } from '../../core/platform/audio';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -211,6 +212,7 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
 
       if (isCorrect) {
         hapticComboTick(nextState.combo);
+        playComboTick();
       }
 
       if (nextState.isGameOver || nextState.timeLeft <= 0) {

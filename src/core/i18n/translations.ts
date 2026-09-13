@@ -13,6 +13,10 @@ export const translations = {
 
     // Settings
     settings_title: 'Configurações',
+    sound_effects: 'Efeitos Sonoros',
+    sound_effects_desc: 'Feedback de áudio no Blitz, Chefes e Fixação',
+    sound_volume: 'Volume dos Efeitos',
+    sound_test: 'Ouvir teste',
     theme: 'Tema da Interface',
     theme_light: 'Claro',
     theme_dark: 'Escuro',
@@ -294,6 +298,10 @@ export const translations = {
 
     // Settings
     settings_title: 'Settings',
+    sound_effects: 'Sound Effects',
+    sound_effects_desc: 'Audio feedback in Blitz, Bosses and Active Recall',
+    sound_volume: 'Effects Volume',
+    sound_test: 'Play test',
     theme: 'Interface Theme',
     theme_light: 'Light',
     theme_dark: 'Dark',

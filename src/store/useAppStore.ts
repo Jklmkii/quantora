@@ -75,6 +75,8 @@ interface AppState {
   // Settings
   settings: AppSettings;
   updateSettings: (partial: Partial<AppSettings>) => void;
+  setSoundEnabled: (enabled: boolean) => void;
+  setSoundVolume: (volume: number) => void;
 
   // History
   history: HistoryItem[];
@@ -172,6 +174,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   decimalSeparator: ',',
   historyLimit: 20,
   hasCompletedOnboarding: false,
+  soundEnabled: true,
+  soundVolume: 0.5,
 };
 
 // Seamlessly migrate legacy storage key if present
@@ -682,6 +686,14 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           settings: { ...state.settings, ...partial },
         })),
+      setSoundEnabled: (enabled) =>
+        set((state) => ({
+          settings: { ...state.settings, soundEnabled: enabled },
+        })),
+      setSoundVolume: (volume) =>
+        set((state) => ({
+          settings: { ...state.settings, soundVolume: Math.max(0, Math.min(1, volume)) },
+        })),
 
       history: [],
       addHistoryItem: ({ type, title, summary, details, rawPayload }) => {
@@ -787,7 +799,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'quantora-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 4,
+      version: 5,
       migrate: (persistedState: any, version: number) => {
         const state = persistedState as any;
         if (!version || version < 2) {
@@ -831,6 +843,12 @@ export const useAppStore = create<AppState>()(
             if (state.profile.stats.highestBossLevelCleared === undefined) state.profile.stats.highestBossLevelCleared = 0;
             if (state.profile.stats.bossCoins === undefined) state.profile.stats.bossCoins = 0;
             if (state.profile.stats.damageUpgradeLevel === undefined) state.profile.stats.damageUpgradeLevel = 0;
+          }
+        }
+        if (!version || version < 5) {
+          if (state?.settings) {
+            if (state.settings.soundEnabled === undefined) state.settings.soundEnabled = true;
+            if (state.settings.soundVolume === undefined) state.settings.soundVolume = 0.5;
           }
         }
         return state;

@@ -92,6 +92,8 @@ export interface AppSettings {
   decimalSeparator: DecimalSeparator;
   historyLimit: number;
   hasCompletedOnboarding: boolean;
+  soundEnabled: boolean;
+  soundVolume: number;
 }
 
 export type QuizDifficultyMode = 'tranquilo' | 'velocidade' | 'brutal';

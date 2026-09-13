@@ -38,6 +38,7 @@ import {
 } from '../../core/quiz/bossEngine';
 import type { BossBattleState, BossRoundResult } from '../../core/quiz/bossEngine';
 import { hapticBossHit, hapticBossDamageTaken } from '../../core/platform/haptics';
+import { playBossHitCritical, playBossHitStandard, playBossDamageTaken } from '../../core/platform/audio';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
@@ -188,7 +189,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         setTimeout(() => setIsBossRecoiling(false), 500);
 
         if (roundResult.damageResult.isCritical) {
-          // Critical hit: screen shake + gold flash + floating text
+          // Critical hit: screen shake + gold flash + floating text + audio
+          playBossHitCritical();
           setIsShaking(true);
           setFlashColor('gold');
           addFloatingText(`-${roundResult.damageResult.damage} CRÍTICO!`, 'critical');
@@ -197,14 +199,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             setFlashColor(null);
           }, 600);
         } else {
-          // Standard hit: emerald flash + floating text
+          // Standard hit: emerald flash + floating text + audio
+          playBossHitStandard();
           setFlashColor('emerald');
           addFloatingText(`-${roundResult.damageResult.damage}`, 'standard');
           setTimeout(() => setFlashColor(null), 400);
         }
       } else {
-        // Wrong or timeout: player recoil + red flash + shield loss text at boss portrait
+        // Wrong or timeout: player recoil + red flash + shield loss text at boss portrait + audio
         hapticBossDamageTaken();
+        playBossDamageTaken();
         setIsPlayerRecoiling(true);
         setFlashColor('red');
         addFloatingText('-1 ESCUDO!', 'shield_loss');

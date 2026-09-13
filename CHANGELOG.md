@@ -2,6 +2,17 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.19] — Sistema de Feedback Sonoro Multiplataforma (SFX) & Áudio Resiliente (2026-09-12)
+
+### 🔊 Feedback Sonoro & Motor de Áudio
+- **Motor de Áudio Universal (`src/core/platform/audio.ts`):** Helper de áudio centralizado operando em Web, Electron Desktop e Android com isolamento hermético contra falhas em ambientes SSR/Node/Vitest.
+- **Assets Ultraleves (`public/sounds/`):** 6 efeitos sonoros autorais gerados proceduralmente (< 85 KB total) em formato `.ogg` e `.wav`: `hit-critical` (golpes críticos), `hit-standard` (golpe comum no chefe), `damage-taken` (perda de escudo), `combo-tick` (sustentação de combo no Blitz), `mastery-badge` (graduação em repetição espaçada) e `rare-67` (easter egg para o número 67).
+- **Controle de Mudo & Volume no Settings (`SettingsModal.tsx`):** Toggle visual de efeitos sonoros, slider com indicador numérico de 0% a 100% e botão interativo para teste de áudio.
+- **Integração Completa nos Modos de Jogo:** Conexão nativa em `BossBattle.tsx`, `BlitzGame.tsx` e `QuizModule.tsx`.
+- **401 Testes Unitários Aprovados:** Suíte Vitest ampliada para 401 testes em 23 arquivos (100% verde) com validação de `src/tests/audio.test.ts`.
+
+---
+
 ## [1.2.15] — Instalador NSIS Silencioso (oneClick) & Governança Agêntica GEMINI.md (2026-09-12)
 
 ### 💻 Desktop (Electron) & Instalador Windows

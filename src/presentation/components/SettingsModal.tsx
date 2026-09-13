@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { X, Moon, Sun, Laptop, Trash2, Download, Upload, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, Globe } from 'lucide-react';
+import { X, Moon, Sun, Laptop, Trash2, Download, Upload, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, Globe, Volume2, VolumeX } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { DecimalPlaces, DecimalSeparator, ThemeMode, UpdaterStatus, AppLanguage } from '../../types';
 import { validateHistorySchema } from '../../core/storage/historyValidator';
 import { useTranslation } from '../../core/i18n/translations';
 import { getDeviceLocalDateString } from '../../core/gamification/leveling';
+import { playTestSound } from '../../core/platform/audio';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -266,6 +267,85 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Efeitos Sonoros (SFX) */}
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className={`p-2 rounded-xl transition-colors ${
+                  settings.soundEnabled ?? true
+                    ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400'
+                }`}>
+                  {(settings.soundEnabled ?? true) ? <Volume2 size={18} /> : <VolumeX size={18} />}
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                    {t.sound_effects}
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    {t.sound_effects_desc}
+                  </p>
+                </div>
+              </div>
+
+              {/* Toggle Switch */}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={settings.soundEnabled ?? true}
+                onClick={() => {
+                  const next = !(settings.soundEnabled ?? true);
+                  updateSettings({ soundEnabled: next });
+                  if (next) playTestSound(settings.soundVolume ?? 0.5);
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50 cursor-pointer ${
+                  (settings.soundEnabled ?? true) ? 'bg-cyan-500' : 'bg-slate-300 dark:bg-slate-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    (settings.soundEnabled ?? true) ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {(settings.soundEnabled ?? true) && (
+              <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-800/60 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-600 dark:text-slate-400">
+                    {t.sound_volume}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400 text-[11px]">
+                      {Math.round((settings.soundVolume ?? 0.5) * 100)}%
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => playTestSound(settings.soundVolume ?? 0.5)}
+                      className="px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[10px] font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                      title={t.sound_test}
+                    >
+                      {t.sound_test}
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={settings.soundVolume ?? 0.5}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    updateSettings({ soundVolume: val });
+                  }}
+                  className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+              </div>
+            )}
           </div>
 
           {/* Decimal Places */}
