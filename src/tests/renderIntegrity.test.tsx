@@ -264,9 +264,9 @@ describe('Render Integrity — BossBattle (HP do Chefe e Escudos)', () => {
     expect(screen.getByText(/HP do Chefe/i)).toBeDefined();
     expect(screen.getAllByText(/100/i).length).toBeGreaterThanOrEqual(1);
 
-    // Deve exibir o tempo de rodada (10.0s)
+    // Deve exibir o tempo de rodada (15.0s para Nível 1)
     expect(screen.getByText(/Tempo da Rodada:/i)).toBeDefined();
-    expect(screen.getByText(/10\.0s/i)).toBeDefined();
+    expect(screen.getByText(/15\.0s/i)).toBeDefined();
   });
 
   test('Permite responder e processa a rodada de combate', async () => {

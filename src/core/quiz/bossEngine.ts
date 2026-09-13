@@ -44,6 +44,43 @@ export function costForUpgrade(upgradeLevel: number = 0): number {
   return Math.round(BASE_UPGRADE_COST * Math.pow(UPGRADE_COST_MULTIPLIER, safeLevel));
 }
 
+/**
+ * Maps discrete boss levels to allowed question categories for clear pedagogical difficulty scaling.
+ * - Levels 1–2: Elementary arithmetic & basic times tables (mental_math only).
+ * - Levels 3–4: Combined operations & basic linear equations (mental_math, equation).
+ * - Levels 5–7: Equations with parentheses, square roots, and basic powers.
+ * - Levels 8+: Advanced equations, powers, roots subtraction, and mixed arcane spells.
+ */
+export function getAllowedTracksForLevel(level: number = 1): BossQuestionCategory[] {
+  const safeLevel = Math.max(1, Math.round(level));
+  if (safeLevel <= 2) {
+    return ['mental_math'];
+  }
+  if (safeLevel <= 4) {
+    return ['mental_math', 'equation'];
+  }
+  if (safeLevel <= 7) {
+    return ['mental_math', 'equation', 'roots', 'powers'];
+  }
+  return ['equation', 'powers', 'roots', 'mixed'];
+}
+
+/**
+ * Computes round time limit for a given boss level (15s on level 1, decreasing smoothly to 8s on level 8+).
+ */
+export function getRoundTimeLimitForLevel(level: number = 1): number {
+  const safeLevel = Math.max(1, Math.round(level));
+  return Math.max(8, 16 - safeLevel);
+}
+
+/**
+ * Computes critical hit time threshold proportional to the round time (~30% of time limit, min 2.0s).
+ */
+export function getCriticalTimeThresholdForLevel(level: number = 1): number {
+  const timeLimit = getRoundTimeLimitForLevel(level);
+  return Math.max(2.0, Math.round(timeLimit * 0.3 * 10) / 10);
+}
+
 export type BossQuestionCategory = 'equation' | 'mental_math' | 'powers' | 'roots' | 'mixed';
 
 export interface BossQuestion {
@@ -141,7 +178,9 @@ export function calculateBossDamage(
   isCorrect: boolean,
   responseTimeSeconds: number,
   customRoll?: number,
-  damageUpgradeLevel: number = 0
+  damageUpgradeLevel: number = 0,
+  timeLimitSeconds: number = ROUND_TIME_LIMIT_SECONDS,
+  criticalThresholdSeconds: number = CRITICAL_TIME_THRESHOLD_SECONDS
 ): BossDamageResult {
   if (!isCorrect) {
     return {
@@ -152,7 +191,7 @@ export function calculateBossDamage(
     };
   }
 
-  if (responseTimeSeconds > ROUND_TIME_LIMIT_SECONDS) {
+  if (responseTimeSeconds > timeLimitSeconds) {
     return {
       damage: 0,
       isCritical: false,
@@ -163,7 +202,7 @@ export function calculateBossDamage(
 
   const bonusDamage = Math.max(0, Math.round(damageUpgradeLevel)) * BONUS_PER_UPGRADE_LEVEL;
 
-  if (responseTimeSeconds < CRITICAL_TIME_THRESHOLD_SECONDS) {
+  if (responseTimeSeconds < criticalThresholdSeconds) {
     const baseDamage = rollDamage(CRITICAL_DAMAGE_MIN, CRITICAL_DAMAGE_MAX, customRoll);
     return {
       damage: baseDamage + bonusDamage,
@@ -268,31 +307,28 @@ function generateOptions(correctAnswer: number, candidateDivergences: number[]):
 }
 
 /**
- * Thematic Question Generator for Boss Rush.
- * Generates multi-step equations, challenging mental math, powers, roots, and mixed spells.
+ * Thematic Question Generator for Boss Battle.
+ * Dynamically scales category tracks, operand ranges, and round timers based on the boss level.
  */
-export function generateBossQuestion(round: number = 1): BossQuestion {
+export function generateBossQuestion(_round: number = 1, level: number = 1): BossQuestion {
+  const safeLevel = Math.max(1, Math.round(level));
   const id = `boss_q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  const categories: BossQuestionCategory[] = ['equation', 'mental_math', 'powers', 'roots', 'mixed'];
-  
-  // Later rounds introduce more roots, equations, and mixed spells
-  let category: BossQuestionCategory;
-  if (round === 1) {
-    category = pickRandom(['mental_math', 'powers', 'roots']);
-  } else if (round === 2) {
-    category = pickRandom(['equation', 'mental_math', 'roots']);
-  } else {
-    category = pickRandom(categories);
-  }
+  const allowedCategories = getAllowedTracksForLevel(safeLevel);
+  const category = pickRandom(allowedCategories);
+  const timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel);
 
   switch (category) {
     case 'equation': {
-      const type = getRandomInt(1, 3);
+      // Levels 3-4 receive simple linear equations (a*x + b = c)
+      // Levels 5+ also unlock subtractions and parenthesized equations
+      const maxType = safeLevel <= 4 ? 1 : 3;
+      const type = getRandomInt(1, maxType);
+
       if (type === 1) {
         // a * x + b = c
-        const a = getRandomInt(2, 6);
-        const x = getRandomInt(3, 15);
-        const b = getRandomInt(5, 30);
+        const a = safeLevel <= 4 ? getRandomInt(2, 4) : getRandomInt(2, 6);
+        const x = safeLevel <= 4 ? getRandomInt(2, 8) : getRandomInt(3, 15);
+        const b = safeLevel <= 4 ? getRandomInt(2, 12) : getRandomInt(5, 30);
         const c = a * x + b;
         const displayExpression = `${a}x + ${b} = ${c}`;
         const options = generateOptions(x, [
@@ -316,7 +352,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `Subtraia ${b} de ambos os lados: ${a}x = ${c} - ${b} = ${c - b}`,
             `Divida por ${a}: x = ${c - b} / ${a} = ${x}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       } else if (type === 2) {
         // a * x - b = c
@@ -346,7 +382,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `Some ${b} a ambos os lados: ${a}x = ${c} + ${b} = ${c + b}`,
             `Divida por ${a}: x = ${c + b} / ${a} = ${x}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       } else {
         // a * (x + b) = c
@@ -376,18 +412,79 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `Divida ambos os lados por ${a}: x + ${b} = ${c / a}`,
             `Isole x subtraindo ${b}: x = ${c / a} - ${b} = ${x}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       }
     }
 
     case 'mental_math': {
+      // Levels 1-2: Friendly elementary arithmetic and basic times tables
+      if (safeLevel <= 2) {
+        const subType = getRandomInt(1, 3);
+        if (subType === 1) {
+          // Addition
+          const a = getRandomInt(4, 25);
+          const b = getRandomInt(3, 20);
+          const ans = a + b;
+          return {
+            id,
+            category: 'mental_math',
+            categoryLabel: 'Aritmética Elementar',
+            title: 'Golpe de Adição',
+            prompt: 'Resolva a soma com precisão:',
+            displayExpression: `${a} + ${b}`,
+            correctAnswer: ans,
+            formattedCorrectAnswer: ans.toString(),
+            options: generateOptions(ans, [ans + 1, ans - 1, ans + 2, Math.max(1, ans - 2)]),
+            explanation: [`Calcule a soma: ${a} + ${b} = ${ans}`],
+            timeLimitSeconds,
+          };
+        } else if (subType === 2) {
+          // Subtraction with positive answer
+          const b = getRandomInt(3, 15);
+          const diff = getRandomInt(2, 20);
+          const a = b + diff;
+          return {
+            id,
+            category: 'mental_math',
+            categoryLabel: 'Aritmética Elementar',
+            title: 'Golpe de Subtração',
+            prompt: 'Calcule o resultado da subtração:',
+            displayExpression: `${a} - ${b}`,
+            correctAnswer: diff,
+            formattedCorrectAnswer: diff.toString(),
+            options: generateOptions(diff, [diff + 1, Math.max(0, diff - 1), diff + 2, diff + 10]),
+            explanation: [`Subtraia os valores: ${a} - ${b} = ${diff}`],
+            timeLimitSeconds,
+          };
+        } else {
+          // Basic times table
+          const a = getRandomInt(2, 9);
+          const b = getRandomInt(2, 10);
+          const prod = a * b;
+          return {
+            id,
+            category: 'mental_math',
+            categoryLabel: 'Tabuada Rápida',
+            title: 'Golpe de Tabuada',
+            prompt: 'Resolva a multiplicação da tabuada:',
+            displayExpression: `${a} × ${b}`,
+            correctAnswer: prod,
+            formattedCorrectAnswer: prod.toString(),
+            options: generateOptions(prod, [prod + a, Math.max(1, prod - b), prod + 2, prod - 2]),
+            explanation: [`Multiplique os fatores: ${a} × ${b} = ${prod}`],
+            timeLimitSeconds,
+          };
+        }
+      }
+
+      // Levels 3+: Combined arithmetic operations
       const type = getRandomInt(1, 3);
       if (type === 1) {
         // a * b - c
-        const a = getRandomInt(11, 25);
-        const b = getRandomInt(4, 9);
-        const c = getRandomInt(10, 45);
+        const a = safeLevel <= 4 ? getRandomInt(4, 12) : getRandomInt(11, 25);
+        const b = safeLevel <= 4 ? getRandomInt(3, 7) : getRandomInt(4, 9);
+        const c = safeLevel <= 4 ? getRandomInt(5, 20) : getRandomInt(10, 45);
         const prod = a * b;
         const answer = prod - c;
         const options = generateOptions(answer, [
@@ -410,7 +507,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `Primeiro multiplique: ${a} × ${b} = ${prod}`,
             `Depois subtraia ${c}: ${prod} - ${c} = ${answer}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       } else if (type === 2) {
         // a * b + c * d
@@ -442,7 +539,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `Multiplicação 2: ${c} × ${d} = ${part2}`,
             `Soma final: ${part1} + ${part2} = ${answer}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       } else {
         // (a + b) * c
@@ -471,24 +568,30 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `Resolva o parêntese primeiro: ${a} + ${b} = ${sum}`,
             `Multiplique o resultado: ${sum} × ${c} = ${answer}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       }
     }
 
     case 'powers': {
       const powerPool = [
+        { base: 2, exp: 3, val: 8 },
+        { base: 2, exp: 4, val: 16 },
         { base: 2, exp: 5, val: 32 },
         { base: 2, exp: 6, val: 64 },
         { base: 2, exp: 7, val: 128 },
+        { base: 3, exp: 2, val: 9 },
         { base: 3, exp: 3, val: 27 },
         { base: 3, exp: 4, val: 81 },
+        { base: 4, exp: 2, val: 16 },
         { base: 4, exp: 3, val: 64 },
+        { base: 5, exp: 2, val: 25 },
         { base: 5, exp: 3, val: 125 },
         { base: 6, exp: 2, val: 36 },
         { base: 7, exp: 2, val: 49 },
         { base: 8, exp: 2, val: 64 },
         { base: 9, exp: 2, val: 81 },
+        { base: 10, exp: 2, val: 100 },
         { base: 11, exp: 2, val: 121 },
         { base: 12, exp: 2, val: 144 },
         { base: 13, exp: 2, val: 169 },
@@ -496,11 +599,12 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
         { base: 15, exp: 2, val: 225 },
       ];
 
-      const isCompound = Math.random() > 0.4;
+      // Levels below 8 only receive single powers; Levels 8+ can get compound powers
+      const isCompound = safeLevel >= 8 && Math.random() > 0.4;
       if (isCompound) {
         // base1^exp1 + base2^exp2
-        const p1 = pickRandom(powerPool.slice(0, 10));
-        const p2 = pickRandom(powerPool.slice(0, 8));
+        const p1 = pickRandom(powerPool.slice(0, 12));
+        const p2 = pickRandom(powerPool.slice(0, 10));
         const answer = p1.val + p2.val;
         const options = generateOptions(answer, [
           p1.val * 2,
@@ -523,10 +627,11 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `${p2.base}^${p2.exp} = ${p2.val}`,
             `Soma: ${p1.val} + ${p2.val} = ${answer}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       } else {
-        const p = pickRandom(powerPool);
+        const pool = safeLevel <= 7 ? powerPool.slice(0, 17) : powerPool;
+        const p = pickRandom(pool);
         const options = generateOptions(p.val, [
           p.base * p.exp,
           p.val + 10,
@@ -547,7 +652,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `${p.base} elevado a ${p.exp} significa multiplicar ${p.base} por si mesmo ${p.exp} vezes`,
             `Resultado: ${p.val}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       }
     }
@@ -568,10 +673,12 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
         { sq: 400, r: 20 },
       ];
 
-      const isSum = Math.random() > 0.4;
+      // Levels below 8 only receive addition of square roots; Levels 8+ can get subtractions
+      const isSum = safeLevel < 8 || Math.random() > 0.4;
       if (isSum) {
-        const r1 = pickRandom(squareRoots);
-        const r2 = pickRandom(squareRoots);
+        const pool = safeLevel <= 7 ? squareRoots.slice(0, 7) : squareRoots;
+        const r1 = pickRandom(pool);
+        const r2 = pickRandom(pool);
         const answer = r1.r + r2.r;
         const options = generateOptions(answer, [
           answer + 2,
@@ -594,7 +701,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `√${r2.sq} = ${r2.r}`,
             `Soma: ${r1.r} + ${r2.r} = ${answer}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       } else {
         const r1 = pickRandom(squareRoots.slice(4)); // >= 10
@@ -621,7 +728,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
             `√${r2.sq} = ${r2.r}`,
             `Diferença: ${r1.r} - ${r2.r} = ${answer}`,
           ],
-          timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+          timeLimitSeconds,
         };
       }
     }
@@ -672,7 +779,7 @@ export function generateBossQuestion(round: number = 1): BossQuestion {
           `Passo 2 (Potência): ${p.base}^${p.exp} = ${p.val}`,
           `Passo 3 (Soma): ${r.r} + ${p.val} = ${answer}`,
         ],
-        timeLimitSeconds: ROUND_TIME_LIMIT_SECONDS,
+        timeLimitSeconds,
       };
     }
   }
@@ -718,7 +825,7 @@ export function createInitialBossBattleState(
     shields: PLAYER_INITIAL_SHIELDS,
     maxShields: PLAYER_INITIAL_SHIELDS,
     round: 1,
-    currentQuestion: generateBossQuestion(1),
+    currentQuestion: generateBossQuestion(1, safeLevel),
     history: [],
     status: 'fighting',
     totalDamageDealt: 0,
@@ -747,9 +854,19 @@ export function processRound(
     throw new Error(`A batalha já foi finalizada com status: ${state.status}`);
   }
 
+  const safeLevel = state.level ?? 1;
   const upgradeLevel = damageUpgradeLevel ?? state.damageUpgradeLevel ?? 0;
   const isCorrect = checkAnswerCorrectness(userAnswer, state.currentQuestion.correctAnswer);
-  const damageResult = calculateBossDamage(isCorrect, responseTimeSeconds, customDamageRoll, upgradeLevel);
+  const timeLimit = state.currentQuestion.timeLimitSeconds ?? getRoundTimeLimitForLevel(safeLevel);
+  const criticalThreshold = getCriticalTimeThresholdForLevel(safeLevel);
+  const damageResult = calculateBossDamage(
+    isCorrect,
+    responseTimeSeconds,
+    customDamageRoll,
+    upgradeLevel,
+    timeLimit,
+    criticalThreshold
+  );
 
   const bossHpBefore = state.bossHp;
   const shieldsBefore = state.shields;
@@ -785,7 +902,7 @@ export function processRound(
     unlockedAchievements: achievements,
   };
 
-  const nextQuestion = status === 'fighting' ? generateBossQuestion(state.round + 1) : state.currentQuestion;
+  const nextQuestion = status === 'fighting' ? generateBossQuestion(state.round + 1, safeLevel) : state.currentQuestion;
 
   const nextState: BossBattleState = {
     ...state,

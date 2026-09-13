@@ -13,6 +13,10 @@ import {
   calculateBossDamage,
   createInitialBossBattleState,
   processRound,
+  getAllowedTracksForLevel,
+  getRoundTimeLimitForLevel,
+  getCriticalTimeThresholdForLevel,
+  generateBossQuestion,
 } from '../core/quiz/bossEngine';
 import { useAppStore } from '../store/useAppStore';
 
@@ -120,7 +124,7 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       const initialState = createInitialBossBattleState(2, 2); // 135 HP, upgrade 2 (+6)
       const correctAns = initialState.currentQuestion.correctAnswer;
 
-      const { nextState, roundResult } = processRound(initialState, correctAns, 4.0, 15);
+      const { nextState, roundResult } = processRound(initialState, correctAns, 5.0, 15);
       expect(roundResult.isCorrect).toBe(true);
       // Dano = 15 base + 6 upgrade = 21
       expect(roundResult.damageResult.damage).toBe(21);
@@ -194,6 +198,79 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       const secondPurchase = useAppStore.getState().purchaseDamageUpgrade();
       expect(secondPurchase).toBe(false);
       expect(useAppStore.getState().damageUpgradeLevel).toBe(1);
+    });
+  });
+
+  describe('Escalonamento Pedagógico de Conteúdo e Dinâmica de Tempo por Nível', () => {
+    it('filtra trilhas de conteúdo estritamente de acordo com a faixa de nível', () => {
+      // Níveis 1 e 2: Apenas matemática mental elementar (adição, subtração positiva, tabuada)
+      expect(getAllowedTracksForLevel(1)).toEqual(['mental_math']);
+      expect(getAllowedTracksForLevel(2)).toEqual(['mental_math']);
+
+      // Níveis 3 e 4: Expressões combinadas e equações de 1º grau lineares
+      expect(getAllowedTracksForLevel(3)).toEqual(['mental_math', 'equation']);
+      expect(getAllowedTracksForLevel(4)).toEqual(['mental_math', 'equation']);
+
+      // Níveis 5 a 7: Equações com parênteses, raízes e potências básicas
+      expect(getAllowedTracksForLevel(5)).toEqual(['mental_math', 'equation', 'roots', 'powers']);
+      expect(getAllowedTracksForLevel(6)).toEqual(['mental_math', 'equation', 'roots', 'powers']);
+      expect(getAllowedTracksForLevel(7)).toEqual(['mental_math', 'equation', 'roots', 'powers']);
+
+      // Níveis 8+: Potências compostas, raízes complexas, equações avançadas e feitiços mistos
+      expect(getAllowedTracksForLevel(8)).toEqual(['equation', 'powers', 'roots', 'mixed']);
+      expect(getAllowedTracksForLevel(12)).toEqual(['equation', 'powers', 'roots', 'mixed']);
+    });
+
+    it('calcula o tempo de rodada decrescente de 15s no Nível 1 até o piso de 8s', () => {
+      expect(getRoundTimeLimitForLevel(1)).toBe(15);
+      expect(getRoundTimeLimitForLevel(2)).toBe(14);
+      expect(getRoundTimeLimitForLevel(3)).toBe(13);
+      expect(getRoundTimeLimitForLevel(4)).toBe(12);
+      expect(getRoundTimeLimitForLevel(5)).toBe(11);
+      expect(getRoundTimeLimitForLevel(6)).toBe(10);
+      expect(getRoundTimeLimitForLevel(7)).toBe(9);
+      expect(getRoundTimeLimitForLevel(8)).toBe(8);
+      expect(getRoundTimeLimitForLevel(9)).toBe(8);
+      expect(getRoundTimeLimitForLevel(15)).toBe(8);
+    });
+
+    it('calcula a janela de golpe crítico proporcional a ~30% do tempo de rodada (mínimo 2.0s)', () => {
+      // Nível 1: 15 * 0.3 = 4.5s
+      expect(getCriticalTimeThresholdForLevel(1)).toBe(4.5);
+      // Nível 2: 14 * 0.3 = 4.2s
+      expect(getCriticalTimeThresholdForLevel(2)).toBe(4.2);
+      // Nível 6: 10 * 0.3 = 3.0s
+      expect(getCriticalTimeThresholdForLevel(6)).toBe(3.0);
+      // Nível 8: 8 * 0.3 = 2.4s
+      expect(getCriticalTimeThresholdForLevel(8)).toBe(2.4);
+    });
+
+    it('gera apenas questões de mental_math e com tempo de rodada correto para o Nível 1', () => {
+      for (let i = 0; i < 20; i++) {
+        const q = generateBossQuestion(i + 1, 1);
+        expect(q.category).toBe('mental_math');
+        expect(q.timeLimitSeconds).toBe(15);
+        expect(q.options).toHaveLength(4);
+        expect(q.options).toContain(q.correctAnswer);
+      }
+    });
+
+    it('aplica golpe crítico respeitando a janela proporcional dinâmica do nível', () => {
+      // No Nível 1 (threshold 4.5s), responder em 4.0s deve ser CRÍTICO
+      const resCritLvl1 = calculateBossDamage(true, 4.0, 30, 0, 15, 4.5);
+      expect(resCritLvl1.isCritical).toBe(true);
+      expect(resCritLvl1.reason).toBe('critical');
+
+      // No Nível 8 (threshold 2.4s), responder em 4.0s deve ser PADRÃO
+      const resStdLvl8 = calculateBossDamage(true, 4.0, 18, 0, 8, 2.4);
+      expect(resStdLvl8.isCritical).toBe(false);
+      expect(resStdLvl8.reason).toBe('standard');
+
+      // No Nível 8 (tempo limite 8s), responder em 9.0s deve ser TIMEOUT
+      const resTimeoutLvl8 = calculateBossDamage(true, 9.0, undefined, 0, 8, 2.4);
+      expect(resTimeoutLvl8.damage).toBe(0);
+      expect(resTimeoutLvl8.shieldDamage).toBe(1);
+      expect(resTimeoutLvl8.reason).toBe('timeout');
     });
   });
 });
