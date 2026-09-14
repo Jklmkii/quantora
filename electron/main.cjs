@@ -69,6 +69,15 @@ function createWindow() {
     return { action: 'deny' };
   });
 
+  // Prevent navigation to external sites inside the app window
+  win.webContents.on('will-navigate', (event, url) => {
+    // Only allow local app navigation
+    if (isDev && url.startsWith('http://localhost:5173')) return;
+    if (!isDev && (url.startsWith('file://') || url.startsWith('blob:'))) return;
+
+    event.preventDefault();
+  });
+
   return win;
 }
 
