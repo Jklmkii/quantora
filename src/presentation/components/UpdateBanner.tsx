@@ -40,6 +40,7 @@ export const UpdateBanner: React.FC = () => {
           onClick={() => setIsDismissed(true)}
           className="text-white/80 hover:text-white"
           title="Fechar"
+          aria-label="Fechar banner de atualização"
         >
           <X size={14} />
         </button>
@@ -66,6 +67,8 @@ export const UpdateBanner: React.FC = () => {
             type="button"
             onClick={() => setIsDismissed(true)}
             className="text-white/80 hover:text-white ml-2"
+            title="Fechar"
+            aria-label="Fechar banner de atualização"
           >
             <X size={14} />
           </button>
