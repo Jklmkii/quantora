@@ -96,6 +96,14 @@ O Antigravity **deve** enviar apenas: a descrição do problema observável (sin
 causa), o arquivo/área provável (sem linha exata), e o comportamento esperado depois da
 correção (o "o quê", não o "como").
 
+### 7-A. Verificação Rápida de Existência (Sanidade Pré-Delegação)
+Antes de delegar qualquer item vindo de um documento de sugestões/backlog (não de um bug já
+confirmado em produção), rodar verificação rápida de existência (grep/leitura pontual) do
+sintoma alegado. Isso **não é pré-resolver** — pré-resolver é escrever a solução; verificar é
+confirmar que o problema é real antes de gastar cota da Jules nele. Se a funcionalidade já
+estiver implementada ou a premissa da sugestão for factualmente incorreta no código atual,
+documentar o fato, informar o usuário e não despachar a tarefa.
+
 ### Teste de Conformidade (aplica-se a toda a regra, não só à seção 7)
 Antes de agir, o Antigravity se pergunta: *"esta ação está de fato poupando meus recursos, ou
 só cumprindo a forma da regra sem entregar a economia que ela existe pra dar?"* Se a resposta
