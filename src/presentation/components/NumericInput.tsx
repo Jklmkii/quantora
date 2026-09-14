@@ -20,7 +20,12 @@ interface NumericInputProps {
  * Ensures numeric keypad on iOS/Android, supports negative sign,
  * prevents zoom via touch-action, guarantees >= 44px touch target.
  */
-export const NumericInput: React.FC<NumericInputProps> = ({
+/**
+ * 💡 What: Wrapped NumericInput with React.memo()
+ * 🎯 Why: This component is rendered multiple times in forms (like PhysicsModule).
+ * 📊 Impact: Prevents unnecessary re-renders of sibling inputs when one input's value changes, provided the parent passes stable onChange handlers.
+ */
+export const NumericInput: React.FC<NumericInputProps> = React.memo(({
   id,
   label,
   value,
@@ -130,4 +135,6 @@ export const NumericInput: React.FC<NumericInputProps> = ({
       )}
     </div>
   );
-};
+});
+
+NumericInput.displayName = 'NumericInput';
