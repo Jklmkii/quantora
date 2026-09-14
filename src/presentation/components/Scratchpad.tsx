@@ -417,6 +417,8 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
                     : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 }`}
                 title="Caneta livre"
+                aria-label="Caneta livre"
+                aria-pressed={tool === 'pen'}
               >
                 <Pencil className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Caneta</span>
@@ -430,6 +432,8 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
                     : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 }`}
                 title="Borracha (apagar traços)"
+                aria-label="Borracha"
+                aria-pressed={tool === 'eraser'}
               >
                 <Eraser className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Borracha</span>
@@ -444,6 +448,8 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
               type="button"
               onClick={() => setIsPaletteCollapsed((prev) => !prev)}
               title={isPaletteCollapsed ? "Expandir paleta de cores e traço" : "Recolher paleta de cores e traço"}
+              aria-label={isPaletteCollapsed ? "Expandir paleta de cores e traço" : "Recolher paleta de cores e traço"}
+              aria-expanded={!isPaletteCollapsed}
               className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition-colors"
             >
               <div
@@ -474,6 +480,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
                         }}
                         title={`Cor: ${c.name}`}
                         aria-label={`Cor ${c.name}`}
+                        aria-pressed={isSelected}
                         className={`w-5 h-5 md:w-6 md:h-6 rounded-full ${c.bgClass} transition-transform ${
                           isSelected
                             ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900 scale-110'
@@ -492,6 +499,8 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
                       type="button"
                       onClick={() => setStrokeWidth(opt.width)}
                       title={`Espessura ${opt.label} (${opt.width}px)`}
+                      aria-label={`Espessura ${opt.label} (${opt.width}px)`}
+                      aria-pressed={strokeWidth === opt.width}
                       className={`px-1.5 py-1 rounded flex items-center justify-center transition-colors ${
                         strokeWidth === opt.width
                           ? 'bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/50'
@@ -514,6 +523,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
               onClick={handleUndo}
               disabled={strokesCount === 0 && !canRestoreClear}
               title="Desfazer (Ctrl+Z)"
+              aria-label="Desfazer (Ctrl+Z)"
               className="p-1.5 md:p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               <RotateCcw className="w-4 h-4 md:w-4.5 md:h-4.5" />
@@ -525,6 +535,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
               onClick={handleClear}
               disabled={strokesCount === 0}
               title="Limpar lousa inteira"
+              aria-label="Limpar lousa inteira"
               className="p-1.5 md:p-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               <Trash2 className="w-4 h-4 md:w-4.5 md:h-4.5" />
@@ -535,6 +546,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
               type="button"
               onClick={cycleBackgroundMode}
               title={`Estilo de Fundo: ${bgMode === 'translucent' ? 'Translúcido' : bgMode === 'chalkboard' ? 'Escuro' : 'Grade'}`}
+              aria-label={`Alterar estilo de fundo. Atual: ${bgMode === 'translucent' ? 'Translúcido' : bgMode === 'chalkboard' ? 'Escuro' : 'Grade'}`}
               className="p-1.5 md:p-2 rounded-lg text-slate-300 hover:text-amber-400 hover:bg-slate-800 transition-colors"
             >
               {bgMode === 'grid' ? (
@@ -551,6 +563,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
               type="button"
               onClick={handleClose}
               title="Fechar / Minimizar lousa (mantém o rascunho salvo)"
+              aria-label="Fechar ou Minimizar lousa"
               className="p-1.5 md:p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
               <X className="w-4 h-4 md:w-5 md:h-5" />
