@@ -2,6 +2,23 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.23] — 25 Conquistas, Novos Troféus e Fases Dinâmicas no Boss Battle (2026-09-15)
+
+### 🏆 Gamificação & Conquistas
+- **Expansão do Catálogo para 25 Conquistas:** Adicionados 9 novos troféus cobrindo Física Clássica (`physics_master`), Repetição Espaçada / Caderno de Erros (`spaced_box5`, `spaced_clean`), progressão avançada no Boss Battle (`boss_level_5`, `boss_level_10`), Forja de Dano (`forge_max`), hábitos de consistência (`streak_30`, `daily_veteran`) e easter egg de habilidade (`rare_67`).
+
+### ⚔️ Batalha de Chefe & Combate Dinâmico
+- **Fases Dinâmicas Internas (`bossEngine.ts`, `BossBattle.tsx`):**
+  - Transição de fase disparada em $\le 50\%$ de HP restante do chefe (`getBossPhase`).
+  - Na Fase 2 (Enfurecido), o tempo por rodada é reduzido em ~20% e a janela de golpe crítico é recalculada proporcionalmente.
+  - HUD atualizado com banner animado `FASE 2 ATIVA! O CHEFE ESTÁ ENFURECIDO (-20% TEMPO POR RODADA)!`, selo dinâmico `FASE 2 • ENFURECIDO` e efeitos flamejantes no avatar do Boss.
+
+### 🧪 Qualidade, Testes & Code Health
+- **Suíte Vitest:** 421 testes passando em 24 suítes (100% verde), com novos testes de fases no Boss Battle e cobertura exaustiva das 25 conquistas.
+- **Oxlint:** 0 erros e 0 avisos em 90 arquivos analisados.
+
+---
+
 ## [1.2.22] — Expansão de Testes Unitários de Física & Deduplicação de Utilitários (2026-09-13)
 
 ### 🧪 Qualidade, Testes & Code Health (Automação Jules AI)

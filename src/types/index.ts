@@ -195,6 +195,9 @@ export interface UserProfileStats {
   highestBossLevelCleared?: number;
   bossCoins?: number;
   damageUpgradeLevel?: number;
+  spacedBox5Count?: number;
+  spacedCleanCount?: number;
+  rare67Hits?: number;
 }
 
 export interface DailyChallengeState {

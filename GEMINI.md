@@ -144,6 +144,25 @@ Antes de qualquer automação ou agente rodar dentro de um **New Worktree** isol
 - **Problema:** O arquivo `.antigravity/jules-quota.json` é gitignorado (`.gitignore`). Ao criar uma pasta temporária/worktree, esse arquivo não é clonado nem sincronizado pelo git, fazendo com que o agente no worktree enxergue um contador zerado ou inexistente, violando a checagem de cota da Seção 2.
 - **Diretriz Mandatória:** Qualquer script ou processo que consulte ou incremente a cota da Jules DEVE sempre resolver o caminho absoluto do repositório raiz principal (`c:\Users\lucas\OneDrive\Área de Trabalho\code\quantora\.antigravity\jules-quota.json`) ou utilizar variável de ambiente/link simbólico apontando para a fonte canônica, blindando o contador de cota diária contra duplicação ou reset acidental.
 
+## 13. Resposta às Sessões Diárias Agendadas da Jules (Palette, Sentinel, Bolt)
+Existem 3 agentes de habilidade agendados diariamente no painel da Jules às 21:00 GMT-3: **Palette** 🎨 (UX/acessibilidade), **Sentinel** 🛡️ (segurança/vulnerabilidades) e **Bolt** ⚡ (performance).
+
+### 13.1. Contabilização da Cota Diária
+- As 3 sessões agendadas consomem cota da Jules **todo dia** automaticamente. O contador local (`.antigravity/jules-quota.json`, Seção 2) deve somar essas 3 execuções fixas na contagem de uso diário, reduzindo a cota disponível para delegações ad-hoc para ~97/dia.
+
+### 13.2. Rotina de Revisão Pós-Execução
+- Após as 21:00 (com margem de conclusão até ~21:30), o Antigravity verifica as 3 sessões para identificar perguntas pendentes, solicitações de aprovação ou PRs concluídos.
+
+### 13.3. Tomada de Decisão em Perguntas da Jules
+Quando uma das sessões pausar solicitando aprovação:
+- **Baixa ou Média** → O Antigravity classifica pela matriz da Seção 1 e pode decidir de forma autônoma (aprovar ou rejeitar, com justificativa concisa no Vault).
+- **Média-Alta ou Alta** → O Antigravity **nunca decide sozinho** — registra como `⏳ AGUARDANDO DECISÃO DO USUÁRIO` no `Historico de Prompts & Demandas.md`, notifica o usuário e só prossegue após consentimento explícito.
+  - **Atenção especial à Sentinel (Segurança):** Mudanças de segurança são tipicamente de complexidade Alta; portanto, aprovações da Sentinel devem ser escaladas compulsoriamente ao usuário por padrão para evitar merges acidentais de mudanças sensíveis.
+
+### 13.4. Auditoria Pré-Decisão & Registro Documental
+- Antes de aprovar qualquer continuidade, o Antigravity deve ler a proposta real e o diff prévio da Jules (reaplicando a Seção 6).
+- Cada decisão tomada (aprovada, rejeitada ou escalada) deve ser registrada formalmente no `Historico de Prompts & Demandas.md`.
+
 ## Registro no Obsidian
 Referenciar este arquivo em `Sistemas & Integracoes/Antigravity & Cotas de IA.md` — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe

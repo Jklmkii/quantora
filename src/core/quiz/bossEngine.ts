@@ -67,18 +67,30 @@ export function getAllowedTracksForLevel(level: number = 1): BossQuestionCategor
 }
 
 /**
- * Computes round time limit for a given boss level (15s on level 1, decreasing smoothly to 8s on level 8+).
+ * Computes boss phase (Phase 1: > 50% HP, Phase 2 Enraged: <= 50% HP).
  */
-export function getRoundTimeLimitForLevel(level: number = 1): number {
+export function getBossPhase(currentHp: number, maxHp: number): 1 | 2 {
+  return currentHp <= maxHp * 0.5 ? 2 : 1;
+}
+
+/**
+ * Computes round time limit for a given boss level (15s on level 1, decreasing smoothly to 8s on level 8+).
+ * In Phase 2 (Enraged, <= 50% HP), round time is reduced by ~20%.
+ */
+export function getRoundTimeLimitForLevel(level: number = 1, phase: 1 | 2 = 1): number {
   const safeLevel = Math.max(1, Math.round(level));
-  return Math.max(8, 16 - safeLevel);
+  const baseTime = Math.max(8, 16 - safeLevel);
+  if (phase === 2) {
+    return Math.max(6, Math.round(baseTime * 0.8));
+  }
+  return baseTime;
 }
 
 /**
  * Computes critical hit time threshold proportional to the round time (~30% of time limit, min 2.0s).
  */
-export function getCriticalTimeThresholdForLevel(level: number = 1): number {
-  const timeLimit = getRoundTimeLimitForLevel(level);
+export function getCriticalTimeThresholdForLevel(level: number = 1, phase: 1 | 2 = 1): number {
+  const timeLimit = getRoundTimeLimitForLevel(level, phase);
   return Math.max(2.0, Math.round(timeLimit * 0.3 * 10) / 10);
 }
 
@@ -126,6 +138,7 @@ export interface BossRoundResult {
 
 export interface BossBattleState {
   level: number;
+  phase: 1 | 2;
   bossHp: number;
   bossMaxHp: number;
   damageUpgradeLevel: number;
@@ -303,12 +316,12 @@ function generateOptions(correctAnswer: number, candidateDivergences: number[]):
  * Thematic Question Generator for Boss Battle.
  * Dynamically scales category tracks, operand ranges, and round timers based on the boss level.
  */
-export function generateBossQuestion(_round: number = 1, level: number = 1): BossQuestion {
+export function generateBossQuestion(_round: number = 1, level: number = 1, phase: 1 | 2 = 1): BossQuestion {
   const safeLevel = Math.max(1, Math.round(level));
   const id = `boss_q_${Date.now()}_${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2, 7)}`;
   const allowedCategories = getAllowedTracksForLevel(safeLevel);
   const category = pickRandom(allowedCategories);
-  const timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel);
+  const timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel, phase);
 
   switch (category) {
     case 'equation': {
@@ -812,13 +825,14 @@ export function createInitialBossBattleState(
 
   return {
     level: safeLevel,
+    phase: 1,
     bossHp: hp,
     bossMaxHp: hp,
     damageUpgradeLevel: safeUpgrade,
     shields: PLAYER_INITIAL_SHIELDS,
     maxShields: PLAYER_INITIAL_SHIELDS,
     round: 1,
-    currentQuestion: generateBossQuestion(1, safeLevel),
+    currentQuestion: generateBossQuestion(1, safeLevel, 1),
     history: [],
     status: 'fighting',
     totalDamageDealt: 0,
@@ -848,10 +862,11 @@ export function processRound(
   }
 
   const safeLevel = state.level ?? 1;
+  const currentPhase = state.phase ?? getBossPhase(state.bossHp, state.bossMaxHp);
   const upgradeLevel = damageUpgradeLevel ?? state.damageUpgradeLevel ?? 0;
   const isCorrect = checkAnswerCorrectness(userAnswer, state.currentQuestion.correctAnswer);
-  const timeLimit = state.currentQuestion.timeLimitSeconds ?? getRoundTimeLimitForLevel(safeLevel);
-  const criticalThreshold = getCriticalTimeThresholdForLevel(safeLevel);
+  const timeLimit = state.currentQuestion.timeLimitSeconds ?? getRoundTimeLimitForLevel(safeLevel, currentPhase);
+  const criticalThreshold = getCriticalTimeThresholdForLevel(safeLevel, currentPhase);
   const damageResult = calculateBossDamage(
     isCorrect,
     responseTimeSeconds,
@@ -895,11 +910,13 @@ export function processRound(
     unlockedAchievements: achievements,
   };
 
-  const nextQuestion = status === 'fighting' ? generateBossQuestion(state.round + 1, safeLevel) : state.currentQuestion;
+  const nextPhase = getBossPhase(newBossHp, state.bossMaxHp);
+  const nextQuestion = status === 'fighting' ? generateBossQuestion(state.round + 1, safeLevel, nextPhase) : state.currentQuestion;
 
   const nextState: BossBattleState = {
     ...state,
     level: state.level ?? 1,
+    phase: nextPhase,
     damageUpgradeLevel: upgradeLevel,
     bossHp: newBossHp,
     shields: newShields,

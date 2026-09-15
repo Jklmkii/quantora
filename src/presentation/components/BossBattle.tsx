@@ -114,14 +114,14 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   // Player level derived from totalXp (100 XP per level, min 1)
   const playerLevel = Math.floor(totalXp / 100) + 1;
 
-  // Boss Rage phase when HP is at or below 40% of max HP
-  const isRageMode = battleState.bossHp <= battleState.bossMaxHp * 0.4 && battleState.bossHp > 0;
+  // Boss Phase 2 (Enraged) when HP is at or below 50% of max HP
+  const isRageMode = (battleState.phase === 2 || battleState.bossHp <= battleState.bossMaxHp * 0.5) && battleState.bossHp > 0;
 
   // Time calculations
   const currentLevel = battleState.level ?? 1;
   const currentRoundTimeLimit =
-    battleState.currentQuestion?.timeLimitSeconds || getRoundTimeLimitForLevel(currentLevel);
-  const currentCriticalThreshold = getCriticalTimeThresholdForLevel(currentLevel);
+    battleState.currentQuestion?.timeLimitSeconds || getRoundTimeLimitForLevel(currentLevel, battleState.phase);
+  const currentCriticalThreshold = getCriticalTimeThresholdForLevel(currentLevel, battleState.phase);
 
   const timeLeft = Math.max(0, currentRoundTimeLimit - elapsedThisRound);
   const timerPercentage = Math.max(0, Math.min(100, (timeLeft / currentRoundTimeLimit) * 100));
@@ -844,7 +844,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         {isRageMode && (
           <div className="w-full py-1.5 px-3 rounded-xl bg-red-600/20 border border-red-500/50 flex items-center justify-center gap-2 text-xs font-black text-red-300 uppercase tracking-wider animate-pulse z-10">
             <Flame size={16} className="text-red-400 fill-red-400" />
-            <span>FÚRIA MATEMÁTICA ATIVA! O CHEFE ESTÁ ENFURECIDO!</span>
+            <span>FASE 2 ATIVA! O CHEFE ESTÁ ENFURECIDO (-20% TEMPO POR RODADA)!</span>
             <Flame size={16} className="text-red-400 fill-red-400" />
           </div>
         )}
@@ -909,7 +909,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                       : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                   }`}
                 >
-                  {isRageMode ? 'Enfurecido' : `Nível ${battleState.level}`}
+                  {isRageMode ? 'FASE 2 • ENFURECIDO' : `FASE 1 • NÍVEL ${battleState.level}`}
                 </span>
               </h3>
               <p className="text-[11px] text-slate-400 font-semibold">

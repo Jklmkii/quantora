@@ -33,11 +33,11 @@ function createBlankProfile(): UserProfile {
 
 describe('Sistema de Conquistas (Achievements Catalog & Engine)', () => {
   describe('Integridade do Catálogo de Conquistas', () => {
-    it('possui exatamente 16 conquistas cadastradas', () => {
-      expect(ACHIEVEMENTS.length).toBe(16);
+    it('possui exatamente 25 conquistas cadastradas', () => {
+      expect(ACHIEVEMENTS.length).toBe(25);
     });
 
-    it('todas as 16 conquistas possuem IDs únicos e campos obrigatórios válidos', () => {
+    it('todas as 25 conquistas possuem IDs únicos e campos obrigatórios válidos', () => {
       const ids = new Set<string>();
       for (const ach of ACHIEVEMENTS) {
         expect(ach.id).toBeTruthy();
@@ -50,10 +50,10 @@ describe('Sistema de Conquistas (Achievements Catalog & Engine)', () => {
         expect(ach.xpReward).toBeGreaterThan(0);
         expect(typeof ach.condition).toBe('function');
       }
-      expect(ids.size).toBe(16);
+      expect(ids.size).toBe(25);
     });
 
-    it('distribui exatamente 4 categorias com exatamente 4 conquistas em cada uma', () => {
+    it('distribui exatamente 4 categorias com contagens corretas', () => {
       const expectedCategories: AchievementCategory[] = [
         'habilidade',
         'consistencia',
@@ -73,14 +73,14 @@ describe('Sistema de Conquistas (Achievements Catalog & Engine)', () => {
         counts[ach.category]++;
       }
 
-      expect(counts.habilidade).toBe(4);
-      expect(counts.consistencia).toBe(4);
-      expect(counts.mestria).toBe(4);
-      expect(counts.desafios).toBe(4);
+      expect(counts.habilidade).toBe(5);
+      expect(counts.consistencia).toBe(6);
+      expect(counts.mestria).toBe(7);
+      expect(counts.desafios).toBe(7);
     });
   });
 
-  describe('Avaliação Individual de Condições para as 16 Conquistas', () => {
+  describe('Avaliação Individual de Condições para as 25 Conquistas', () => {
     // Helper to find achievement
     const getAch = (id: string): AchievementDef => {
       const found = ACHIEVEMENTS.find((a) => a.id === id);
@@ -313,6 +313,102 @@ describe('Sistema de Conquistas (Achievements Catalog & Engine)', () => {
       expect(ach.condition(p)).toBe(true);
 
       p.stats.flawlessBossVictories = 3;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 17. rare_67
+    it('17. rare_67: ativa com rare67Hits >= 1', () => {
+      const ach = getAch('rare_67');
+      const p = createBlankProfile();
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.rare67Hits = 1;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 18. streak_30
+    it('18. streak_30: ativa com streakDays >= 30', () => {
+      const ach = getAch('streak_30');
+      const p = createBlankProfile();
+      p.streakDays = 29;
+      expect(ach.condition(p)).toBe(false);
+
+      p.streakDays = 30;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 19. daily_veteran
+    it('19. daily_veteran: ativa com dailyChallengesCompleted >= 20', () => {
+      const ach = getAch('daily_veteran');
+      const p = createBlankProfile();
+      p.stats.dailyChallengesCompleted = 19;
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.dailyChallengesCompleted = 20;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 20. physics_master
+    it('20. physics_master: ativa com totalPhysics >= 5', () => {
+      const ach = getAch('physics_master');
+      const p = createBlankProfile();
+      p.stats.totalPhysics = 4;
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.totalPhysics = 5;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 21. spaced_box5
+    it('21. spaced_box5: ativa com spacedBox5Count >= 1', () => {
+      const ach = getAch('spaced_box5');
+      const p = createBlankProfile();
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.spacedBox5Count = 1;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 22. spaced_clean
+    it('22. spaced_clean: ativa com spacedCleanCount >= 1', () => {
+      const ach = getAch('spaced_clean');
+      const p = createBlankProfile();
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.spacedCleanCount = 1;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 23. boss_level_5
+    it('23. boss_level_5: ativa com highestBossLevelCleared >= 5', () => {
+      const ach = getAch('boss_level_5');
+      const p = createBlankProfile();
+      p.stats.highestBossLevelCleared = 4;
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.highestBossLevelCleared = 5;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 24. boss_level_10
+    it('24. boss_level_10: ativa com highestBossLevelCleared >= 10', () => {
+      const ach = getAch('boss_level_10');
+      const p = createBlankProfile();
+      p.stats.highestBossLevelCleared = 9;
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.highestBossLevelCleared = 10;
+      expect(ach.condition(p)).toBe(true);
+    });
+
+    // 25. forge_max
+    it('25. forge_max: ativa com damageUpgradeLevel >= 5', () => {
+      const ach = getAch('forge_max');
+      const p = createBlankProfile();
+      p.stats.damageUpgradeLevel = 4;
+      expect(ach.condition(p)).toBe(false);
+
+      p.stats.damageUpgradeLevel = 5;
       expect(ach.condition(p)).toBe(true);
     });
   });

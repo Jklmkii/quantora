@@ -282,14 +282,14 @@ describe('Empirical Stress Harness: 16 Achievements, Category Distribution & Per
   });
 
   // --------------------------------------------------------------------------
-  // 2. CATEGORY DISTRIBUTION: EXACTLY 4 CATEGORIES WITH 4 ACHIEVEMENTS EACH (4x4)
+  // 2. CATEGORY DISTRIBUTION: 4 CATEGORIES (TOTAL 25 ACHIEVEMENTS)
   // --------------------------------------------------------------------------
-  describe('2. Category Distribution & Structure (4x4)', () => {
-    it('contains exactly 16 achievements in total', () => {
-      expect(ACHIEVEMENTS.length).toBe(16);
+  describe('2. Category Distribution & Structure (25 Achievements)', () => {
+    it('contains exactly 25 achievements in total', () => {
+      expect(ACHIEVEMENTS.length).toBe(25);
     });
 
-    it('has exactly 4 distinct categories, each containing exactly 4 achievements', () => {
+    it('has exactly 4 distinct categories, with correct counts and IDs', () => {
       const categories: Record<AchievementCategory, AchievementDef[]> = {
         habilidade: [],
         consistencia: [],
@@ -302,10 +302,10 @@ describe('Empirical Stress Harness: 16 Achievements, Category Distribution & Per
         categories[ach.category].push(ach);
       }
 
-      expect(categories.habilidade.length).toBe(4);
-      expect(categories.consistencia.length).toBe(4);
-      expect(categories.mestria.length).toBe(4);
-      expect(categories.desafios.length).toBe(4);
+      expect(categories.habilidade.length).toBe(5);
+      expect(categories.consistencia.length).toBe(6);
+      expect(categories.mestria.length).toBe(7);
+      expect(categories.desafios.length).toBe(7);
 
       // Verify exact assignment per category
       expect(categories.habilidade.map((a) => a.id)).toEqual([
@@ -313,24 +313,33 @@ describe('Empirical Stress Harness: 16 Achievements, Category Distribution & Per
         'quiz_starter',
         'blitz_speedster',
         'crit_master',
+        'rare_67',
       ]);
       expect(categories.consistencia.map((a) => a.id)).toEqual([
         'streak_3',
         'streak_7',
         'daily_starter',
         'daily_champion',
+        'streak_30',
+        'daily_veteran',
       ]);
       expect(categories.mestria.map((a) => a.id)).toEqual([
         'bhaskara_master',
         'rule_three_expert',
         'level_5',
         'level_10',
+        'physics_master',
+        'spaced_box5',
+        'spaced_clean',
       ]);
       expect(categories.desafios.map((a) => a.id)).toEqual([
         'survival_10',
         'scratchpad_thinker',
         'boss_slayer',
         'boss_flawless',
+        'boss_level_5',
+        'boss_level_10',
+        'forge_max',
       ]);
     });
   });

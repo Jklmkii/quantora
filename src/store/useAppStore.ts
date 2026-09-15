@@ -24,6 +24,7 @@ import {
   createItemKey,
   createInitialCard,
   processCardAnswer,
+  getDueCards,
 } from '../core/quiz/spacedRepetition';
 import {
   coinsForLevel,
@@ -434,17 +435,33 @@ export const useAppStore = create<AppState>()(
           const prevProf = state.profile || DEFAULT_PROFILE;
           const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
 
+          const candidateProfile: UserProfile = {
+            ...prevProf,
+            stats: {
+              ...prevStats,
+              bossCoins: nextCoins,
+              damageUpgradeLevel: nextUpgradeLevel,
+            },
+          };
+
+          const newlyUnlockedIds = checkNewAchievements(candidateProfile);
+          const newlyUnlockedDefs = newlyUnlockedIds
+            .map((id) => ACHIEVEMENTS.find((a) => a.id === id))
+            .filter((a): a is AchievementDef => Boolean(a));
+          let bonusXp = 0;
+          for (const def of newlyUnlockedDefs) {
+            bonusXp += def.xpReward || 0;
+          }
+
           return {
             bossCoins: nextCoins,
             damageUpgradeLevel: nextUpgradeLevel,
             profile: {
-              ...prevProf,
-              stats: {
-                ...prevStats,
-                bossCoins: nextCoins,
-                damageUpgradeLevel: nextUpgradeLevel,
-              },
+              ...candidateProfile,
+              totalXp: (candidateProfile.totalXp || 0) + bonusXp,
+              unlockedAchievements: [...new Set([...(prevProf.unlockedAchievements || []), ...newlyUnlockedIds])],
             },
+            toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
           };
         });
         return purchased;
@@ -534,9 +551,11 @@ export const useAppStore = create<AppState>()(
 
           const earned = correct ? Math.max(10, xpEarned || 10) : 0;
           const newTotalXp = (prevProf.totalXp || 0) + earned;
+          const has67 = countNumber === 67 || xpEarned === 67;
           const newStats = {
             ...prevStats,
             totalQuizCorrect: (prevStats.totalQuizCorrect || 0) + (correct ? 1 : 0),
+            rare67Hits: (prevStats.rare67Hits || 0) + (has67 ? 1 : 0),
             bestSurvivalRecord:
               track === 'sobrevivencia'
                 ? Math.max(prevStats.bestSurvivalRecord || 0, countNumber)
@@ -665,11 +684,46 @@ export const useAppStore = create<AppState>()(
             updatedCards[key] = newCard;
           }
 
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+
+          const now = Date.now();
+          const dueAfter = getDueCards(updatedCards, currentGlobal, now);
+          const isCleanSlate = Boolean(existingCard) && dueAfter.length === 0;
+
+          const newStats = {
+            ...prevStats,
+            spacedBox5Count: (prevStats.spacedBox5Count || 0) + (graduated ? 1 : 0),
+            spacedCleanCount: (prevStats.spacedCleanCount || 0) + (isCleanSlate ? 1 : 0),
+          };
+
+          const newTotalXp = (prevProf.totalXp || 0) + resultXp;
+          const candidateProfile: UserProfile = {
+            ...prevProf,
+            totalXp: newTotalXp,
+            stats: newStats,
+          };
+
+          const newlyUnlockedIds = checkNewAchievements(candidateProfile);
+          const newlyUnlockedDefs = newlyUnlockedIds
+            .map((id) => ACHIEVEMENTS.find((a) => a.id === id))
+            .filter((a): a is AchievementDef => Boolean(a));
+          let bonusXp = 0;
+          for (const def of newlyUnlockedDefs) {
+            bonusXp += def.xpReward || 0;
+          }
+
           return {
             spacedRepetition: {
               cards: updatedCards,
               globalQuestionsAnswered: currentGlobal,
             },
+            profile: {
+              ...candidateProfile,
+              totalXp: newTotalXp + bonusXp,
+              unlockedAchievements: [...new Set([...(prevProf.unlockedAchievements || []), ...newlyUnlockedIds])],
+            },
+            toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
           };
         });
 
@@ -725,11 +779,19 @@ export const useAppStore = create<AppState>()(
           // Gamification: grant 25 XP for performing calculations with step-by-step
           const prevProf = state.profile || DEFAULT_PROFILE;
           const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          const isPhysics = type === 'physics';
+          const has67 =
+            /\b67(\.0+)?\b/.test(summary) ||
+            /\b67(\.0+)?\b/.test(title) ||
+            (details ? /\b67(\.0+)?\b/.test(details) : false);
+
           const newStats = {
             ...prevStats,
             totalCalculations: (prevStats.totalCalculations || 0) + 1,
             totalBhaskara: (prevStats.totalBhaskara || 0) + (type === 'bhaskara' ? 1 : 0),
             totalRegraDeTres: (prevStats.totalRegraDeTres || 0) + (type.startsWith('regra') ? 1 : 0),
+            totalPhysics: (prevStats.totalPhysics || 0) + (isPhysics ? 1 : 0),
+            rare67Hits: (prevStats.rare67Hits || 0) + (has67 ? 1 : 0),
           };
           const newTotalXp = (prevProf.totalXp || 0) + 25;
           const candidateProfile: UserProfile = {

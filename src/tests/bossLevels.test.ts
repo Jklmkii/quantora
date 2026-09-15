@@ -17,6 +17,7 @@ import {
   getRoundTimeLimitForLevel,
   getCriticalTimeThresholdForLevel,
   generateBossQuestion,
+  getBossPhase,
 } from '../core/quiz/bossEngine';
 import { useAppStore } from '../store/useAppStore';
 
@@ -271,6 +272,61 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       expect(resTimeoutLvl8.damage).toBe(0);
       expect(resTimeoutLvl8.shieldDamage).toBe(1);
       expect(resTimeoutLvl8.reason).toBe('timeout');
+    });
+  });
+
+  describe('Fases Internas da Luta do Chefe (Fase 1 vs. Fase 2 Enfurecido)', () => {
+    it('determina a fase com base no limiar exato de 50% de HP (getBossPhase)', () => {
+      // 100 HP max: > 50 HP é Fase 1, <= 50 HP é Fase 2
+      expect(getBossPhase(100, 100)).toBe(1);
+      expect(getBossPhase(51, 100)).toBe(1);
+      expect(getBossPhase(50, 100)).toBe(2);
+      expect(getBossPhase(49, 100)).toBe(2);
+      expect(getBossPhase(0, 100)).toBe(2);
+
+      // Nível 2 (135 HP max): 50% = 67.5
+      expect(getBossPhase(68, 135)).toBe(1);
+      expect(getBossPhase(67, 135)).toBe(2);
+    });
+
+    it('reduz o tempo de rodada em ~20% na Fase 2 (Enfurecido)', () => {
+      // Nível 1: base = 15s -> Fase 2 = round(15 * 0.8) = 12s
+      expect(getRoundTimeLimitForLevel(1, 1)).toBe(15);
+      expect(getRoundTimeLimitForLevel(1, 2)).toBe(12);
+
+      // Nível 8: base = 8s -> Fase 2 = round(8 * 0.8) = 6s
+      expect(getRoundTimeLimitForLevel(8, 1)).toBe(8);
+      expect(getRoundTimeLimitForLevel(8, 2)).toBe(6);
+    });
+
+    it('recalcula a janela crítica proporcionalmente ao tempo reduzido da Fase 2', () => {
+      // Nível 1: Fase 1 (15s) -> 4.5s; Fase 2 (12s) -> round(12 * 0.3 * 10)/10 = 3.6s
+      expect(getCriticalTimeThresholdForLevel(1, 1)).toBe(4.5);
+      expect(getCriticalTimeThresholdForLevel(1, 2)).toBe(3.6);
+
+      // Nível 8: Fase 1 (8s) -> 2.4s; Fase 2 (6s) -> round(6 * 0.3 * 10)/10 = 2.0s (ou min 2.0s)
+      expect(getCriticalTimeThresholdForLevel(8, 1)).toBe(2.4);
+      expect(getCriticalTimeThresholdForLevel(8, 2)).toBe(2.0);
+    });
+
+    it('inicia o combate na Fase 1 e transiciona para Fase 2 quando o HP cai a <= 50%', () => {
+      const state = createInitialBossBattleState(1, 0);
+      expect(state.phase).toBe(1);
+      expect(state.bossHp).toBe(100);
+      expect(state.currentQuestion.timeLimitSeconds).toBe(15);
+
+      // Golpe 1: Causa 30 de dano crítico -> HP vai para 70 (> 50% => Fase 1)
+      const r1 = processRound(state, state.currentQuestion.correctAnswer, 1.0, 30);
+      expect(r1.nextState.bossHp).toBe(70);
+      expect(r1.nextState.phase).toBe(1);
+      expect(r1.nextState.currentQuestion.timeLimitSeconds).toBe(15);
+
+      // Golpe 2: Causa 30 de dano crítico -> HP vai para 40 (<= 50% => Fase 2 Enfurecido)
+      const r2 = processRound(r1.nextState, r1.nextState.currentQuestion.correctAnswer, 1.0, 30);
+      expect(r2.nextState.bossHp).toBe(40);
+      expect(r2.nextState.phase).toBe(2);
+      // Próxima pergunta deve ter timer da Fase 2 (12s no Nível 1)
+      expect(r2.nextState.currentQuestion.timeLimitSeconds).toBe(12);
     });
   });
 });
