@@ -133,6 +133,17 @@ for a segunda, a ação está errada mesmo que tecnicamente siga os passos descr
   2. O Antigravity **DEVE fatiar o lote**: isolar os scripts de complexidade Baixa ou Média e despachá-los imediatamente para a Jules via API.
   3. **Concorrência de Arquivos no Lote:** Caso dois scripts toquem o mesmo arquivo (ex: um altera classes visuais e outro altera lógica no mesmo componente), a execução DEVE ser **sequencial**: delegar o script Baixo/Médio para a Jules primeiro via API, aguardar a conclusão e merge do PR, atualizar o repositório local (`git pull`) e só então o Antigravity assume a tarefa de maior complexidade. Agrupar as tarefas para executar localmente sob pretexto de evitar a espera pelo arquivo comum é considerado bypass proibido de tokens.
 
+## 11. Cota Semanal do Próprio Antigravity e Preferência por Hooks Reativos
+Até agora o `GEMINI.md` só rastreia a cota diária da **Jules** (100/dia). É mandatório reconhecer que o **Antigravity também tem cota própria (semanal)**, e que multiplicar Tarefas Agendadas nativas consome esse recurso mesmo sem gerar nenhuma sessão da Jules.
+- Antes de adicionar uma nova Tarefa Agendada ou Hook recorrente, considerar o custo acumulado semanal, não só o custo de uma execução isolada.
+- **Preferir Hooks (reativos)** — que só disparam quando há evento real — a **Tarefas Agendadas de verificação frequente (proativas)** — que rodam periodicamente mesmo sem nada ter mudado — sempre que o caso de uso permitir.
+- Exemplo prático: a reação a um PR mergeado da Jules deve ser implementada via Hook de ciclo de vida (ou webhooks de evento), e não por um cron que faça polling constante a cada poucos minutos, preservando integralmente os tokens do Antigravity.
+
+## 12. Blindagem de Worktree para Persistência de Cota (jules-quota.json)
+Antes de qualquer automação ou agente rodar dentro de um **New Worktree** isolado (ou branches clonadas):
+- **Problema:** O arquivo `.antigravity/jules-quota.json` é gitignorado (`.gitignore`). Ao criar uma pasta temporária/worktree, esse arquivo não é clonado nem sincronizado pelo git, fazendo com que o agente no worktree enxergue um contador zerado ou inexistente, violando a checagem de cota da Seção 2.
+- **Diretriz Mandatória:** Qualquer script ou processo que consulte ou incremente a cota da Jules DEVE sempre resolver o caminho absoluto do repositório raiz principal (`c:\Users\lucas\OneDrive\Área de Trabalho\code\quantora\.antigravity\jules-quota.json`) ou utilizar variável de ambiente/link simbólico apontando para a fonte canônica, blindando o contador de cota diária contra duplicação ou reset acidental.
+
 ## Registro no Obsidian
 Referenciar este arquivo em `Sistemas & Integracoes/Antigravity & Cotas de IA.md` — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe
