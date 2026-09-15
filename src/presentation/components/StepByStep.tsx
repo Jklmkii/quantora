@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { ChevronDown, ChevronUp, Copy, Check, Share2 } from 'lucide-react';
 
 interface StepByStepProps {
@@ -14,6 +14,7 @@ export const StepByStep: React.FC<StepByStepProps> = ({
   steps,
   summaryText,
 }) => {
+  const contentId = useId();
   const [isOpen, setIsOpen] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -52,6 +53,8 @@ export const StepByStep: React.FC<StepByStepProps> = ({
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2.5 text-left font-semibold text-slate-800 dark:text-slate-200 touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+          aria-expanded={isOpen}
+          aria-controls={contentId}
         >
           <span className="p-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
             {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -96,7 +99,7 @@ export const StepByStep: React.FC<StepByStepProps> = ({
 
       {/* Body */}
       {isOpen && (
-        <div className="p-4 md:p-5 flex flex-col gap-3 font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+        <div id={contentId} className="p-4 md:p-5 flex flex-col gap-3 font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300">
           {steps.map((step, idx) => {
             // Render markdown-like bolding for readability
             const formatted = step.split('\n').map((line, lIdx) => {
