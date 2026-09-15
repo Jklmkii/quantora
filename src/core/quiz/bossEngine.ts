@@ -305,7 +305,7 @@ function generateOptions(correctAnswer: number, candidateDivergences: number[]):
  */
 export function generateBossQuestion(_round: number = 1, level: number = 1): BossQuestion {
   const safeLevel = Math.max(1, Math.round(level));
-  const id = `boss_q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const id = `boss_q_${Date.now()}_${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2, 7)}`;
   const allowedCategories = getAllowedTracksForLevel(safeLevel);
   const category = pickRandom(allowedCategories);
   const timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel);

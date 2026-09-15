@@ -124,7 +124,7 @@ export function generateQuizQuestion(
     track = trackSelector;
   }
 
-  const id = `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const id = `q_${Date.now()}_${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2, 7)}`;
   const totalGoal = 200;
 
   switch (track) {
