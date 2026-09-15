@@ -9,7 +9,14 @@ interface StepByStepProps {
 
 const BOLD_REGEX = /(\*\*.*?\*\*)/g;
 
-export const StepByStep: React.FC<StepByStepProps> = ({
+/**
+ * ⚡ Bolt: Performance Optimization
+ * 💡 What: Wrapped StepByStep with React.memo()
+ * 🎯 Why: This component renders a list of formatted steps with complex regex parsing and doesn't need to re-render when parent state (like text inputs in BhaskaraModule or PhysicsModule) changes, as long as the computed results are structurally equal.
+ * 📊 Impact: Prevents expensive re-evaluation and regex parsing of step strings on every keystroke in parent modules.
+ * 🔬 Measurement: Observe React DevTools Profiler while typing in the Bhaskara text parser - StepByStep will no longer re-render.
+ */
+export const StepByStep: React.FC<StepByStepProps> = React.memo(({
   title = 'Passo a Passo da Resolução',
   steps,
   summaryText,
@@ -131,4 +138,4 @@ export const StepByStep: React.FC<StepByStepProps> = ({
       )}
     </div>
   );
-};
+});
