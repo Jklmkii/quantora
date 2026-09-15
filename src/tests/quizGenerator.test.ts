@@ -16,7 +16,6 @@ describe('quizGenerator', () => {
   describe('Track: soma', () => {
     it('gerar soma de dois números para countNumber <= 20', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // for id
         .mockReturnValueOnce(0) // for a
         .mockReturnValueOnce(0.5); // for b
 
@@ -31,7 +30,6 @@ describe('quizGenerator', () => {
 
     it('gerar soma de três termos para countNumber <= 50', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0.5) // > 0.4 branch
         .mockReturnValueOnce(0) // a
         .mockReturnValueOnce(0) // b
@@ -48,7 +46,6 @@ describe('quizGenerator', () => {
   describe('Track: subtracao', () => {
     it('gerar subtracao simples para countNumber <= 20', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // b = getRandomInt(5, 40) => 5
         .mockReturnValueOnce(0); // a = b + getRandomInt(4, 50) => 5 + 4 = 9
 
@@ -60,7 +57,6 @@ describe('quizGenerator', () => {
 
     it('gerar subtracao com resultado negativo para countNumber <= 110', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // a = getRandomInt(20, 100) => 20
         .mockReturnValueOnce(0); // b = a + getRandomInt(15, 80) => 20 + 15 = 35
 
@@ -73,7 +69,6 @@ describe('quizGenerator', () => {
 
     it('gerar subtracao com decimais finitos para countNumber > 110', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // aInt = getRandomInt(30, 150) => 30
         .mockReturnValueOnce(0); // bInt = getRandomInt(10, 30-5) => 10
 
@@ -87,7 +82,6 @@ describe('quizGenerator', () => {
   describe('Track: multiplicacao', () => {
     it('gerar multiplicacao mental para countNumber <= 30', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // a = getRandomInt(2, 10) => 2
         .mockReturnValueOnce(0); // b = getRandomInt(3, 10) => 3
 
@@ -99,7 +93,6 @@ describe('quizGenerator', () => {
 
     it('gerar multiplicacao de 2 digitos por 1 digito para countNumber <= 80', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // a = getRandomInt(11, 45) => 11
         .mockReturnValueOnce(0); // b = getRandomInt(3, 9) => 3
 
@@ -113,7 +106,6 @@ describe('quizGenerator', () => {
   describe('Track: divisao', () => {
     it('gerar divisao exata para countNumber <= 30', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // b = getRandomInt(2, 9) => 2
         .mockReturnValueOnce(0); // correct = getRandomInt(2, 10) => 2
 
@@ -125,7 +117,6 @@ describe('quizGenerator', () => {
 
     it('gerar divisao com decimal finito para countNumber > 80', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // pickRandom => FINITE_DECIMAL_DIVISORS_1_DECIMAL[0] = 2
         .mockReturnValueOnce(0); // a = getRandomInt(15, 150) => 15. Wait, 15 % 2 != 0, so 15
 
@@ -139,7 +130,6 @@ describe('quizGenerator', () => {
   describe('Track: regra_simples', () => {
     it('gerar pergunta de regra de tres', () => {
       vi.mocked(Math.random)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0); // pickRandom item 0
 
       const question = generateQuizQuestion('regra_simples', 10);
@@ -152,7 +142,6 @@ describe('quizGenerator', () => {
     it('escolhe trilha baseada no countNumber <= 20', () => {
        vi.mocked(Math.random)
         .mockReturnValueOnce(0) // pickRandom -> 'soma' (index 0)
-        .mockReturnValueOnce(0.123) // id
         .mockReturnValueOnce(0) // a
         .mockReturnValueOnce(0); // b
 
@@ -163,7 +152,6 @@ describe('quizGenerator', () => {
     it('escolhe trilha baseada no countNumber > 50', () => {
       vi.mocked(Math.random)
        .mockReturnValueOnce(0.9) // pickRandom -> 'regra_simples' (last item)
-       .mockReturnValueOnce(0.123) // id
        .mockReturnValueOnce(0); // item index
 
       const question = generateQuizQuestion('sobrevivencia', 60);
