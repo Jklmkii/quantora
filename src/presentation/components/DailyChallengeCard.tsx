@@ -22,6 +22,7 @@ import {
 } from '../../core/daily/dailyEngine';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useTranslation } from '../../core/i18n/translations';
 
 interface DailyChallengeCardProps {
   className?: string;
@@ -38,15 +39,18 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
   className = '',
   onCompleted,
 }) => {
-  const { streak, lastCompletedDate, completeDailyChallenge, addXp, checkAndUpdateStreak } = useAppStore(
+  const { streak, lastCompletedDate, completeDailyChallenge, addXp, checkAndUpdateStreak, language } = useAppStore(
     useShallow((s) => ({
       streak: s.profile?.streakDays || 1,
       lastCompletedDate: (s as unknown as { dailyChallenge?: { lastCompletedDate: string | null } }).dailyChallenge?.lastCompletedDate ?? null,
       completeDailyChallenge: (s as unknown as { completeDailyChallenge?: (dateString: string, score: number) => void }).completeDailyChallenge,
       addXp: s.addXp,
       checkAndUpdateStreak: (s as unknown as { checkAndUpdateStreak?: () => void }).checkAndUpdateStreak,
+      language: s.settings.language,
     }))
   );
+
+  const t = useTranslation(language);
 
   // Today's date string in local YYYY-MM-DD
   const todayStr = useMemo(() => getTodayDateString(), []);
@@ -177,14 +181,14 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Desafio Diário
+                  {t.daily_challenge_title}
                 </h2>
                 <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300">
                   {challenge.categoryLabel}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                {challenge.title} · Edição {todayStr}
+                {challenge.title} · {t.daily_edition} {todayStr}
               </p>
             </div>
           </div>
@@ -217,10 +221,10 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                 </div>
                 <div>
                   <h3 className="text-sm sm:text-base font-black text-emerald-700 dark:text-emerald-300">
-                    Concluído hoje!
+                    {t.daily_completed_today}
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                    Você garantiu +{challenge.xpReward} XP e manteve seu foco diário ativo.
+                    {t.daily_xp_secured.replace('{xp}', challenge.xpReward.toString())}
                   </p>
                 </div>
               </div>
@@ -228,14 +232,14 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
               {/* Streak Pill */}
               <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-orange-100 dark:bg-orange-500/15 border border-orange-200 dark:border-orange-500/40 text-orange-700 dark:text-orange-400 font-bold text-xs shrink-0">
                 <Flame size={15} className="fill-orange-500 dark:fill-orange-400 text-orange-500 dark:text-orange-400" />
-                <span>Sequência: {streak} {streak === 1 ? 'dia' : 'dias'}</span>
+                <span>{t.daily_streak_label} {streak} {streak === 1 ? t.daily_streak_singular : t.daily_streak_plural}</span>
               </div>
             </div>
 
             {/* Problem & Solution Recap */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 flex flex-col gap-2">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                Problema do Dia:
+                {t.daily_problem_of_the_day}
               </span>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 {challenge.question}
@@ -257,7 +261,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                 aria-expanded={showExplanation}
                 aria-controls="explanation-content"
               >
-                <span>Passo a Passo da Resolução</span>
+                <span>{t.daily_step_by_step}</span>
                 {showExplanation ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
 
@@ -293,12 +297,12 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                 {copiedToast ? (
                   <>
                     <Check size={18} className="stroke-[3]" />
-                    <span>Copiado para a área de transferência!</span>
+                    <span>{t.daily_copied_clipboard}</span>
                   </>
                 ) : (
                   <>
                     <Share2 size={18} className="stroke-[2.5]" />
-                    <span>Compartilhar Resultado</span>
+                    <span>{t.daily_share_result}</span>
                   </>
                 )}
               </button>
@@ -370,10 +374,10 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
               <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 flex flex-col gap-2 animate-in fade-in">
                 <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-bold text-sm">
                   <XCircle size={18} />
-                  <span>Não foi dessa vez! A resposta correta era {challenge.correctAnswer}.</span>
+                  <span>{t.daily_wrong_answer} {challenge.correctAnswer}.</span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Reveja a explicação passo a passo abaixo para fixar o método matemático.
+                  {t.daily_review_explanation}
                 </p>
 
                 {/* Inline Step-by-Step for learning */}
@@ -389,7 +393,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                   className="mt-2 py-2.5 px-4 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Share2 size={14} />
-                  <span>{copiedToast ? 'Copiado!' : 'Compartilhar Desafio'}</span>
+                  <span>{copiedToast ? t.daily_copied : t.daily_share_challenge}</span>
                 </button>
               </div>
             )}
@@ -406,7 +410,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                     : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25'
                 }`}
               >
-                <span>Confirmar Resposta</span>
+                <span>{t.daily_confirm_answer}</span>
               </button>
             )}
           </div>

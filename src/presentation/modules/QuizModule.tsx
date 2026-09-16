@@ -614,7 +614,7 @@ export const QuizModule: React.FC = () => {
                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                   {/* Lógica de concordância gramatical */}
                   {dueCount > 0
-                    ? `${dueCount} ${dueCount === 1 ? 'fato matemático' : 'fatos matemáticos'} aguardando fixação`
+                    ? `${dueCount} ${dueCount === 1 ? t.spaced_due_count_singular : t.spaced_due_count_plural}`
                     : t.spaced_all_caught_up}
                 </p>
               </div>
