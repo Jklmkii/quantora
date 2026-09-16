@@ -2,6 +2,14 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.24] — Auto-Bump de Release & Sincronização Contínua (2026-09-15)
+
+### 🤖 CI/CD & Versionamento
+- **Publicação Automatizada de Release no GitHub:** Bump de versão via pipeline de CI/CD para `1.2.24` consolidando as 25 conquistas de gamificação, as fases dinâmicas no Boss Battle (Fase 2 Enfurecido) e novas ferramentas de auditoria.
+- **Artefatos Multiplataforma:** Compilação dos instaladores Electron (.exe NSIS silencioso e portátil) e APK Android com 421 testes unitários aprovados e zero avisos no Oxlint.
+
+---
+
 ## [1.2.23] — 25 Conquistas, Novos Troféus e Fases Dinâmicas no Boss Battle (2026-09-15)
 
 ### 🏆 Gamificação & Conquistas
