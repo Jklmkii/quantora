@@ -40,6 +40,14 @@ export function App() {
   const activeTab = useAppStore((s) => s.activeTab);
   const theme = useAppStore((s) => s.settings.theme);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set([activeTab]));
+
+  // Track visited tabs synchronously during render
+  if (!visitedTabs.has(activeTab)) {
+    const newSet = new Set(visitedTabs);
+    newSet.add(activeTab);
+    setVisitedTabs(newSet);
+  }
 
   // Sync theme with DOM root
   useEffect(() => {
@@ -83,11 +91,20 @@ export function App() {
       {/* Main Content Area */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-6 md:pt-8 pb-36 md:pb-16">
         <Suspense fallback={<ModuleSkeleton />}>
-          {activeTab === 'bhaskara' && <BhaskaraModule />}
-          {(activeTab === 'regra_simples' || activeTab === 'regra_composta') && (
-            <RegraDeTresModule />
-          )}
-          {activeTab === 'physics' && <PhysicsModule />}
+          {/* Static Modules (Keep mounted to preserve state) */}
+          <div style={{ display: activeTab === 'bhaskara' ? 'block' : 'none' }}>
+            {visitedTabs.has('bhaskara') && <BhaskaraModule />}
+          </div>
+
+          <div style={{ display: (activeTab === 'regra_simples' || activeTab === 'regra_composta') ? 'block' : 'none' }}>
+            {(visitedTabs.has('regra_simples') || visitedTabs.has('regra_composta')) && <RegraDeTresModule />}
+          </div>
+
+          <div style={{ display: activeTab === 'physics' ? 'block' : 'none' }}>
+            {visitedTabs.has('physics') && <PhysicsModule />}
+          </div>
+
+          {/* Dynamic Modules (Unmount to reset state) */}
           {activeTab === 'quiz' && <QuizModule />}
           {activeTab === 'history' && <HistoryModule />}
         </Suspense>
