@@ -94,6 +94,7 @@ export interface AppSettings {
   hasCompletedOnboarding: boolean;
   soundEnabled: boolean;
   soundVolume: number;
+  unlockAllFeatures?: boolean;
 }
 
 export type QuizDifficultyMode = 'tranquilo' | 'velocidade' | 'brutal';
@@ -257,6 +258,9 @@ declare global {
       checkForUpdates?: () => Promise<{ success: boolean; updateInfo?: unknown; error?: string; message?: string }>;
       installUpdate?: () => Promise<{ success: boolean }>;
       onUpdateStatus?: (callback: (status: UpdaterStatus) => void) => () => void;
+      closeTrayWidget?: () => void;
+      openMainWindow?: () => void;
+      onTrayNewQuestion?: (callback: () => void) => () => void;
     };
   }
 }

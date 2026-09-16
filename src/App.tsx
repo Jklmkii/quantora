@@ -5,6 +5,7 @@ import { SettingsModal } from './presentation/components/SettingsModal';
 import { OnboardingModal } from './presentation/components/OnboardingModal';
 import { UpdateBanner } from './presentation/components/UpdateBanner';
 import { AchievementToast } from './presentation/components/AchievementToast';
+import { FeatureUnlockToast } from './presentation/components/FeatureUnlockToast';
 import { Scratchpad } from './presentation/components/Scratchpad';
 
 // Code-splitting: Lazy load content modules on demand
@@ -81,6 +82,9 @@ export function App() {
 
       {/* Achievement Toast with Confetti */}
       <AchievementToast />
+
+      {/* Feature Unlock Toast with Confetti */}
+      <FeatureUnlockToast />
 
       {/* Floating Scratchpad Board */}
       <Scratchpad />

@@ -38,6 +38,7 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
+      "build/icon.ico",
       "package.json"
     ],
     "win": {

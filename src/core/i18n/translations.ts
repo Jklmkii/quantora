@@ -302,6 +302,12 @@ export const translations = {
     physics_err_height_negative: 'A altura inicial não pode ser negativa.',
     physics_err_torricelli_imaginary: 'Velocidade resultante impossível com os dados fornecidos (radicando negativo no Torricelli).',
     physics_err_division_by_zero: 'Divisão por zero no cálculo físico.',
+
+    // Onboarding & Progressive Unlocks
+    settings_unlock_all: 'Desbloquear Todos os Recursos',
+    settings_unlock_all_desc: 'Libera todas as calculadoras e modos de jogo imediatamente, ignorando requisitos de nível.',
+    locked_level_badge: '🔒 Nv. {level}',
+    locked_feature_toast: 'Recurso bloqueado! Disponível a partir do Nível {level}.',
   },
   en: {
     // Navbar
@@ -604,6 +610,12 @@ export const translations = {
     physics_err_height_negative: 'Initial height cannot be negative.',
     physics_err_torricelli_imaginary: 'Impossible resultant velocity for given parameters (negative radicand in Torricelli).',
     physics_err_division_by_zero: 'Division by zero in physics calculation.',
+
+    // Onboarding & Progressive Unlocks
+    settings_unlock_all: 'Unlock All Features',
+    settings_unlock_all_desc: 'Unlocks all calculators and game modes immediately, bypassing level requirements.',
+    locked_level_badge: '🔒 Lvl {level}',
+    locked_feature_toast: 'Feature locked! Available from Level {level}.',
   },
 } as const;
 

@@ -2,10 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { TrayPracticeWidget } from './presentation/components/TrayPracticeWidget'
+
+const isTrayPractice = window.location.hash === '#tray-practice';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {isTrayPractice ? <TrayPracticeWidget /> : <App />}
   </StrictMode>,
 )
 

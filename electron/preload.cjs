@@ -21,4 +21,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('updater:status', subscription);
     return () => ipcRenderer.removeListener('updater:status', subscription);
   },
+
+  closeTrayWidget: () => {
+    ipcRenderer.send('tray:close');
+  },
+
+  openMainWindow: () => {
+    ipcRenderer.send('tray:open-main');
+  },
+
+  onTrayNewQuestion: (callback) => {
+    const subscription = () => callback();
+    ipcRenderer.on('tray:new-question', subscription);
+    return () => ipcRenderer.removeListener('tray:new-question', subscription);
+  },
 });
+

@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { X, Moon, Sun, Laptop, Trash2, Download, Upload, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, Globe, Volume2, VolumeX } from 'lucide-react';
+import { X, Moon, Sun, Laptop, Trash2, Download, Upload, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, Globe, Volume2, VolumeX, Unlock } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { DecimalPlaces, DecimalSeparator, ThemeMode, UpdaterStatus, AppLanguage } from '../../types';
@@ -346,6 +346,41 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 />
               </div>
             )}
+          </div>
+
+          {/* Progressive Onboarding Override Toggle */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 space-y-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                  <Unlock size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {t.settings_unlock_all || 'Desbloquear Todos os Recursos'}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {t.settings_unlock_all_desc || 'Pula a progressão e libera todos os modos de jogo imediatamente.'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={Boolean(settings.unlockAllFeatures)}
+                onClick={() => updateSettings({ unlockAllFeatures: !settings.unlockAllFeatures })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500/50 cursor-pointer ${
+                  settings.unlockAllFeatures ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.unlockAllFeatures ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
 
           {/* Decimal Places */}

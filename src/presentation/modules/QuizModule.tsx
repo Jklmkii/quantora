@@ -14,6 +14,7 @@ import {
   Crown,
   BookOpen,
   CheckCircle2,
+  Lock,
 } from 'lucide-react';
 import { generateQuizQuestion } from '../../core/math/quizGenerator';
 import { parseBig, formatNumberSmart } from '../../core/math/precision';
@@ -23,6 +24,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
 import { DailyChallengeCard } from '../components/DailyChallengeCard';
 import { selectNextDueCard, getDueCards } from '../../core/quiz/spacedRepetition';
+import { isFeatureUnlocked } from '../../core/gamification/onboarding';
+import { calculateLevelInfo } from '../../core/gamification/leveling';
 import { hapticMasteryBadge } from '../../core/platform/haptics';
 import { playMasteryBadge, playRare67 } from '../../core/platform/audio';
 import type { QuizDifficultyMode, QuizQuestion, QuizTrackSelector, SpacedCard } from '../../types';
@@ -42,11 +45,14 @@ export const QuizModule: React.FC = () => {
     decimalPlaces,
     decimalSeparator,
     language,
+    totalXp,
     blitzHighScore,
     highestBossLevelCleared,
     bossCoins,
     spacedRepetition,
     recordSpacedAnswer,
+    unlockedFeatures,
+    unlockAllFeatures,
   } = useAppStore(
     useShallow((s) => ({
       quizProgress: s.quizProgress,
@@ -54,11 +60,14 @@ export const QuizModule: React.FC = () => {
       decimalPlaces: s.settings.decimalPlaces,
       decimalSeparator: s.settings.decimalSeparator,
       language: s.settings.language || 'pt',
+      totalXp: s.profile?.totalXp || 0,
       blitzHighScore: s.profile?.stats?.blitzHighScore || 0,
       highestBossLevelCleared: s.profile?.stats?.highestBossLevelCleared || 0,
       bossCoins: s.profile?.stats?.bossCoins || 0,
       spacedRepetition: s.spacedRepetition,
       recordSpacedAnswer: s.recordSpacedAnswer,
+      unlockedFeatures: s.unlockedFeatures || ['survival'],
+      unlockAllFeatures: s.settings?.unlockAllFeatures ?? false,
     }))
   );
   const settings = React.useMemo(
@@ -67,8 +76,24 @@ export const QuizModule: React.FC = () => {
   );
   const t = useTranslation(language);
 
+  const userLevel = useMemo(() => calculateLevelInfo(totalXp).level, [totalXp]);
+  const isBlitzUnlocked = useMemo(
+    () => isFeatureUnlocked('blitz', userLevel, blitzHighScore, unlockedFeatures, unlockAllFeatures),
+    [userLevel, blitzHighScore, unlockedFeatures, unlockAllFeatures]
+  );
+  const isBossUnlocked = useMemo(
+    () => isFeatureUnlocked('boss_battle', userLevel, blitzHighScore, unlockedFeatures, unlockAllFeatures),
+    [userLevel, blitzHighScore, unlockedFeatures, unlockAllFeatures]
+  );
+
   // Screen View: 'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush'
   const [screen, setScreen] = useState<'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush'>('lobby');
+
+  const effectiveScreen = useMemo(() => {
+    if (screen === 'blitz' && !isBlitzUnlocked) return 'lobby';
+    if (screen === 'boss_rush' && !isBossUnlocked) return 'lobby';
+    return screen;
+  }, [screen, isBlitzUnlocked, isBossUnlocked]);
 
   // Repetição Espaçada / Prática Focada State
   const [isFocusedPractice, setIsFocusedPractice] = useState<boolean>(false);
@@ -121,13 +146,13 @@ export const QuizModule: React.FC = () => {
   // Haptic feedback no momento em que o badge de Fixação Ativa aparece
   const prevSpacedBadgeRef = useRef<boolean>(false);
   useEffect(() => {
-    const isBadgeVisible = screen === 'playing' && Boolean(currentQuestion?.isSpacedReview);
+    const isBadgeVisible = effectiveScreen === 'playing' && Boolean(currentQuestion?.isSpacedReview);
     if (isBadgeVisible && !prevSpacedBadgeRef.current) {
       hapticMasteryBadge();
       playMasteryBadge();
     }
     prevSpacedBadgeRef.current = isBadgeVisible;
-  }, [screen, currentQuestion?.id, currentQuestion?.isSpacedReview]);
+  }, [effectiveScreen, currentQuestion?.id, currentQuestion?.isSpacedReview]);
 
   // Compute total time based on difficulty and count number
   const computeTimeLimit = useCallback((mode: QuizDifficultyMode, count: number): number => {
@@ -425,7 +450,7 @@ export const QuizModule: React.FC = () => {
 
   // Keyboard Event Listener
   useEffect(() => {
-    if (screen !== 'playing') return;
+    if (effectiveScreen !== 'playing') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isAnswered) {
@@ -453,12 +478,12 @@ export const QuizModule: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [screen, isAnswered, countNumber, selectedTrack, handleConfirm, loadQuestion, handleAddDigit, handleAddDecimal, handleToggleNegative, handleBackspace]);
+  }, [effectiveScreen, isAnswered, countNumber, selectedTrack, handleConfirm, loadQuestion, handleAddDigit, handleAddDecimal, handleToggleNegative, handleBackspace]);
 
   // ==========================================
   // SCREEN: BLITZ GAME (60 Segundos)
   // ==========================================
-  if (screen === 'blitz') {
+  if (effectiveScreen === 'blitz') {
     return (
       <React.Suspense
         fallback={
@@ -478,7 +503,7 @@ export const QuizModule: React.FC = () => {
   // ==========================================
   // SCREEN: BOSS BATTLE (Boss Rush)
   // ==========================================
-  if (screen === 'boss_rush') {
+  if (effectiveScreen === 'boss_rush') {
     return (
       <React.Suspense
         fallback={
@@ -498,7 +523,7 @@ export const QuizModule: React.FC = () => {
   // ==========================================
   // SCREEN 1: LOBBY / MENU
   // ==========================================
-  if (screen === 'lobby') {
+  if (effectiveScreen === 'lobby') {
     const sobrevRecorde = quizProgress.survival?.recordCount || 0;
 
     return (
@@ -643,60 +668,114 @@ export const QuizModule: React.FC = () => {
           {/* Modo Blitz Card */}
           <button
             type="button"
-            onClick={() => setScreen('blitz')}
-            className="p-5 rounded-3xl bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 hover:from-amber-950/60 border border-amber-500/40 hover:border-amber-400 transition-all flex flex-col items-center text-center gap-2.5 group shadow-xl hover:shadow-amber-500/10 active:scale-[0.98] touch-target cursor-pointer relative overflow-hidden"
+            disabled={!isBlitzUnlocked}
+            onClick={() => isBlitzUnlocked && setScreen('blitz')}
+            className={`p-5 rounded-3xl border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
+              isBlitzUnlocked
+                ? 'bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 hover:from-amber-950/60 border-amber-500/40 hover:border-amber-400 group shadow-xl hover:shadow-amber-500/10 active:scale-[0.98] cursor-pointer'
+                : 'bg-slate-900/50 border-slate-800/80 opacity-70 cursor-not-allowed'
+            }`}
           >
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center group-hover:scale-110 transition-transform shadow-md shadow-amber-500/20">
-              <Zap size={26} className="fill-amber-400" />
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform shadow-md ${
+                isBlitzUnlocked
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 group-hover:scale-110 shadow-amber-500/20'
+                  : 'bg-slate-800 text-slate-500 border border-slate-700'
+              }`}
+            >
+              {isBlitzUnlocked ? <Zap size={26} className="fill-amber-400" /> : <Lock size={22} />}
             </div>
             <div>
-              <div className="flex items-center justify-center gap-1.5">
+              <div className="flex items-center justify-center gap-1.5 flex-wrap">
                 <h3 className="text-lg font-black text-white">Modo Blitz</h3>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  60s
-                </span>
+                {isBlitzUnlocked ? (
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    60s
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                    <Lock size={10} /> Nível 3
+                  </span>
+                )}
               </div>
               <p className="text-xs font-medium text-slate-400 mt-0.5">
-                Agilidade mental contra o relógio (+2s acerto / -3s erro)
+                {isBlitzUnlocked
+                  ? 'Agilidade mental contra o relógio (+2s acerto / -3s erro)'
+                  : 'Desbloqueia ao atingir o Nível 3 de XP geral.'}
               </p>
             </div>
             <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-800/80 px-1 text-slate-400">
-              <span className="flex items-center gap-1 text-orange-400">
-                <Flame size={14} className="fill-orange-400" /> Combo até 3x XP
-              </span>
-              <span className="font-mono text-amber-300">
-                Recorde: {blitzHighScore} pts
-              </span>
+              {isBlitzUnlocked ? (
+                <>
+                  <span className="flex items-center gap-1 text-orange-400">
+                    <Flame size={14} className="fill-orange-400" /> Combo até 3x XP
+                  </span>
+                  <span className="font-mono text-amber-300">
+                    Recorde: {blitzHighScore} pts
+                  </span>
+                </>
+              ) : (
+                <span className="text-slate-500 text-[11px] flex items-center gap-1 mx-auto">
+                  <Lock size={12} /> Bloqueado até o Nível 3
+                </span>
+              )}
             </div>
           </button>
 
           {/* Batalha de Chefe (Níveis & Forja) Card */}
           <button
             type="button"
-            onClick={() => setScreen('boss_rush')}
-            className="p-5 rounded-3xl bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-950 hover:from-purple-950/60 border border-purple-500/40 hover:border-purple-400 transition-all flex flex-col items-center text-center gap-2.5 group shadow-xl hover:shadow-purple-500/10 active:scale-[0.98] touch-target cursor-pointer relative overflow-hidden"
+            disabled={!isBossUnlocked}
+            onClick={() => isBossUnlocked && setScreen('boss_rush')}
+            className={`p-5 rounded-3xl border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
+              isBossUnlocked
+                ? 'bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-950 hover:from-purple-950/60 border-purple-500/40 hover:border-purple-400 group shadow-xl hover:shadow-purple-500/10 active:scale-[0.98] cursor-pointer'
+                : 'bg-slate-900/50 border-slate-800/80 opacity-70 cursor-not-allowed'
+            }`}
           >
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center group-hover:scale-110 transition-transform shadow-md shadow-purple-500/20">
-              <Swords size={26} />
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform shadow-md ${
+                isBossUnlocked
+                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 group-hover:scale-110 shadow-purple-500/20'
+                  : 'bg-slate-800 text-slate-500 border border-slate-700'
+              }`}
+            >
+              {isBossUnlocked ? <Swords size={26} /> : <Lock size={22} />}
             </div>
             <div>
-              <div className="flex items-center justify-center gap-1.5">
+              <div className="flex items-center justify-center gap-1.5 flex-wrap">
                 <h3 className="text-lg font-black text-white">Batalha de Chefe</h3>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                  Níveis & Forja
-                </span>
+                {isBossUnlocked ? (
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    Níveis & Forja
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30 flex items-center gap-1">
+                    <Lock size={10} /> Nível 5 ou 1 Blitz
+                  </span>
+                )}
               </div>
               <p className="text-xs font-medium text-slate-400 mt-0.5">
-                Enfrente 10 chefes épicos com poderes e forja de runas
+                {isBossUnlocked
+                  ? 'Enfrente 10 chefes épicos com poderes e forja de runas'
+                  : 'Desbloqueia no Nível 5 de XP ou ao vencer 1 sessão de Blitz.'}
               </p>
             </div>
             <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-800/80 px-1 text-slate-400">
-              <span className="flex items-center gap-1 text-purple-300">
-                <Crown size={14} className="text-amber-400" /> Nv. Máx: {highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}
-              </span>
-              <span className="font-mono text-amber-300 flex items-center gap-1">
-                🪙 {bossCoins} {bossCoins === 1 ? 'moeda' : 'moedas'}
-              </span>
+              {isBossUnlocked ? (
+                <>
+                  <span className="flex items-center gap-1 text-purple-300">
+                    <Crown size={14} className="text-amber-400" /> Nv. Máx: {highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}
+                  </span>
+                  <span className="font-mono text-amber-300 flex items-center gap-1">
+                    🪙 {bossCoins} {bossCoins === 1 ? 'moeda' : 'moedas'}
+                  </span>
+                </>
+              ) : (
+                <span className="text-slate-500 text-[11px] flex items-center gap-1 mx-auto">
+                  <Lock size={12} /> Bloqueado até o Nível 5 ou 1 Blitz
+                </span>
+              )}
             </div>
           </button>
         </div>
@@ -707,7 +786,7 @@ export const QuizModule: React.FC = () => {
   // ==========================================
   // SCREEN 2: GAME OVER (Modo Sobrevivência)
   // ==========================================
-  if (screen === 'game_over') {
+  if (effectiveScreen === 'game_over') {
     return (
       <div className="flex flex-col items-center gap-6 max-w-xl mx-auto pb-24 md:pb-12 select-none animate-in fade-in">
         <div className="w-full p-8 rounded-3xl bg-slate-950 text-white border border-red-900/60 shadow-2xl flex flex-col items-center text-center gap-6">

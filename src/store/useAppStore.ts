@@ -18,8 +18,13 @@ import {
   checkStreakMaintenance,
   getDeviceLocalDateString,
   checkNewAchievements,
+  calculateLevelInfo,
   ACHIEVEMENTS,
 } from '../core/gamification/leveling';
+import {
+  checkNewFeatureUnlocks,
+  type FeatureUnlockDef,
+} from '../core/gamification/onboarding';
 import {
   createItemKey,
   createInitialCard,
@@ -113,6 +118,12 @@ interface AppState {
   }) => { xpEarned: number; graduatedNow: boolean; isResilienceBonus: boolean };
   resetSpacedRepetition: () => void;
 
+  // Progressive Onboarding & Unlocks
+  unlockedFeatures: string[];
+  unlockFeature: (featureId: string) => void;
+  featureToastQueue: FeatureUnlockDef[];
+  dismissFeatureToast: () => void;
+
   // Onboarding
   completeOnboarding: () => void;
 }
@@ -177,6 +188,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   hasCompletedOnboarding: false,
   soundEnabled: true,
   soundVolume: 0.5,
+  unlockAllFeatures: false,
 };
 
 // Seamlessly migrate legacy storage key if present
@@ -191,6 +203,29 @@ if (typeof window !== 'undefined' && window.localStorage) {
   }
 }
 
+function checkProgression(
+  totalXp: number,
+  blitzHighScore: number,
+  unlockedFeatures: string[],
+  unlockAll: boolean = false
+): { newFeatures: string[]; toasts: FeatureUnlockDef[] } {
+  const userLevel = calculateLevelInfo(totalXp).level;
+  const newDefs = checkNewFeatureUnlocks({
+    userLevel,
+    blitzHighScore,
+    currentUnlocked: unlockedFeatures,
+    unlockAll,
+  });
+  if (newDefs.length === 0) {
+    return { newFeatures: unlockedFeatures, toasts: [] };
+  }
+  const newlyUnlockedIds = newDefs.map((d) => d.id);
+  return {
+    newFeatures: [...new Set([...unlockedFeatures, ...newlyUnlockedIds])],
+    toasts: newDefs,
+  };
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
@@ -202,6 +237,19 @@ export const useAppStore = create<AppState>()(
       dismissAchievementToast: () => {
         set((state) => ({
           toastQueue: state.toastQueue.length > 0 ? state.toastQueue.slice(1) : [],
+        }));
+      },
+
+      unlockedFeatures: ['survival'],
+      featureToastQueue: [],
+      dismissFeatureToast: () => {
+        set((state) => ({
+          featureToastQueue: state.featureToastQueue.length > 0 ? state.featureToastQueue.slice(1) : [],
+        }));
+      },
+      unlockFeature: (featureId) => {
+        set((state) => ({
+          unlockedFeatures: [...new Set([...(state.unlockedFeatures || []), featureId])],
         }));
       },
 
@@ -321,10 +369,23 @@ export const useAppStore = create<AppState>()(
             bonusXp += def.xpReward || 0;
           }
 
+          const finalXp = newTotalXp + bonusXp;
+          const { newFeatures, toasts } = checkProgression(
+            finalXp,
+            newStats.blitzHighScore,
+            state.unlockedFeatures || ['survival'],
+            state.settings?.unlockAllFeatures
+          );
+
           return {
+            unlockedFeatures: newFeatures,
+            featureToastQueue:
+              toasts.length > 0
+                ? [...(state.featureToastQueue || []), ...toasts]
+                : state.featureToastQueue,
             profile: {
               ...candidate,
-              totalXp: newTotalXp + bonusXp,
+              totalXp: finalXp,
               unlockedAchievements: [...new Set([...(prevProf.unlockedAchievements || []), ...newlyUnlockedIds])],
             },
             toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
@@ -497,10 +558,24 @@ export const useAppStore = create<AppState>()(
           for (const def of newlyUnlockedDefs) {
             bonusXp += def.xpReward || 0;
           }
+
+          const finalXp = newTotalXp + bonusXp;
+          const { newFeatures, toasts } = checkProgression(
+            finalXp,
+            prevProf.stats?.blitzHighScore || 0,
+            state.unlockedFeatures || ['survival'],
+            state.settings?.unlockAllFeatures
+          );
+
           return {
+            unlockedFeatures: newFeatures,
+            featureToastQueue:
+              toasts.length > 0
+                ? [...(state.featureToastQueue || []), ...toasts]
+                : state.featureToastQueue,
             profile: {
               ...candidate,
-              totalXp: newTotalXp + bonusXp,
+              totalXp: finalXp,
               unlockedAchievements: [...new Set([...(prevProf.unlockedAchievements || []), ...newlyUnlockedIds])],
             },
             toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
@@ -576,18 +651,29 @@ export const useAppStore = create<AppState>()(
             bonusXp += def.xpReward || 0;
           }
 
+          const finalXp = newTotalXp + bonusXp;
           const finalProfile: UserProfile = {
             ...candidateProfile,
-            totalXp: newTotalXp + bonusXp,
+            totalXp: finalXp,
             unlockedAchievements: [...new Set([...(prevProf.unlockedAchievements || []), ...newlyUnlockedIds])],
           };
 
+          const { newFeatures, toasts } = checkProgression(
+            finalXp,
+            candidateProfile.stats?.blitzHighScore || 0,
+            state.unlockedFeatures || ['survival'],
+            state.settings?.unlockAllFeatures
+          );
+
           const newToastQueue = newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue;
+          const newFeatureToastQueue = toasts.length > 0 ? [...(state.featureToastQueue || []), ...toasts] : state.featureToastQueue;
 
           if (track === 'sobrevivencia') {
             const prevSurv = prevProgress.survival || DEFAULT_QUIZ_PROGRESS.survival;
             return {
               profile: finalProfile,
+              unlockedFeatures: newFeatures,
+              featureToastQueue: newFeatureToastQueue,
               toastQueue: newToastQueue,
               quizProgress: {
                 ...prevProgress,
@@ -617,6 +703,8 @@ export const useAppStore = create<AppState>()(
 
             return {
               profile: finalProfile,
+              unlockedFeatures: newFeatures,
+              featureToastQueue: newFeatureToastQueue,
               toastQueue: newToastQueue,
               quizProgress: {
                 ...prevProgress,
@@ -861,7 +949,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'quantora-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 5,
+      version: 6,
       migrate: (persistedState: any, version: number) => {
         const state = persistedState as any;
         if (!version || version < 2) {
@@ -913,10 +1001,28 @@ export const useAppStore = create<AppState>()(
             if (state.settings.soundVolume === undefined) state.settings.soundVolume = 0.5;
           }
         }
+        if (!version || version < 6) {
+          const hasExistingProgress =
+            (state?.profile?.totalXp || 0) > 0 ||
+            (state?.history && state.history.length > 0) ||
+            (state?.profile?.stats?.totalCalculations || 0) > 0 ||
+            (state?.profile?.stats?.totalQuizCorrect || 0) > 0;
+
+          if (hasExistingProgress) {
+            state.unlockedFeatures = ['survival', 'blitz', 'boss_battle', 'spaced_repetition'];
+          } else {
+            state.unlockedFeatures = state.unlockedFeatures || ['survival'];
+          }
+        }
         return state;
       },
       partialize: (state) => {
-        const { toastQueue: _toastQueue, isScratchpadOpen: _isScratchpadOpen, ...rest } = state;
+        const {
+          toastQueue: _toastQueue,
+          featureToastQueue: _featureToastQueue,
+          isScratchpadOpen: _isScratchpadOpen,
+          ...rest
+        } = state;
         return rest;
       },
     }

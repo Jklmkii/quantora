@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, session, Tray, Menu, nativeImage, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { autoUpdater } = require('electron-updater');
@@ -8,6 +8,11 @@ autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+
+let mainWindow = null;
+let quickPracticeWindow = null;
+let tray = null;
+let isQuitting = false;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -78,12 +83,172 @@ function createWindow() {
     event.preventDefault();
   });
 
+  win.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      win.hide();
+    }
+  });
+
   return win;
+}
+
+function createQuickPracticeWindow() {
+  const win = new BrowserWindow({
+    width: 360,
+    height: 480,
+    minWidth: 320,
+    minHeight: 420,
+    maxWidth: 420,
+    maxHeight: 560,
+    show: false,
+    frame: false,
+    resizable: false,
+    movable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    backgroundColor: '#020617',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  win.setMenuBarVisibility(false);
+
+  if (isDev) {
+    win.loadURL('http://localhost:5173#tray-practice');
+  } else {
+    win.loadFile(path.join(__dirname, '../dist/index.html'), { hash: 'tray-practice' });
+  }
+
+  win.on('blur', () => {
+    if (!win.webContents.isDevToolsOpened()) {
+      win.hide();
+    }
+  });
+
+  win.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      win.hide();
+    }
+  });
+
+  return win;
+}
+
+function toggleQuickPracticeWindow() {
+  if (!quickPracticeWindow || quickPracticeWindow.isDestroyed()) {
+    quickPracticeWindow = createQuickPracticeWindow();
+  }
+
+  if (quickPracticeWindow.isVisible()) {
+    quickPracticeWindow.hide();
+    return;
+  }
+
+  try {
+    if (tray) {
+      const trayBounds = tray.getBounds();
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+      const winWidth = 360;
+      const winHeight = 480;
+
+      let x = Math.round(trayBounds.x + (trayBounds.width / 2) - (winWidth / 2));
+      let y = Math.round(trayBounds.y - winHeight - 8);
+
+      if (x + winWidth > screenWidth) x = screenWidth - winWidth - 12;
+      if (x < 12) x = 12;
+      if (y < 12) y = 12;
+      if (y + winHeight > screenHeight) y = trayBounds.y + trayBounds.height + 8;
+
+      quickPracticeWindow.setPosition(x, y, false);
+    }
+  } catch {
+    // fallback se não conseguir calcular bounds
+  }
+
+  quickPracticeWindow.show();
+  quickPracticeWindow.focus();
+}
+
+function setupTray() {
+  const iconPath = path.join(__dirname, '../build/icon.ico');
+  let trayIcon;
+  if (fs.existsSync(iconPath)) {
+    trayIcon = nativeImage.createFromPath(iconPath);
+  } else {
+    trayIcon = nativeImage.createEmpty();
+  }
+
+  tray = new Tray(trayIcon);
+  tray.setToolTip('Quantora - Prática Rápida');
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Nova conta rápida',
+      click: () => {
+        toggleQuickPracticeWindow();
+        if (quickPracticeWindow && !quickPracticeWindow.isDestroyed()) {
+          quickPracticeWindow.webContents.send('tray:new-question');
+        }
+      },
+    },
+    {
+      label: 'Abrir Quantora',
+      click: () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          if (mainWindow.isMinimized()) mainWindow.restore();
+          mainWindow.show();
+          mainWindow.focus();
+        } else {
+          mainWindow = createWindow();
+        }
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Sair',
+      click: () => {
+        isQuitting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    toggleQuickPracticeWindow();
+  });
 }
 
 // IPC Handlers
 app.whenReady().then(() => {
-  const mainWindow = createWindow();
+  mainWindow = createWindow();
+  setupTray();
+
+  // Tray window IPC events
+  ipcMain.on('tray:close', () => {
+    if (quickPracticeWindow && !quickPracticeWindow.isDestroyed()) {
+      quickPracticeWindow.hide();
+    }
+  });
+
+  ipcMain.on('tray:open-main', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      mainWindow = createWindow();
+    }
+  });
+
 
   // Save File Dialog
   ipcMain.handle('dialog:saveFile', async (event, { defaultName, content, filters }) => {
@@ -263,8 +428,13 @@ app.whenReady().then(() => {
   });
 });
 
+app.on('before-quit', () => {
+  isQuitting = true;
+});
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (isQuitting || process.platform === 'darwin') {
     app.quit();
   }
 });
+
