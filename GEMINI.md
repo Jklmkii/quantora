@@ -171,7 +171,16 @@ Quando uma das sessões pausar solicitando aprovação:
 - Essa regra elimina qualquer atrito operacional ou dependência de lembretes manuais por parte do usuário.
 
 ## Registro no Obsidian
-Referenciar este arquivo em `Sistemas & Integracoes/Antigravity & Cotas de IA.md` — o
+Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe
 e o histórico dos casos reais que motivaram cada seção.
 
+---
+
+## 🔗 Navegação na Documentação (Obsidian)
+* [[Quantora - Visao Geral]]
+* [[Dashboard]]
+* [[Antigravity & Cotas de IA]]
+* [[AGENTS]]
+* [[Decisoes & Estado Atual]]
+* [[Historico de Prompts & Demandas]]

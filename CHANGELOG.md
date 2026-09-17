@@ -2,6 +2,21 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.25] — Onboarding Progressivo, Widget no System Tray & Preservação de Estado (2026-09-16)
+
+### 🚀 Novas Funcionalidades & Experiência do Usuário
+- **🌟 Onboarding Progressivo por Níveis (`src/core/gamification/onboarding.ts`):** Liberação gradual de recursos matemáticos e modos de jogo. Calculadoras básicas, Treino Mental e Sobrevivência disponíveis desde o Nível 1; Modo Blitz (60s) desbloqueado no Nível 3; Boss Battle desbloqueado no Nível 5 ou ao pontuar no Blitz.
+- **🎉 Feedback Celebratório com Confetes (`FeatureUnlockToast.tsx`):** Toast animado flutuante notificando novos desbloqueios com explosão suave de confetes.
+- **⚡ Widget de Prática Rápida no Electron System Tray (`TrayPracticeWidget.tsx`):** Mini-janela flutuante autônoma (360×480, `alwaysOnTop: true`) na bandeja do Windows para micro-treino ágil, concessão de +15 XP por acerto e cálculo de nível em tempo real.
+- **💾 Preservação de Estado de Calculadoras Didáticas (`App.tsx` — PR #43):** Rastreamento de abas visitadas via `visitedTabs` e renderização estática (`display: none / block`) para Bhaskara, Regra de Três e Física Clássica, impedindo a perda de dados ao navegar.
+- **🌐 Internacionalização Integral (PR #44):** 34 novas chaves de tradução adicionadas em `src/core/i18n/translations.ts` cobrindo o Desafio Diário e Caderno de Erros, eliminando textos em português codificados diretamente nos componentes.
+- **🎨 Acessibilidade ARIA no Widget do Tray (PR #45):** Inclusão de atributos `aria-label` descritivos nos botões de controle de ícone único no `TrayPracticeWidget.tsx`.
+- **🛡️ Segurança Criptográfica de IDs (PR #46):** Geração segura de IDs com `crypto.randomUUID()` em textos flutuantes no `BossBattle.tsx`.
+- **⚡ Otimização de Render do Timer (PR #47):** Isolamento do subcomponente `MidnightCountdown` em `DailyChallengeCard.tsx` eliminando re-renderizações desnecessárias a cada segundo.
+- **🧪 Qualidade & Testes:** Suíte Vitest ampliada para 435 testes unitários em 26 arquivos (100% verde) e Oxlint 0 avisos em 95 arquivos.
+
+---
+
 ## [1.2.24] — Auto-Bump de Release & Sincronização Contínua (2026-09-15)
 
 ### 🤖 CI/CD & Versionamento
