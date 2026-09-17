@@ -163,7 +163,15 @@ Quando uma das sessões pausar solicitando aprovação:
 - Antes de aprovar qualquer continuidade, o Antigravity deve ler a proposta real e o diff prévio da Jules (reaplicando a Seção 6).
 - Cada decisão tomada (aprovada, rejeitada ou escalada) deve ser registrada formalmente no `Historico de Prompts & Demandas.md`.
 
+## 14. Auto-Restauração Autônoma de Crons em Background (14:00 e 21:30)
+- **Cenário:** O desligamento do computador ou o encerramento do processo do servidor da IDE encerra as tarefas em background na memória, disparando a mensagem de sistema `[Notice] All your subagents and background tasks have been stopped due to server restart`.
+- **Comportamento Mandatório:** Sempre que o Antigravity for acionado e constatar essa notificação de reinício, ou se `manage_task(Action='list')` indicar que os daemons não estão em execução, o agente **NÃO deve esperar o usuário solicitar a reativação**. Ele deve, de forma imediata e autônoma, invocar a ferramenta `schedule` (`IsDaemon: true`) para restaurar:
+  1. `0 14 * * *` — Sincronização Diária Repositório $\rightarrow$ Vault às 14:00.
+  2. `30 21 * * *` — Revisão Noturna Diária das Sessões Jules (Palette, Sentinel, Bolt) às 21:30.
+- Essa regra elimina qualquer atrito operacional ou dependência de lembretes manuais por parte do usuário.
+
 ## Registro no Obsidian
 Referenciar este arquivo em `Sistemas & Integracoes/Antigravity & Cotas de IA.md` — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe
 e o histórico dos casos reais que motivaram cada seção.
+
