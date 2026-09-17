@@ -35,6 +35,19 @@ interface DailyChallengeCardProps {
  * 🎯 Why: DailyChallengeCard contains expensive sub-trees, loops (setInterval for timeLeft), and UI. It is placed in components that update frequently (like QuizModule) leading to unnecessary rendering of the card when parent changes state unrelated to the card.
  * 📊 Impact: Reduces re-renders of the entire DailyChallengeCard layout when parent components (like the main Quiz/Home screen) re-render.
  */
+const MidnightCountdown = React.memo(() => {
+  const [timeLeft, setTimeLeft] = useState<TimeUntilMidnight>(() => getTimeUntilMidnight());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(getTimeUntilMidnight());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return <span>{timeLeft.formatted}</span>;
+});
+
 export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(({
   className = '',
   onCompleted,
@@ -61,15 +74,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
     [todayStr]
   );
 
-  // Countdown timer to midnight
-  const [timeLeft, setTimeLeft] = useState<TimeUntilMidnight>(() => getTimeUntilMidnight());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(getTimeUntilMidnight());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // Countdown timer extracted to MidnightCountdown
 
   // Completion states
   const isAlreadyCompletedToday = lastCompletedDate === todayStr;
@@ -205,7 +210,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
               title="Tempo até o próximo desafio à meia-noite"
             >
               <Clock size={14} className="text-slate-500 dark:text-slate-400" />
-              <span>{timeLeft.formatted}</span>
+              <MidnightCountdown />
             </div>
           </div>
         </div>
