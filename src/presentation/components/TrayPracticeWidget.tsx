@@ -116,6 +116,7 @@ export const TrayPracticeWidget: React.FC = () => {
             type="button"
             onClick={handleOpenMain}
             title="Abrir aplicativo principal"
+            aria-label="Abrir aplicativo principal"
             className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -124,6 +125,7 @@ export const TrayPracticeWidget: React.FC = () => {
             type="button"
             onClick={handleClose}
             title="Fechar widget"
+            aria-label="Fechar widget"
             className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition-colors"
           >
             <X className="w-3.5 h-3.5" />
