@@ -50,7 +50,7 @@ interface BossBattleProps {
 }
 
 interface FloatingText {
-  id: number;
+  id: string;
   text: string;
   type: 'critical' | 'standard' | 'shield_loss' | 'correction';
 }
@@ -152,7 +152,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   // Helper to add floating combat numbers
   const addFloatingText = useCallback(
     (text: string, type: 'critical' | 'standard' | 'shield_loss' | 'correction') => {
-      const id = Date.now() + Math.random();
+      const id = globalThis.crypto?.randomUUID?.() || Date.now().toString(36);
       setFloatingTexts((prev) => [...prev, { id, text, type }]);
       setTimeout(() => {
         setFloatingTexts((prev) => prev.filter((item) => item.id !== id));
