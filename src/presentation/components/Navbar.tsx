@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sigma,
   Scale,
@@ -26,7 +26,7 @@ interface NavbarProps {
   onOpenSettings: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
+export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => {
   const {
     activeTab,
     setActiveTab,
@@ -62,9 +62,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
     checkAndUpdateStreak();
   }, [checkAndUpdateStreak]);
 
-  const levelInfo = calculateLevelInfo(profile?.totalXp || 0, settings.language || 'pt');
+  const levelInfo = useMemo(() => calculateLevelInfo(profile?.totalXp || 0, settings.language || 'pt'), [profile?.totalXp, settings.language]);
 
-  const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: number }[] = [
+  const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: number }[] = useMemo(() => [
     { id: 'bhaskara', label: t.nav_bhaskara, icon: <Sigma size={20} /> },
     { id: 'regra_simples', label: t.nav_regra, icon: <Scale size={20} /> },
     { id: 'physics', label: t.physics_title || 'Física', icon: <Atom size={20} /> },
@@ -75,7 +75,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
       icon: <History size={20} />,
       badge: historyCount > 0 ? historyCount : undefined,
     },
-  ];
+  ], [t, historyCount]);
 
   const cycleTheme = () => {
     const modes = ['light', 'dark', 'system'] as const;
@@ -321,4 +321,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSettings }) => {
       </div>
     </>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
