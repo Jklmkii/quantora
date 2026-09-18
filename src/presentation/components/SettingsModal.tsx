@@ -334,6 +334,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 </div>
                 <input
                   type="range"
+                  aria-label={t.sound_volume || 'Volume'}
                   min="0"
                   max="1"
                   step="0.05"
