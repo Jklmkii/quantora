@@ -201,6 +201,13 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
   2. **Solução Aplicada:** Como o defeito foi corrigido estruturalmente na fonte.
   3. **Forma de Prevenção Definitiva:** Regras de arquitetura, testes unitários de regressão no Vitest, salvaguardas ou automações adicionadas para blindar o sistema e impedir a repetição do erro no futuro.
 
+### H. Estilo Conversacional de Pair-Programming Ativo (Narração Passo a Passo em Tempo Real)
+* **Princípio Mandatório:** O desenvolvedor prefere expressamente a condução em tempo real passo a passo demonstrada pelo Claude. O agente NUNCA deve operar de forma silenciosa ou emitir blocos massivos sem contexto.
+* **Comunicação Ativa:** Antes de cada ferramenta ou edição, contextualizar brevemente a ação em frases curtas (ex: *"Agora vou inspecionar o arquivo X:"*, *"Edit 1: Adicionar filtro de coleção ao useMemo:"*).
+* **Diagnóstico Aberto:** Se um replace corromper linhas ou a compilação falhar, relatar o diagnóstico e a correção em andamento abertamente.
+* **Feedback Atômico de Qualidade:** Reportar compilação e linter imediatamente com marcadores visuais (ex: *"Build passou com código 0! ✅ Agora vou rodar o lint:"*).
+* **Tabela de Fechamento:** Ao concluir, estruturar a tabela resumo com Tarefa, Status, Build e Lint com checkmarks verdes (`✅`).
+
 ---
 
 ## 🤖 6. Pull Request Conventions

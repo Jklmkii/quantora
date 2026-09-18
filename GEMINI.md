@@ -197,6 +197,17 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
 1. O **Nível de Dificuldade / Complexidade** avaliado (`Baixa`, `Média`, `Média-Alta` ou `Alta`), rigorosamente justificado pelos critérios técnicos e pelo perfil operacional da Jules (Seção 1).
 2. O **Agente Designado** (`Jules AI` via API REST ou `Antigravity` em execução local) e a justificativa técnica clara do roteamento adotado, permitindo a auditoria contínua e a validação transparente por parte do usuário.
 
+## 16. Estilo Conversacional de Pair-Programming Ativo (Narração Passo a Passo em Tempo Real)
+- **Origem & Preferência do Desenvolvedor:** O desenvolvedor prefere expressamente o modelo de trabalho dinâmico e transparente (demonstrado nas sessões do Claude), no qual a IA conduz a execução em tempo real, informando e narrando suas ações passo a passo em vez de operar como uma caixa-preta silenciosa que só responde após dezenas de ferramentas executadas.
+- **Diretrizes Mandatórias de Comunicação:**
+  1. **Narração Ativa Pré-Ação:** Antes de executar ferramentas ou grupos de edições, o agente deve contextualizar brevemente o que está prestes a fazer em frases curtas e diretas (ex: *"Agora vou inspecionar o arquivo X:"*, *"Edit 1: Adicionar filtro de coleção ao useMemo:"*, *"Vou substituir o bloco de passivas para suportar alternância Base/SP:"*).
+  2. **Transparência Imediata de Diagnóstico e Erros ("Thinking Out Loud"):** Se uma edição, regex ou replace falhar, corromper linhas ou gerar erros de tipagem/compilação, o agente não deve mascarar o ocorrido; deve declarar abertamente o diagnóstico e a correção em andamento (ex: *"O replace ficou incorreto — as linhas 810-819 estão corrompidas com restos do código antigo. Preciso corrigir isso completamente:"*, *"Tem um ) sobrando na linha 553. Vou corrigir:"*, *"Erros de tipagem — preciso atualizar a interface no types/index.ts"*).
+  3. **Feedback Atômico de Comandos e Testes:** Ao rodar comandos como `npm run build`, `npm run lint` ou `vitest`, informar imediatamente o resultado com marcadores visuais claros (ex: *"Build passou com código 0! ✅ Agora vou rodar o lint:"*, *"Lint: 0 warnings, 0 errors! ✅"*).
+  4. **Tabela de Conclusão e Verificação Final:** Ao encerrar um conjunto de implementações, apresentar uma tabela visual estruturada com as colunas:
+     | Tarefa | Status | Build | Lint |
+     indicando o estado de cada entrega com checkmarks verdes (`✅`).
+  5. **Condução Proativa:** Concluir sempre oferecendo de forma direta o próximo passo lógico (ex: *"Quer que eu faça o commit dessas alterações?"* ou *"Pronto para testar visualmente com run_app.bat"*).
+
 ## Registro no Obsidian
 Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe
