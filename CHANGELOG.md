@@ -13,6 +13,8 @@ Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 - **🎨 Acessibilidade ARIA no Widget do Tray (PR #45):** Inclusão de atributos `aria-label` descritivos nos botões de controle de ícone único no `TrayPracticeWidget.tsx`.
 - **🛡️ Segurança Criptográfica de IDs (PR #46):** Geração segura de IDs com `crypto.randomUUID()` em textos flutuantes no `BossBattle.tsx`.
 - **⚡ Otimização de Render do Timer (PR #47):** Isolamento do subcomponente `MidnightCountdown` em `DailyChallengeCard.tsx` eliminando re-renderizações desnecessárias a cada segundo.
+- **🎨 Acessibilidade no Controle de Volume (PR #48 — Jules AI Palette):** Inclusão de atributo `aria-label` descritivo no slider de volume sonoro em `SettingsModal.tsx`.
+- **⚡ Otimização de Re-render da Navbar (PR #49 — Jules AI Bolt):** Encapsulamento com `React.memo` e memoização de cálculos e abas via `useMemo` em `Navbar.tsx`.
 - **🧪 Qualidade & Testes:** Suíte Vitest ampliada para 435 testes unitários em 26 arquivos (100% verde) e Oxlint 0 avisos em 95 arquivos.
 
 ---
