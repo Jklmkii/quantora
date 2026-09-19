@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface NumericInputProps {
   id?: string;
@@ -39,6 +39,9 @@ export const NumericInput: React.FC<NumericInputProps> = React.memo(({
   className = '',
   allowNegative = true,
 }) => {
+  const fallbackId = useId();
+  const inputId = id ?? fallbackId;
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let raw = e.target.value;
 
@@ -67,7 +70,7 @@ export const NumericInput: React.FC<NumericInputProps> = React.memo(({
     <div className={`flex flex-col gap-1.5 ${className}`}>
       {label && (
         <label
-          htmlFor={id}
+          htmlFor={inputId}
           className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 select-none"
         >
           {label}
@@ -88,7 +91,7 @@ export const NumericInput: React.FC<NumericInputProps> = React.memo(({
         )}
 
         <input
-          id={id}
+          id={inputId}
           type="text"
           inputMode="decimal"
           autoComplete="off"
