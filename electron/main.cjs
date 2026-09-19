@@ -124,6 +124,28 @@ function createQuickPracticeWindow() {
     win.loadFile(path.join(__dirname, '../dist/index.html'), { hash: 'tray-practice' });
   }
 
+  // Open external links in default OS browser
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
+        require('electron').shell.openExternal(parsedUrl.href);
+      }
+    } catch {
+      // Malformed URL, do nothing
+    }
+    return { action: 'deny' };
+  });
+
+  // Prevent navigation to external sites inside the app window
+  win.webContents.on('will-navigate', (event, url) => {
+    // Only allow local app navigation
+    if (isDev && url.startsWith('http://localhost:5173')) return;
+    if (!isDev && (url.startsWith('file://') || url.startsWith('blob:'))) return;
+
+    event.preventDefault();
+  });
+
   win.on('blur', () => {
     if (!win.webContents.isDevToolsOpened()) {
       win.hide();
