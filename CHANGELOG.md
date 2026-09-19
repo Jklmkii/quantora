@@ -15,6 +15,9 @@ Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 - **⚡ Otimização de Render do Timer (PR #47):** Isolamento do subcomponente `MidnightCountdown` em `DailyChallengeCard.tsx` eliminando re-renderizações desnecessárias a cada segundo.
 - **🎨 Acessibilidade no Controle de Volume (PR #48 — Jules AI Palette):** Inclusão de atributo `aria-label` descritivo no slider de volume sonoro em `SettingsModal.tsx`.
 - **⚡ Otimização de Re-render da Navbar (PR #49 — Jules AI Bolt):** Encapsulamento com `React.memo` e memoização de cálculos e abas via `useMemo` em `Navbar.tsx`.
+- **⚡ Otimização de Performance do Confete (`ConfettiCanvas.tsx` — PR #50 — Jules AI Bolt):** Encapsulamento com `React.memo` e atribuição explícita de `displayName = 'ConfettiCanvas'`, prevenindo re-renderizações espúrias do canvas e recalculação desnecessária durante atualizações de estado nos toasts que o contêm.
+- **🎨 Acessibilidade Dinâmica via `useId` em Inputs Numéricos (`NumericInput.tsx` — PR #51 — Jules AI Palette):** Associação semântica e acessível entre `<label>` e `<input>` via fallback dinâmico `useId()` do React quando a propriedade `id` for omitida pelo componente pai, garantindo conformidade WCAG AA para leitores de tela.
+- **🛡️ Blindagem de Navegação no Widget da Bandeja (`electron/main.cjs` — PR #52 — Jules AI Sentinel):** Implementação de `setWindowOpenHandler` e listener do evento `will-navigate` na janela secundária do Electron (`createQuickPracticeWindow`), impedindo navegações arbitrárias para URLs externas e redirecionando links externos HTTP/HTTPS para o navegador padrão do sistema operacional.
 - **🧪 Qualidade & Testes:** Suíte Vitest ampliada para 435 testes unitários em 26 arquivos (100% verde) e Oxlint 0 avisos em 95 arquivos.
 
 ---
