@@ -31,7 +31,14 @@ const CONFETTI_COLORS = [
   '#eab308', // Yellow
 ];
 
-export const ConfettiCanvas: React.FC<ConfettiCanvasProps> = ({
+/**
+ * ⚡ Bolt: Performance Optimization
+ * 💡 What: Wrapped ConfettiCanvas with React.memo()
+ * 🎯 Why: ConfettiCanvas is rendered in toasts and heavily relies on its own internal animation loop. Preventing re-renders from parent state changes saves unnecessary React diffing overhead.
+ * 📊 Impact: Prevents re-renders of the canvas wrapper element when the parent toast state updates.
+ * 🔬 Measurement: Observe React DevTools Profiler when toasts are active.
+ */
+export const ConfettiCanvas: React.FC<ConfettiCanvasProps> = React.memo(({
   active = true,
   durationMs = 2800,
   particleCount = 80,
@@ -156,4 +163,6 @@ export const ConfettiCanvas: React.FC<ConfettiCanvasProps> = ({
       aria-hidden="true"
     />
   );
-};
+});
+
+ConfettiCanvas.displayName = 'ConfettiCanvas';
