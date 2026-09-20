@@ -14,3 +14,8 @@
 **Vulnerability:** The Electron quick practice window lacked `setWindowOpenHandler` and `will-navigate` event listeners. While these protections were previously applied to the main app window, forgetting them on secondary windows left the app vulnerable to navigation changes and unauthorized opening of external links.
 **Learning:** Security configurations in Electron must be explicitly applied to *every* `BrowserWindow` or `webContents` instance created by the app. Secondary windows, tray popups, or child windows are commonly overlooked, creating bypass vectors.
 **Prevention:** Always implement `setWindowOpenHandler` and `will-navigate` listeners (or configure global `app.on('web-contents-created', ...)` handlers) to explicitly restrict navigation for all windows created in the application.
+
+## 2025-05-24 - Missing Global WebContents Security Limitations in Electron
+**Vulnerability:** Navigation security limitations (`setWindowOpenHandler`, `will-navigate`) were being explicitly applied only on newly created window instances in functions like `createWindow()` or `createQuickPracticeWindow()`, leaving secondary/indirect windows unprotected.
+**Learning:** If a new implicit webContents is spawned (e.g. `window.open` within an unprotected context before it hits the handler, or external window creation routines) without lifecycle monitoring, it can bypass the previously set navigation restrictions (potentially resulting in XSS or local execution).
+**Prevention:** Always use the globally scoped `app.on('web-contents-created')` lifecycle method to apply `will-navigate` constraints and external handler interceptors to all `webContents` globally as they are created, guaranteeing blanket security coverage for any new contexts.
