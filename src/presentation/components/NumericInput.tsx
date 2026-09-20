@@ -13,6 +13,7 @@ interface NumericInputProps {
   helperText?: string;
   className?: string;
   allowNegative?: boolean;
+  ariaLabel?: string;
 }
 
 /**
@@ -38,6 +39,7 @@ export const NumericInput: React.FC<NumericInputProps> = React.memo(({
   helperText,
   className = '',
   allowNegative = true,
+  ariaLabel,
 }) => {
   const fallbackId = useId();
   const inputId = id ?? fallbackId;
@@ -101,6 +103,7 @@ export const NumericInput: React.FC<NumericInputProps> = React.memo(({
           onChange={handleChange}
           placeholder={placeholder}
           disabled={disabled}
+          aria-label={ariaLabel || label || placeholder || "Entrada numérica"}
           className="w-full bg-transparent px-3.5 py-3 min-h-[44px] text-base md:text-lg font-medium text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none touch-manipulation"
         />
 

@@ -1121,6 +1121,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   disabled={isResolving}
                   onChange={(e) => setManualInput(e.target.value)}
                   placeholder="Digite sua resposta..."
+                  aria-label="Digite sua resposta"
                   className="flex-1 py-3 px-4 rounded-2xl bg-slate-950 border border-slate-700 font-mono text-lg font-black text-white focus:outline-none focus:border-amber-400 text-center"
                 />
                 <button

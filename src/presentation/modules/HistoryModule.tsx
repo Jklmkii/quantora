@@ -85,6 +85,7 @@ export const HistoryModule: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Pesquisar por fórmula, equação ou data..."
+            aria-label="Pesquisar por fórmula, equação ou data"
             className="w-full pl-10 pr-4 py-2.5 min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 touch-manipulation"
           />
         </div>
