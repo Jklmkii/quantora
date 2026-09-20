@@ -60,29 +60,6 @@ function createWindow() {
     win.show();
   });
 
-  // Open external links in default OS browser
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    try {
-      const parsedUrl = new URL(url);
-      // Security: Only allow http and https protocols to prevent local file execution or NTLM relay attacks
-      if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
-        require('electron').shell.openExternal(parsedUrl.href);
-      }
-    } catch {
-      // Malformed URL, do nothing
-    }
-    return { action: 'deny' };
-  });
-
-  // Prevent navigation to external sites inside the app window
-  win.webContents.on('will-navigate', (event, url) => {
-    // Only allow local app navigation
-    if (isDev && url.startsWith('http://localhost:5173')) return;
-    if (!isDev && (url.startsWith('file://') || url.startsWith('blob:'))) return;
-
-    event.preventDefault();
-  });
-
   win.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault();
@@ -123,28 +100,6 @@ function createQuickPracticeWindow() {
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html'), { hash: 'tray-practice' });
   }
-
-  // Open external links in default OS browser
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    try {
-      const parsedUrl = new URL(url);
-      if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
-        require('electron').shell.openExternal(parsedUrl.href);
-      }
-    } catch {
-      // Malformed URL, do nothing
-    }
-    return { action: 'deny' };
-  });
-
-  // Prevent navigation to external sites inside the app window
-  win.webContents.on('will-navigate', (event, url) => {
-    // Only allow local app navigation
-    if (isDev && url.startsWith('http://localhost:5173')) return;
-    if (!isDev && (url.startsWith('file://') || url.startsWith('blob:'))) return;
-
-    event.preventDefault();
-  });
 
   win.on('blur', () => {
     if (!win.webContents.isDevToolsOpened()) {
@@ -248,6 +203,30 @@ function setupTray() {
     toggleQuickPracticeWindow();
   });
 }
+
+// Security: enforce webContents navigation restrictions globally
+app.on('web-contents-created', (event, contents) => {
+  // Prevent navigation to external sites inside the app window
+  contents.on('will-navigate', (event, url) => {
+    if (isDev && url.startsWith('http://localhost:5173')) return;
+    if (!isDev && (url.startsWith('file://') || url.startsWith('blob:'))) return;
+
+    event.preventDefault();
+  });
+
+  // Open external links in default OS browser
+  contents.setWindowOpenHandler(({ url }) => {
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
+        require('electron').shell.openExternal(parsedUrl.href);
+      }
+    } catch {
+      // Malformed URL, do nothing
+    }
+    return { action: 'deny' };
+  });
+});
 
 // IPC Handlers
 app.whenReady().then(() => {
