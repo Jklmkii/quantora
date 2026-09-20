@@ -167,6 +167,7 @@ export const TrayPracticeWidget: React.FC = () => {
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 placeholder="Resposta..."
+                aria-label="Sua resposta"
                 autoFocus
                 className="flex-1 bg-slate-900 border border-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-lg px-4 py-2 text-center text-xl font-mono text-white placeholder:text-slate-500 outline-none transition-all"
               />

@@ -135,6 +135,7 @@ export const BhaskaraModule: React.FC = () => {
             onChange={(e) => setEquationText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleParseTextEquation()}
             placeholder="Ex: 2x² - 3x + 1 = 0 ou x^2 = 9"
+            aria-label="Entrada por Texto da Equação"
             className="flex-1 px-4 py-3 min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 touch-manipulation"
           />
           <button
