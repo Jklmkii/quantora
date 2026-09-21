@@ -209,7 +209,20 @@ app.on('web-contents-created', (event, contents) => {
   // Prevent navigation to external sites inside the app window
   contents.on('will-navigate', (event, url) => {
     if (isDev && url.startsWith('http://localhost:5173')) return;
-    if (!isDev && (url.startsWith('file://') || url.startsWith('blob:'))) return;
+
+    if (!isDev) {
+      if (url.startsWith('blob:')) return;
+      if (url.startsWith('file://')) {
+        try {
+          const { fileURLToPath } = require('url');
+          const parsedPath = fileURLToPath(url);
+          const expectedDist = path.resolve(__dirname, '../dist');
+          if (parsedPath.startsWith(expectedDist)) return;
+        } catch (e) {
+          // invalid file URL, deny
+        }
+      }
+    }
 
     event.preventDefault();
   });

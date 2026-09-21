@@ -19,3 +19,8 @@
 **Vulnerability:** Navigation security limitations (`setWindowOpenHandler`, `will-navigate`) were being explicitly applied only on newly created window instances in functions like `createWindow()` or `createQuickPracticeWindow()`, leaving secondary/indirect windows unprotected.
 **Learning:** If a new implicit webContents is spawned (e.g. `window.open` within an unprotected context before it hits the handler, or external window creation routines) without lifecycle monitoring, it can bypass the previously set navigation restrictions (potentially resulting in XSS or local execution).
 **Prevention:** Always use the globally scoped `app.on('web-contents-created')` lifecycle method to apply `will-navigate` constraints and external handler interceptors to all `webContents` globally as they are created, guaranteeing blanket security coverage for any new contexts.
+
+## 2025-05-24 - [Restrict file:// navigation in Electron to safe directories]
+**Vulnerability:** The global `will-navigate` listener allowed any `file://` URL to be loaded in production mode (`url.startsWith('file://')`). This broad allowance introduced a Path Traversal / Arbitrary File Load vulnerability, where an attacker manipulating navigation could force the app to load sensitive local files (e.g., `file:///etc/passwd`).
+**Learning:** Checking `url.startsWith('file://')` is insufficient for Electron security, as it blindly trusts all local files. File navigation must be strictly scoped to the application's expected distribution directory.
+**Prevention:** Always parse `file://` URLs using `url.fileURLToPath` and verify that the resulting path strictly starts with the expected secure directory (e.g., `path.resolve(__dirname, '../dist')`) before allowing navigation.
