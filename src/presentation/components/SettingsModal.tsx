@@ -294,6 +294,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <button
                 type="button"
                 role="switch"
+                aria-label={t.sound_effects}
                 aria-checked={settings.soundEnabled ?? true}
                 onClick={() => {
                   const next = !(settings.soundEnabled ?? true);
@@ -369,6 +370,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <button
                 type="button"
                 role="switch"
+                aria-label={t.settings_unlock_all || 'Desbloquear Todos os Recursos'}
                 aria-checked={Boolean(settings.unlockAllFeatures)}
                 onClick={() => updateSettings({ unlockAllFeatures: !settings.unlockAllFeatures })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500/50 cursor-pointer ${
