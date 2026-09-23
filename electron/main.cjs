@@ -219,7 +219,7 @@ app.on('web-contents-created', (event, contents) => {
           const expectedDist = path.resolve(__dirname, '../dist');
           const expectedDistWithSep = expectedDist + path.sep;
           if (parsedPath === expectedDist || parsedPath.startsWith(expectedDistWithSep)) return;
-        } catch (e) {
+        } catch {
           // invalid file URL, deny
         }
       }
