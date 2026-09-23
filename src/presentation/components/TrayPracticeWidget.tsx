@@ -1,14 +1,26 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Zap, X, ExternalLink, RotateCw, CheckCircle2, XCircle, Sparkles } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 import { generateQuizQuestion } from '../../core/math/quizGenerator';
 import { calculateLevelInfo } from '../../core/gamification/leveling';
 import { playSfx } from '../../core/platform/audio';
 import type { QuizQuestion } from '../../types';
 import Big from 'big.js';
 
+/**
+ * ⚡ Bolt Performance Optimization
+ * 💡 What: Wrapped useAppStore with useShallow hook for selective subscription.
+ * 🎯 Why: Using useAppStore without useShallow caused TrayPracticeWidget to re-render on *any* store change.
+ * 📊 Impact: Significantly reduces unnecessary re-renders of the widget, especially when unrelated state updates.
+ */
 export const TrayPracticeWidget: React.FC = () => {
-  const { profile, addXp } = useAppStore();
+  const { profile, addXp } = useAppStore(
+    useShallow((s) => ({
+      profile: s.profile,
+      addXp: s.addXp,
+    }))
+  );
   const levelInfo = calculateLevelInfo(profile?.totalXp || 0);
   const [, setQuestionIndex] = useState(1);
   const [question, setQuestion] = useState<QuizQuestion>(() =>
