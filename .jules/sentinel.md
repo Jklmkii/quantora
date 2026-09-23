@@ -24,3 +24,8 @@
 **Vulnerability:** The global `will-navigate` listener allowed any `file://` URL to be loaded in production mode (`url.startsWith('file://')`). This broad allowance introduced a Path Traversal / Arbitrary File Load vulnerability, where an attacker manipulating navigation could force the app to load sensitive local files (e.g., `file:///etc/passwd`).
 **Learning:** Checking `url.startsWith('file://')` is insufficient for Electron security, as it blindly trusts all local files. File navigation must be strictly scoped to the application's expected distribution directory.
 **Prevention:** Always parse `file://` URLs using `url.fileURLToPath` and verify that the resulting path strictly starts with the expected secure directory (e.g., `path.resolve(__dirname, '../dist')`) before allowing navigation.
+
+## 2025-02-28 - Path Traversal in Directory Prefix Matching
+**Vulnerability:** A path traversal vulnerability was found in Electron's `will-navigate` event where `.startsWith(expectedDist)` was used without trailing slashes. An attacker could use a folder named `dist-malicious` to bypass the `dist` restriction.
+**Learning:** `path.resolve` drops trailing slashes, so using `startsWith` directly on the resolved path allows any matching prefix (e.g. `dist-malicious/test.html` matches `dist`).
+**Prevention:** Always append `path.sep` to the expected directory before using `.startsWith()`, or use proper path resolution/relative path checking (`!path.relative(expected, actual).startsWith('..')`).

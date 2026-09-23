@@ -217,7 +217,8 @@ app.on('web-contents-created', (event, contents) => {
           const { fileURLToPath } = require('url');
           const parsedPath = fileURLToPath(url);
           const expectedDist = path.resolve(__dirname, '../dist');
-          if (parsedPath.startsWith(expectedDist)) return;
+          const expectedDistWithSep = expectedDist + path.sep;
+          if (parsedPath === expectedDist || parsedPath.startsWith(expectedDistWithSep)) return;
         } catch (e) {
           // invalid file URL, deny
         }
