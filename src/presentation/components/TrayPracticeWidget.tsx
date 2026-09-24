@@ -185,6 +185,7 @@ export const TrayPracticeWidget: React.FC = () => {
               />
               <button
                 type="submit"
+                aria-label="Confirmar resposta"
                 className="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-sm rounded-lg transition-all shadow-md active:scale-95"
               >
                 OK
@@ -221,6 +222,7 @@ export const TrayPracticeWidget: React.FC = () => {
               <button
                 type="button"
                 onClick={nextQuestion}
+                aria-label="Gerar nova conta"
                 autoFocus
                 className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 border border-slate-700 text-slate-100 font-semibold text-xs rounded-lg transition-all"
               >
