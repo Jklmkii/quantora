@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Award, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ConfettiCanvas } from './ConfettiCanvas';
 import type { AchievementCategory } from '../../types';
 
@@ -27,9 +28,13 @@ const CATEGORY_STYLES: Record<
 };
 
 export const AchievementToast: React.FC = () => {
-  const currentAch = useAppStore((s) => (s.toastQueue && s.toastQueue.length > 0 ? s.toastQueue[0] : null));
-  const queueLength = useAppStore((s) => s.toastQueue?.length ?? 0);
-  const dismissAchievementToast = useAppStore((s) => s.dismissAchievementToast);
+  const { currentAch, queueLength, dismissAchievementToast } = useAppStore(
+    useShallow((s) => ({
+      currentAch: s.toastQueue && s.toastQueue.length > 0 ? s.toastQueue[0] : null,
+      queueLength: s.toastQueue?.length ?? 0,
+      dismissAchievementToast: s.dismissAchievementToast,
+    }))
+  );
 
   useEffect(() => {
     if (!currentAch) return;
