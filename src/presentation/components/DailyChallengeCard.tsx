@@ -262,7 +262,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
               <button
                 type="button"
                 onClick={() => setShowExplanation((prev) => !prev)}
-                className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors"
+                className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
                 aria-expanded={showExplanation}
                 aria-controls="explanation-content"
               >
@@ -297,7 +297,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
               <button
                 type="button"
                 onClick={handleShareResult}
-                className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-[0.98] text-slate-950 font-black text-sm tracking-wide uppercase shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer touch-target"
+                className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-[0.98] text-slate-950 font-black text-sm tracking-wide uppercase shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer touch-target focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/50"
               >
                 {copiedToast ? (
                   <>
@@ -354,7 +354,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                     type="button"
                     disabled={hasSubmitted}
                     onClick={() => setSelectedOption(opt)}
-                    className={`p-4 rounded-2xl border font-mono text-lg font-bold flex items-center justify-between gap-3 transition-all active:scale-[0.98] cursor-pointer touch-target ${optionStyle}`}
+                    className={`p-4 rounded-2xl border font-mono text-lg font-bold flex items-center justify-between gap-3 transition-all active:scale-[0.98] cursor-pointer touch-target focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/50 ${optionStyle}`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="w-7 h-7 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 text-xs font-sans font-bold flex items-center justify-center text-slate-600 dark:text-slate-300">
@@ -395,7 +395,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                 <button
                   type="button"
                   onClick={handleShareResult}
-                  className="mt-2 py-2.5 px-4 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="mt-2 py-2.5 px-4 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
                 >
                   <Share2 size={14} />
                   <span>{copiedToast ? t.daily_copied : t.daily_share_challenge}</span>
@@ -409,7 +409,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                 type="button"
                 disabled={selectedOption === null}
                 onClick={handleSubmitAnswer}
-                className={`w-full py-4 rounded-2xl font-black text-base tracking-wider uppercase transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer touch-target active:scale-[0.98] ${
+                className={`w-full py-4 rounded-2xl font-black text-base tracking-wider uppercase transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer touch-target active:scale-[0.98] focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/50 ${
                   selectedOption === null
                     ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-60'
                     : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25'

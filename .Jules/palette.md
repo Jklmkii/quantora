@@ -7,3 +7,6 @@
 ## 2024-05-15 - Dynamic IDs for Reusable Inputs
 **Learning:** Using optional `id` props on reusable input components can leave them inaccessible if the parent component forgets to provide one. Screen readers cannot properly link the label and input without matching `htmlFor` and `id` attributes.
 **Action:** When creating reusable UI components with forms or labels, use `React.useId()` as a fallback when an explicit ID is missing to ensure accessibility is maintained automatically.
+## 2025-03-01 - Daily Challenge Keyboard Accessibility
+**Learning:** Adding visible focus states (`focus-visible:ring-*`) to multiple interactive elements (such as accordions, options, and submission buttons) within complex gamification cards drastically improves keyboard navigability, as complex custom UI components often accidentally suppress or obscure default focus styles.
+**Action:** When creating or evaluating custom gamification UI elements in the future, always explicitly verify tab-order styling with `focus-visible` classes to ensure screen-reader/keyboard users have clear contextual awareness of their location within the card.
