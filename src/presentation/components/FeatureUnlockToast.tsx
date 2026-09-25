@@ -1,13 +1,18 @@
 import React, { useEffect } from 'react';
 import { Sparkles, X, Zap, Swords } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ConfettiCanvas } from './ConfettiCanvas';
 
 export const FeatureUnlockToast: React.FC = () => {
-  const currentUnlock = useAppStore((s) => s.featureToastQueue?.[0] ?? null);
-  const queueLength = useAppStore((s) => s.featureToastQueue?.length ?? 0);
-  const dismissFeatureToast = useAppStore((s) => s.dismissFeatureToast);
-  const lang = useAppStore((s) => s.settings.language || 'pt');
+  const { currentUnlock, queueLength, dismissFeatureToast, lang } = useAppStore(
+    useShallow((s) => ({
+      currentUnlock: s.featureToastQueue?.[0] ?? null,
+      queueLength: s.featureToastQueue?.length ?? 0,
+      dismissFeatureToast: s.dismissFeatureToast,
+      lang: s.settings.language || 'pt',
+    }))
+  );
 
   useEffect(() => {
     if (!currentUnlock) return;

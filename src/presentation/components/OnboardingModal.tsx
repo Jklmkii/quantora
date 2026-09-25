@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { Sigma, Scale, ShieldCheck, ChevronRight, Check } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export const OnboardingModal: React.FC = () => {
-  const hasCompletedOnboarding = useAppStore((s) => s.settings.hasCompletedOnboarding);
-  const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const { hasCompletedOnboarding, completeOnboarding } = useAppStore(
+    useShallow((s) => ({
+      hasCompletedOnboarding: s.settings.hasCompletedOnboarding,
+      completeOnboarding: s.completeOnboarding,
+    }))
+  );
   const [currentSlide, setCurrentSlide] = useState(0);
 
   if (hasCompletedOnboarding) return null;

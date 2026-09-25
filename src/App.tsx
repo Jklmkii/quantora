@@ -1,5 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { useAppStore } from './store/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Navbar } from './presentation/components/Navbar';
 import { SettingsModal } from './presentation/components/SettingsModal';
 import { OnboardingModal } from './presentation/components/OnboardingModal';
@@ -38,8 +39,12 @@ function ModuleSkeleton() {
 }
 
 export function App() {
-  const activeTab = useAppStore((s) => s.activeTab);
-  const theme = useAppStore((s) => s.settings.theme);
+  const { activeTab, theme } = useAppStore(
+    useShallow((s) => ({
+      activeTab: s.activeTab,
+      theme: s.settings.theme,
+    }))
+  );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set([activeTab]));
 
