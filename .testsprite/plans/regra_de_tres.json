@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.12.0/schemas/plan.schema.json",
+  "projectId": "676d23fc-1dba-4551-9281-6f35286a6186",
+  "type": "frontend",
+  "name": "Navigation to Rule of Three calculates correct direct proportional value",
+  "description": "When the user switches to the Regra de 3 tab, the module loads with standard values a1=2, b1=10, a2=6 and computes the unknown quantity x=30 with direct proportionality.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the homepage"
+    },
+    {
+      "type": "action",
+      "description": "Click on the Regra de 3 tab in the top navigation bar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the calculation result displays x = 30 and the step-by-step solution card is visible"
+    }
+  ]
+}

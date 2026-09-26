@@ -2,6 +2,23 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.26] — Auto-Bump de Release & Consolidação Multiplataforma (2026-09-23)
+
+### 🤖 CI/CD, Versionamento & Empacotamento
+- **Publicação Automatizada de Release no GitHub:** Versão `1.2.26` gerada automaticamente via pipeline de CI/CD após aprovação e merge de correções de segurança e acessibilidade na branch `main`.
+- **Consolidação de Segurança e Performance:** Integração consolidada dos PRs #56, #57, #58 e #59 da Jules AI (Palette, Sentinel e Bolt) e commit `5d4319d` (Antigravity).
+- **🎨 Acessibilidade Semântica no Widget do Tray (PR #60 — Jules AI Palette):** Inclusão de atributos `aria-label="Confirmar resposta"` no botão de submissão OK e `aria-label="Gerar nova conta"` no botão de próxima questão em `TrayPracticeWidget.tsx`, garantindo leitura e anúncio acessível por tecnologias assistivas.
+- **🛡️ Restrição de Navegação Local e Prevenção de Path Traversal (PR #56 & PR #59 — Jules AI Sentinel):** Interceptação estrita de navegação `file://` em `electron/main.cjs`, delimitando o escopo ao diretório canônico `dist` com inclusão de `path.sep` e validação via `fileURLToPath`.
+- **🎨 Acessibilidade ARIA em Switches de Configurações (PR #57 — Jules AI Palette):** Atributos `aria-label` descritivos adicionados nos seletores `role="switch"` em `SettingsModal.tsx`.
+- **⚡ Otimização de Performance no Widget do Tray (PR #58 — Jules AI Bolt):** Envolvimento de `useAppStore` com `useShallow` de `zustand/react/shallow` em `TrayPracticeWidget.tsx`, mitigando re-renderizações espúrias da mini-janela.
+- **⚡ Otimização Abrangente de Seletores Zustand (PR #61 & PR #62 — Jules AI Bolt):** Envolvimento sistemático de chamadas `useAppStore` com `useShallow` em `AchievementToast.tsx`, `App.tsx`, `OnboardingModal.tsx` e `FeatureUnlockToast.tsx`, eliminando re-renderizações atômicas desnecessárias decorrentes de mutações de outros estados da store.
+- **🎨 Acessibilidade de Foco por Teclado no Desafio Diário (PR #63 — Jules AI Palette):** Inclusão de classes Tailwind `focus-visible:ring-2` e `focus-visible:ring-4` nos botões de passo a passo, opções de resposta e compartilhamento em `DailyChallengeCard.tsx`, proporcionando feedback visual imediato para navegação acessível por teclado (WCAG 2.4.7).
+- **🎨 Associação Dinâmica Acessível via `useId` (PR #64 — Jules AI Palette):** Adoção de `React.useId()` para vinculação semântica e inequívoca do atributo `aria-controls` ao contêiner de explicação didática (`#id`) em `DailyChallengeCard.tsx`.
+- **🧹 Conformidade ECMAScript & Optional Catch Binding (`electron/main.cjs` — Commit `5d4319d` — Antigravity):** Adoção de optional catch binding (`catch` sem identificador de erro) no parsing de URLs, mantendo o Oxlint 100% limpo com zero avisos.
+- **🧪 Integridade da Suíte QA:** 435 testes unitários aprovados em 26 suítes (100% verde) e 0 erros/avisos no Oxlint em 95 arquivos analisados.
+
+---
+
 ## [1.2.25] — Onboarding Progressivo, Widget no System Tray & Preservação de Estado (2026-09-16)
 
 ### 🚀 Novas Funcionalidades & Experiência do Usuário

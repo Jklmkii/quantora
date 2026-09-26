@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.12.0/schemas/plan.schema.json",
+  "projectId": "676d23fc-1dba-4551-9281-6f35286a6186",
+  "type": "frontend",
+  "name": "Survival mode game launches with arithmetic question and exits cleanly",
+  "description": "User opens Treino Mental, starts Modo Sobrevivencia, verifies the active game interface with arithmetic question and keypad, then safely exits back to the lobby.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the homepage"
+    },
+    {
+      "type": "action",
+      "description": "Click on the Treino Mental tab in the top navigation bar"
+    },
+    {
+      "type": "action",
+      "description": "Click on the Modo Sobrevivência card to start the game"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the active game screen displays the question header Conta #1 and the numeric keypad"
+    },
+    {
+      "type": "action",
+      "description": "Click the sair button in the top left corner"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the user returns to the game lobby displaying the Modo Sobrevivência hero card"
+    }
+  ]
+}

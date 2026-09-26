@@ -165,7 +165,7 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 * **Preserve Tests:** Do not delete or weaken existing tests in `src/tests/`. If changing business logic, update corresponding tests to reflect the new intended behavior and maintain 100% test pass rate.
 
 ### F. Sincronização Obrigatória com o Obsidian (Obsidian-First — Foco Estrito no Desenvolvimento)
-* **Antes de Iniciar Qualquer Tarefa:** Sempre consulte as notas do projeto em `Obsidian-Vault/Projetos/Quantora/` (`Decisoes & Estado Atual.md`, `Quantora - Visao Geral.md`, etc.) para verificar requisitos prévios, convenções de arquitetura e decisões já tomadas, minimizando retrabalho e consumo desnecessário de contexto.
+* **Antes de Iniciar Qualquer Tarefa:** Sempre consulte as notas do projeto em `Obsidian-Vault/10 - Projetos/Quantora/` (`Decisoes & Estado Atual.md`, `Quantora - Visao Geral.md`, etc.) para verificar requisitos prévios, convenções de arquitetura e decisões já tomadas, minimizando retrabalho e consumo desnecessário de contexto.
 * **Ao Concluir ou Alterar Funcionalidades:** Sempre registre ou atualize o Obsidian com as novas decisões, mudanças de estado, correções de bugs em `Changelog & Historico de Bugs.md` e impactos nos módulos correspondentes.
 * **Indexação Estrita de Prompts de Desenvolvimento:**
   A partir de agora, **todo prompt relacionado ao desenvolvimento deste programa deve ser salvo, indexado e correlacionado à alteração implementada no Obsidian**. Cada registro deve manter o vínculo estruturado entre:
@@ -188,9 +188,9 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 * **Exclusão Somente sob Permissão Expressa do Usuário (Regra Mandatória):**
   Qualquer exclusão, expurgo ou remoção de notas, arquivos ou diretórios do Obsidian Vault só poderá ser realizada com a autorização prévia, expressa e explícita do usuário.
 * **Preservação da Pasta `raw/`:**
-  A pasta `raw/` abriga materiais brutos não tratados que serão mantidos intactos e processados exclusivamente quando solicitado pelo usuário.
+  A pasta `raw/` (alocada em `30 - Recursos & IA/raw/`) abriga materiais brutos não tratados que serão mantidos intactos e processados exclusivamente quando solicitado pelo usuário.
 * **Credenciais & Tokens:**
-  O arquivo `Sistemas & Integracoes/Credenciais & Tokens.md` é permanente e vital para a autenticação não-interativa do Git (GitHub PAT) e execução dos agentes.
+  O arquivo `20 - Sistemas & Integracoes/Credenciais & Tokens.md` é permanente e vital para a autenticação não-interativa do Git (GitHub PAT) e execução dos agentes.
 
 ### G. Análise de Falhas, Causa Raiz & Prevenção no Vault (Regra Mandatória)
 * **Análise Prévia Obrigatória:** Toda falha recorrente ou relevante encontrada durante a execução (seja em testes, build, automação de CI/CD, comandos de terminal ou comportamento da UI) deve ser minuciosamente analisada **antes** de qualquer tentativa de correção.
@@ -207,6 +207,13 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 * **Diagnóstico Aberto:** Se um replace corromper linhas ou a compilação falhar, relatar o diagnóstico e a correção em andamento abertamente.
 * **Feedback Atômico de Qualidade:** Reportar compilação e linter imediatamente com marcadores visuais (ex: *"Build passou com código 0! ✅ Agora vou rodar o lint:"*).
 * **Tabela de Fechamento:** Ao concluir, estruturar a tabela resumo com Tarefa, Status, Build e Lint com checkmarks verdes (`✅`).
+
+### I. Diretriz de Leitura Cirúrgica de Documentação no Vault (Economia de Tokens & Alta Precisão)
+* **Proibição de Leitura Integral Cega:** O agente NUNCA deve ler arquivos markdown inteiros de documentação se o arquivo tiver mais de 100 linhas.
+* **Funil de Resolução Progressiva (*Coarse-to-Fine*):**
+  1. **Nível 1 (Descoberta Global):** Consulte o manifesto semântico em `00 - Hub & Visao Geral/llms.txt` ou `00 - Hub & Visao Geral/vault_catalog.json` para identificar o arquivo exato e o resumo de suas seções em menos de 1k tokens.
+  2. **Nível 2 (Extração de Estrutura - Outline):** Para inspecionar a estrutura de uma nota específica, utilize comandos de outline por cabeçalhos (`rg "^#{1,3}\s" <caminho> -n`) para mapear os números de linha exatos de cada seção sem consumir o corpo do texto.
+  3. **Nível 3 (Fatiamento Cirúrgico):** Utilize a ferramenta de leitura com parâmetros de intervalo estrito (`StartLine` e `EndLine`), lendo apenas as 30 a 80 linhas necessárias para resolver a tarefa, blindando a janela de contexto contra saturação (*"Lost in the Middle"*).
 
 ---
 
