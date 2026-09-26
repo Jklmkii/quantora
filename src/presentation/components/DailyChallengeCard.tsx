@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useId } from 'react';
 import {
   Calendar,
   Clock,
@@ -52,6 +52,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
   className = '',
   onCompleted,
 }) => {
+  const explanationId = useId();
   const { streak, lastCompletedDate, completeDailyChallenge, addXp, checkAndUpdateStreak, language } = useAppStore(
     useShallow((s) => ({
       streak: s.profile?.streakDays || 1,
@@ -264,14 +265,14 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                 onClick={() => setShowExplanation((prev) => !prev)}
                 className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
                 aria-expanded={showExplanation}
-                aria-controls="explanation-content"
+                aria-controls={explanationId}
               >
                 <span>{t.daily_step_by_step}</span>
                 {showExplanation ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
 
               {showExplanation && (
-                <div id="explanation-content" className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex flex-col gap-2 text-xs font-mono text-slate-700 dark:text-slate-300 leading-relaxed animate-in slide-in-from-top-2 duration-200">
+                <div id={explanationId} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex flex-col gap-2 text-xs font-mono text-slate-700 dark:text-slate-300 leading-relaxed animate-in slide-in-from-top-2 duration-200">
                   {challenge.explanation.map((step, idx) => {
                     const parts = step.split(/(\*\*.*?\*\*)/g);
                     return (
