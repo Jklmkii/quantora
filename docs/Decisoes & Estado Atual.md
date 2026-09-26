@@ -6,10 +6,11 @@ Documento de persistência rápida de contexto e decisões de projeto para consu
 
 ## ⚡ Estado Atual do Projeto
 * **Nome Oficial:** Quantora
-* **Versão no Repositório:** `1.1.1` (Pronta para bump para `1.2.0`)
-* **Branch Ativa:** `main` (Commit: `6eae161`)
-* **Testes Automatizados:** 172 testes passando em 12 suítes (`100% verde`)
-* **Build de Produção:** Vite + TypeScript compilando limpo (<500ms)
+* **Versão no Repositório:** `1.2.27`
+* **Branch Ativa:** `main`
+* **Testes Automatizados:** 455 testes passando em 28 suítes (`100% verde`)
+* **Linter Oxlint:** 0 warnings e 0 errors em 100 arquivos
+* **Build de Produção:** Vite + TypeScript compilando limpo (<900ms)
 
 ---
 
@@ -25,13 +26,18 @@ Documento de persistência rápida de contexto e decisões de projeto para consu
 ---
 
 ## ⚙️ Decisões Técnicas Principais
-1. **Migração de Storage:** Em `src/store/useAppStore.ts`, se `mathutils-storage` existir e `quantora-storage` for nulo, os dados locais (XP, streaks, histórico e medalhas) são migrados na inicialização sem perda.
+1. **Migração de Storage (Schema v7):** Em `src/store/useAppStore.ts`, schema versionado com suporte retrocompatível e migrações seguras, persistindo consumíveis de batalha (`bossOracleCharges`, `bossTimeFreezeCharges`).
 2. **Pacote Android:** `com.quantora.app`, com `MainActivity.java` sob `com/quantora/app/`.
 3. **Desktop (Electron):** Título da janela padronizado e rotina de auto-update configurada para instaladores `Quantora-Setup-<ver>.exe`.
 4. **Modos de Jogo:**
    * Desafio Diário determinístico (Mulberry32 seeded por data ISO).
    * Modo Blitz 60s (+2s acerto / -3s erro / combos até 3x).
-   * Modo Batalha de Chefe (100 HP, 3 escudos).
+   * Modo Batalha de Chefe em **Torre Procedural Infinita ($N = 1, \dots, \infty$)**:
+     * Fórmula de vida: $HP_{max}(N) = 100 \cdot (1 + 0.35 \cdot (N - 1))$.
+     * Teto assintótico de dificuldade aritmética ($N_{cap} = 15$).
+     * 3 Fases Dinâmicas (Fase 3 Enrage $\le 25\%$ HP com $1.5\times$ dano crítico e 2 de dano de escudo ao errar).
+     * Debuffs cognitivos procedurais (`fog`, `mirror`, `time_siphon`).
+     * Consumíveis compráveis com moedas (`oracle` e `timeFreeze`).
    * Lousa de Rascunho (*Scratchpad*) em Canvas transparente.
    * Catálogo de 16 Conquistas (*Achievements*).
 

@@ -5,6 +5,11 @@ import {
   playBossDamageTaken,
   playComboTick,
   playMasteryBadge,
+  playBossVictory,
+  playBossShieldBreak,
+  playBlitzTimeWarning,
+  playLevelUp,
+  playStreakFlame,
   playRare67,
   playTestSound,
   playSfx,
@@ -42,6 +47,11 @@ describe('Audio Platform Helper (SFX)', () => {
     expect(() => playBossDamageTaken()).not.toThrow();
     expect(() => playComboTick()).not.toThrow();
     expect(() => playMasteryBadge()).not.toThrow();
+    expect(() => playBossVictory()).not.toThrow();
+    expect(() => playBossShieldBreak()).not.toThrow();
+    expect(() => playBlitzTimeWarning()).not.toThrow();
+    expect(() => playLevelUp()).not.toThrow();
+    expect(() => playStreakFlame()).not.toThrow();
     expect(() => playRare67()).not.toThrow();
     expect(() => playTestSound()).not.toThrow();
   });

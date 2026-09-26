@@ -11,6 +11,7 @@ export const VALID_TYPES: readonly CalculationType[] = [
   'regra_simples',
   'regra_composta',
   'physics',
+  'pitagoras',
 ] as const;
 
 /**

@@ -22,7 +22,7 @@ import {
   type BlitzState,
 } from '../../core/quiz/blitzEngine';
 import { hapticComboTick } from '../../core/platform/haptics';
-import { playComboTick } from '../../core/platform/audio';
+import { playComboTick, playBlitzTimeWarning } from '../../core/platform/audio';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -154,6 +154,9 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
     timerRef.current = window.setInterval(() => {
       setState((prev) => {
         const nextTime = Math.max(0, prev.timeLeft - stepSeconds);
+        if (Math.ceil(prev.timeLeft) !== Math.ceil(nextTime) && nextTime <= 5 && nextTime > 0) {
+          playBlitzTimeWarning();
+        }
         if (nextTime <= 0) {
           clearInterval(timerRef.current!);
           finishGame(

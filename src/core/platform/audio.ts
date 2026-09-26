@@ -12,7 +12,12 @@ export type SfxName =
   | 'damage-taken'
   | 'combo-tick'
   | 'mastery-badge'
-  | 'rare-67';
+  | 'rare-67'
+  | 'boss-victory'
+  | 'boss-shield-break'
+  | 'blitz-time-warning'
+  | 'level-up'
+  | 'streak-flame';
 
 // Cache audio elements for fast playback without reloading
 let audioCache: Partial<Record<SfxName, HTMLAudioElement>> = {};
@@ -109,6 +114,31 @@ export function playComboTick(): void {
 /** Som triunfante de maestria / graduação de fato matemático no Caderno de Erros */
 export function playMasteryBadge(): void {
   playSfx('mastery-badge');
+}
+
+/** Som triunfal épico de vitória contra o Boss */
+export function playBossVictory(): void {
+  playSfx('boss-victory');
+}
+
+/** Som de estilhaçamento de escudo/barreira do Boss */
+export function playBossShieldBreak(): void {
+  playSfx('boss-shield-break');
+}
+
+/** Som tenso de pulso cardíaco para avisar os últimos segundos no Blitz */
+export function playBlitzTimeWarning(): void {
+  playSfx('blitz-time-warning');
+}
+
+/** Som mágico e cintilante ao subir de nível ou desbloquear conquistas */
+export function playLevelUp(): void {
+  playSfx('level-up');
+}
+
+/** Som crepitante de chama ao manter a sequência diária */
+export function playStreakFlame(): void {
+  playSfx('streak-flame');
 }
 
 /** Som especial e raro para o easter egg do número 67 */

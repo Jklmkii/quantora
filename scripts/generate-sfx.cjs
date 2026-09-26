@@ -162,6 +162,125 @@ function generateRare67() {
   return samples;
 }
 
+// 7. boss-victory: Triumphant, heroic brass fanfare arpeggio (C4 -> E4 -> G4 -> C5 -> E5) (0.75s)
+function generateBossVictory() {
+  const duration = 0.75;
+  const total = Math.floor(SAMPLE_RATE * duration);
+  const samples = new Float32Array(total);
+  const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+  const noteDuration = 0.12;
+
+  for (let i = 0; i < total; i++) {
+    const t = i / SAMPLE_RATE;
+    let s = 0;
+    for (let n = 0; n < notes.length; n++) {
+      const noteStart = n * noteDuration;
+      if (t >= noteStart) {
+        const noteT = t - noteStart;
+        const noteEnv = Math.exp(-noteT * 4.5);
+        const freq = notes[n];
+        // Rich brass-like timbre with harmonics
+        const wave =
+          Math.sin(2 * Math.PI * freq * noteT) +
+          0.5 * Math.sin(4 * Math.PI * freq * noteT) +
+          0.25 * Math.sin(6 * Math.PI * freq * noteT);
+        s += wave * noteEnv * 0.32;
+      }
+    }
+    samples[i] = Math.tanh(s * 1.2);
+  }
+  return samples;
+}
+
+// 8. boss-shield-break: Shattering crystalline/glass transient with dispersion (0.32s)
+function generateBossShieldBreak() {
+  const duration = 0.32;
+  const total = Math.floor(SAMPLE_RATE * duration);
+  const samples = new Float32Array(total);
+
+  for (let i = 0; i < total; i++) {
+    const t = i / SAMPLE_RATE;
+    const env = Math.exp(-t * 14);
+    const noise = (Math.random() * 2 - 1) * Math.exp(-t * 22);
+    // Multiple metallic resonant glass frequencies
+    const wave1 = 0.4 * Math.sin(2 * Math.PI * (1450 + 200 * Math.sin(60 * t)) * t);
+    const wave2 = 0.3 * Math.sin(2 * Math.PI * (2300 + 400 * Math.sin(40 * t)) * t);
+    const wave3 = 0.2 * Math.sin(2 * Math.PI * (3800 * Math.exp(-t * 8)) * t);
+
+    let sample = (wave1 + wave2 + wave3 + noise * 0.7) * env;
+    samples[i] = Math.tanh(sample * 1.4);
+  }
+  return samples;
+}
+
+// 9. blitz-time-warning: Tense, urgent heartbeat pulse with low-pass resonance (0.28s)
+function generateBlitzTimeWarning() {
+  const duration = 0.28;
+  const total = Math.floor(SAMPLE_RATE * duration);
+  const samples = new Float32Array(total);
+
+  for (let i = 0; i < total; i++) {
+    const t = i / SAMPLE_RATE;
+    // Double pulse: lub-dub
+    const p1 = Math.exp(-Math.pow((t - 0.05) / 0.035, 2));
+    const p2 = 0.7 * Math.exp(-Math.pow((t - 0.16) / 0.035, 2));
+    const env = p1 + p2;
+    const freq = 68 - 18 * t;
+    const wave = Math.sin(2 * Math.PI * freq * t) + 0.3 * Math.sin(4 * Math.PI * freq * t);
+
+    samples[i] = Math.tanh(wave * env * 1.5) * 0.85;
+  }
+  return samples;
+}
+
+// 10. level-up: Sparkling, magical ascending shimmer with bright overtone sparkle (0.55s)
+function generateLevelUp() {
+  const duration = 0.55;
+  const total = Math.floor(SAMPLE_RATE * duration);
+  const samples = new Float32Array(total);
+  const notes = [440, 554.37, 659.25, 880, 1108.73];
+  const step = 0.08;
+
+  for (let i = 0; i < total; i++) {
+    const t = i / SAMPLE_RATE;
+    let s = 0;
+    for (let n = 0; n < notes.length; n++) {
+      const noteStart = n * step;
+      if (t >= noteStart) {
+        const noteT = t - noteStart;
+        const noteEnv = Math.exp(-noteT * 6);
+        const freq = notes[n];
+        const shimmer = 0.2 * Math.sin(2 * Math.PI * 12 * noteT);
+        const wave = Math.sin(2 * Math.PI * (freq + shimmer * 50) * noteT);
+        const bell = 0.35 * Math.sin(4 * Math.PI * freq * noteT);
+        s += (wave + bell) * noteEnv * 0.28;
+      }
+    }
+    samples[i] = Math.tanh(s * 1.1);
+  }
+  return samples;
+}
+
+// 11. streak-flame: Crackling fiery ignition with warm resonant whoosh (0.40s)
+function generateStreakFlame() {
+  const duration = 0.40;
+  const total = Math.floor(SAMPLE_RATE * duration);
+  const samples = new Float32Array(total);
+
+  for (let i = 0; i < total; i++) {
+    const t = i / SAMPLE_RATE;
+    const env = Math.exp(-t * 7);
+    const crackle = (Math.random() > 0.88 ? Math.random() * 2 - 1 : 0) * Math.exp(-t * 12);
+    const whooshFreq = 180 + 350 * Math.exp(-t * 10);
+    const whoosh = Math.sin(2 * Math.PI * whooshFreq * t);
+    const warmth = 0.4 * Math.sin(Math.PI * whooshFreq * t);
+
+    let sample = (whoosh + warmth + crackle * 0.8) * env * 0.8;
+    samples[i] = Math.tanh(sample * 1.3);
+  }
+  return samples;
+}
+
 function main() {
   const outDir = path.resolve(__dirname, '..', 'public', 'sounds');
   if (!fs.existsSync(outDir)) {
@@ -174,7 +293,12 @@ function main() {
     { name: 'damage-taken', gen: generateDamageTaken },
     { name: 'combo-tick', gen: generateComboTick },
     { name: 'mastery-badge', gen: generateMasteryBadge },
-    { name: 'rare-67', gen: generateRare67 }
+    { name: 'rare-67', gen: generateRare67 },
+    { name: 'boss-victory', gen: generateBossVictory },
+    { name: 'boss-shield-break', gen: generateBossShieldBreak },
+    { name: 'blitz-time-warning', gen: generateBlitzTimeWarning },
+    { name: 'level-up', gen: generateLevelUp },
+    { name: 'streak-flame', gen: generateStreakFlame },
   ];
 
   for (const s of sounds) {

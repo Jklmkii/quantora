@@ -21,6 +21,8 @@ import {
   Lock,
   CheckCircle2,
   XCircle,
+  Eye,
+  Snowflake,
 } from 'lucide-react';
 import {
   createInitialBossBattleState,
@@ -35,10 +37,22 @@ import {
   CRITICAL_DAMAGE_MAX,
   getRoundTimeLimitForLevel,
   getCriticalTimeThresholdForLevel,
+  DIFFICULTY_CAP_LEVEL,
+  getBossIdentityForLevel,
+  applyOracleInBattle,
+  applyTimeFreezeInBattle,
+  ORACLE_COST,
+  TIME_FREEZE_COST,
 } from '../../core/quiz/bossEngine';
 import type { BossBattleState, BossRoundResult } from '../../core/quiz/bossEngine';
 import { hapticBossHit, hapticBossDamageTaken } from '../../core/platform/haptics';
-import { playBossHitCritical, playBossHitStandard, playBossDamageTaken } from '../../core/platform/audio';
+import {
+  playBossHitCritical,
+  playBossHitStandard,
+  playBossDamageTaken,
+  playBossVictory,
+  playBossShieldBreak,
+} from '../../core/platform/audio';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
@@ -65,8 +79,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     highestBossLevelCleared,
     bossCoins,
     damageUpgradeLevel,
+    bossOracleCharges,
+    bossTimeFreezeCharges,
     recordBossVictory,
     purchaseDamageUpgrade,
+    buyBossConsumable,
+    consumeBossConsumableCharge,
     addXp,
     unlockAchievement,
     language,
@@ -76,8 +94,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       highestBossLevelCleared: s.highestBossLevelCleared ?? s.profile?.stats?.highestBossLevelCleared ?? 0,
       bossCoins: s.bossCoins ?? s.profile?.stats?.bossCoins ?? 0,
       damageUpgradeLevel: s.damageUpgradeLevel ?? s.profile?.stats?.damageUpgradeLevel ?? 0,
+      bossOracleCharges: s.bossOracleCharges ?? s.profile?.stats?.bossOracleCharges ?? 0,
+      bossTimeFreezeCharges: s.bossTimeFreezeCharges ?? s.profile?.stats?.bossTimeFreezeCharges ?? 0,
       recordBossVictory: s.recordBossVictory,
       purchaseDamageUpgrade: s.purchaseDamageUpgrade,
+      buyBossConsumable: s.buyBossConsumable,
+      consumeBossConsumableCharge: s.consumeBossConsumableCharge,
       addXp: s.addXp,
       unlockAchievement: s.unlockAchievement,
       language: s.settings.language || 'pt',
@@ -92,7 +114,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
   // Combat State
   const [battleState, setBattleState] = useState<BossBattleState>(() =>
-    createInitialBossBattleState(initialLevel, damageUpgradeLevel)
+    createInitialBossBattleState(initialLevel, damageUpgradeLevel, bossOracleCharges, bossTimeFreezeCharges)
   );
   const [elapsedThisRound, setElapsedThisRound] = useState<number>(0);
   const [isResolving, setIsResolving] = useState<boolean>(false);
@@ -110,12 +132,19 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const timerRef = useRef<number | null>(null);
   const roundStartTimeRef = useRef<number>(0);
   const victoryRecordedRef = useRef<boolean>(false);
+  const elapsedThisRoundRef = useRef<number>(0);
+
+  useEffect(() => {
+    elapsedThisRoundRef.current = elapsedThisRound;
+  }, [elapsedThisRound]);
 
   // Player level derived from totalXp (100 XP per level, min 1)
   const playerLevel = Math.floor(totalXp / 100) + 1;
 
-  // Boss Phase 2 (Enraged) when HP is at or below 50% of max HP
-  const isRageMode = (battleState.phase === 2 || battleState.bossHp <= battleState.bossMaxHp * 0.5) && battleState.bossHp > 0;
+  // Boss Phases
+  const isPhase2 = battleState.phase === 2;
+  const isPhase3 = battleState.phase === 3;
+  const isRageMode = (isPhase2 || isPhase3 || battleState.bossHp <= battleState.bossMaxHp * 0.5) && battleState.bossHp > 0;
 
   // Time calculations
   const currentLevel = battleState.level ?? 1;
@@ -136,7 +165,14 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       }
       victoryRecordedRef.current = false;
       setSelectedLevel(level);
-      setBattleState(createInitialBossBattleState(level, damageUpgradeLevel));
+      setBattleState(
+        createInitialBossBattleState(
+          level,
+          damageUpgradeLevel,
+          bossOracleCharges,
+          bossTimeFreezeCharges
+        )
+      );
       setElapsedThisRound(0);
       setIsResolving(false);
       setSelectedOption(null);
@@ -146,7 +182,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       setScreen('battle');
       roundStartTimeRef.current = Date.now();
     },
-    [damageUpgradeLevel]
+    [damageUpgradeLevel, bossOracleCharges, bossTimeFreezeCharges]
   );
 
   // Helper to add floating combat numbers
@@ -160,6 +196,56 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     },
     []
   );
+
+  // Consumable Action Handlers
+  const handleUseOracle = useCallback(() => {
+    if (
+      isResolving ||
+      battleState.status !== 'fighting' ||
+      bossOracleCharges <= 0 ||
+      battleState.eliminatedOptions.length > 0
+    ) {
+      return;
+    }
+    const used = consumeBossConsumableCharge('oracle');
+    if (used) {
+      setBattleState((prev) => applyOracleInBattle(prev));
+      addFloatingText('🔮 2 OPÇÕES ELIMINADAS!', 'standard');
+    }
+  }, [
+    isResolving,
+    battleState.status,
+    bossOracleCharges,
+    battleState.eliminatedOptions.length,
+    consumeBossConsumableCharge,
+    addFloatingText,
+  ]);
+
+  const handleUseTimeFreeze = useCallback(() => {
+    if (
+      isResolving ||
+      battleState.status !== 'fighting' ||
+      bossTimeFreezeCharges <= 0 ||
+      battleState.isTimeFrozen
+    ) {
+      return;
+    }
+    const used = consumeBossConsumableCharge('timeFreeze');
+    if (used) {
+      setBattleState((prev) => applyTimeFreezeInBattle(prev));
+      addFloatingText('❄️ TEMPO CONGELADO (+4s)!', 'standard');
+      setTimeout(() => {
+        setBattleState((prev) => ({ ...prev, isTimeFrozen: false }));
+      }, 4000);
+    }
+  }, [
+    isResolving,
+    battleState.status,
+    bossTimeFreezeCharges,
+    battleState.isTimeFrozen,
+    consumeBossConsumableCharge,
+    addFloatingText,
+  ]);
 
   // Answer resolution logic
   const handleAnswerSubmit = useCallback(
@@ -198,7 +284,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           playBossHitCritical();
           setIsShaking(true);
           setFlashColor('gold');
-          addFloatingText(`-${roundResult.damageResult.damage} CRÍTICO!`, 'critical');
+          const critLabel = battleState.phase === 3 ? 'CRÍTICO FURIOSO 1.5x!' : 'CRÍTICO!';
+          addFloatingText(`-${roundResult.damageResult.damage} ${critLabel}`, 'critical');
           setTimeout(() => {
             setIsShaking(false);
             setFlashColor(null);
@@ -214,9 +301,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         // Wrong or timeout: player recoil + red flash + shield loss text at boss portrait + audio
         hapticBossDamageTaken();
         playBossDamageTaken();
+        playBossShieldBreak();
         setIsPlayerRecoiling(true);
         setFlashColor('red');
-        addFloatingText('-1 ESCUDO!', 'shield_loss');
+        const shieldLoss = roundResult.damageResult.shieldDamage || 1;
+        const lossText = shieldLoss > 1 ? `-${shieldLoss} ESCUDOS (FÚRIA)!` : '-1 ESCUDO!';
+        addFloatingText(lossText, 'shield_loss');
         setTimeout(() => {
           setIsPlayerRecoiling(false);
           setFlashColor(null);
@@ -250,7 +340,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       return;
     }
 
-    const startTime = Date.now();
+    if (battleState.isTimeFrozen) {
+      // While time freeze is active, don't run the tick countdown
+      return;
+    }
+
+    const startTime = Date.now() - elapsedThisRoundRef.current * 1000;
     roundStartTimeRef.current = startTime;
 
     timerRef.current = window.setInterval(() => {
@@ -267,12 +362,21 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [screen, battleState.status, isResolving, battleState.round, currentRoundTimeLimit, handleTimeout]);
+  }, [
+    screen,
+    battleState.status,
+    battleState.isTimeFrozen,
+    isResolving,
+    battleState.round,
+    currentRoundTimeLimit,
+    handleTimeout,
+  ]);
 
   // Victory Handler: persist rewards (coins, level cleared, XP) to global store once
   useEffect(() => {
     if (screen === 'battle' && battleState.status === 'victory' && !victoryRecordedRef.current) {
       victoryRecordedRef.current = true;
+      playBossVictory();
 
       const totalTime = Math.round(battleState.totalTimeSeconds);
       const shieldsRemaining = battleState.shields;
@@ -316,6 +420,10 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       const keyIndex = parseInt(e.key, 10) - 1;
       if (keyIndex >= 0 && keyIndex < battleState.currentQuestion.options.length) {
         const option = battleState.currentQuestion.options[keyIndex];
+        // Cannot select eliminated option
+        if (battleState.eliminatedOptions?.includes(option)) {
+          return;
+        }
         setSelectedOption(option);
         handleAnswerSubmit(option);
       }
@@ -332,8 +440,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     const nextCost = costForUpgrade(damageUpgradeLevel);
     const canAfford = bossCoins >= nextCost;
     const currentBonus = damageUpgradeLevel * BONUS_PER_UPGRADE_LEVEL;
-    const totalLevelsToDisplay = Math.max(highestBossLevelCleared + 2, 6);
+    const totalLevelsToDisplay = Math.max(highestBossLevelCleared + 4, 9);
     const levelsArray = Array.from({ length: totalLevelsToDisplay }, (_, i) => i + 1);
+
+    const canAffordOracle = bossCoins >= ORACLE_COST;
+    const canAffordFreeze = bossCoins >= TIME_FREEZE_COST;
 
     return (
       <div className="flex flex-col gap-6 max-w-2xl mx-auto pb-24 md:pb-12 select-none">
@@ -373,20 +484,20 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           <div className="flex-1 text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
               <span className="text-[10px] uppercase font-black tracking-widest px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Chefe Titã • Níveis Progressivos
+                Torre Infinita Procedural
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-100 to-white">
               {t.boss_battle_title || 'Batalha de Chefes'}
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 mt-1">
-              Enfrente Lord Mathgoth em níveis cada vez mais desafiadores. Cada vitória concede moedas para aprimorar seu ataque permanentemente!
+              Enfrente a torre procedural infinita. A vida dos chefes escala sem limites, com dificuldade aritmética calculável até o teto do nível {DIFFICULTY_CAP_LEVEL}!
             </p>
           </div>
         </div>
 
         {/* Arsenal & Damage Forge (Shop) */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white border border-amber-300 dark:border-amber-500/30 shadow-xl flex flex-col gap-4">
+        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white border border-amber-300 dark:border-amber-500/30 shadow-xl flex flex-col gap-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 flex items-center justify-center shrink-0">
@@ -428,7 +539,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             </div>
           </div>
 
-          {/* Upgrade Purchase Button */}
+          {/* Upgrade Damage Purchase Button */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
             <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
               <span>Próximo nível (+3 de dano): </span>
@@ -455,6 +566,78 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 : `Moedas Insuficientes (${bossCoins}/${nextCost})`}
             </button>
           </div>
+
+          {/* Consumable Shop Section */}
+          <div className="border-t border-slate-200 dark:border-slate-800/80 pt-4 flex flex-col gap-3">
+            <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Sparkles size={14} className="text-cyan-500" />
+              Consumíveis Táticos de Batalha
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Oracle 50/50 */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                      <Eye size={17} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900 dark:text-white">Oráculo 50/50</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Descarta 2 alternativas incorretas</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-black px-2 py-0.5 rounded-lg bg-purple-500/15 text-purple-400 border border-purple-500/20">
+                    {bossOracleCharges} {bossOracleCharges === 1 ? 'carga' : 'cargas'}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={!canAffordOracle}
+                  onClick={() => buyBossConsumable('oracle')}
+                  className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    canAffordOracle
+                      ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/20 cursor-pointer active:scale-95'
+                      : 'bg-slate-200 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <Coins size={13} /> Comprar Carga ({ORACLE_COST} 🪙)
+                </button>
+              </div>
+
+              {/* Time Freeze */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                      <Snowflake size={17} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900 dark:text-white">Dilatação Temporal</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Congela o cronômetro por 4s</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-black px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-400 border border-cyan-500/20">
+                    {bossTimeFreezeCharges} {bossTimeFreezeCharges === 1 ? 'carga' : 'cargas'}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={!canAffordFreeze}
+                  onClick={() => buyBossConsumable('timeFreeze')}
+                  className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    canAffordFreeze
+                      ? 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/20 cursor-pointer active:scale-95'
+                      : 'bg-slate-200 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <Coins size={13} /> Comprar Carga ({TIME_FREEZE_COST} 🪙)
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Levels Selection Grid */}
@@ -476,6 +659,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               const isLocked = lvl > highestBossLevelCleared + 1;
               const hp = getBossHpForLevel(lvl);
               const coinsReward = coinsForLevel(lvl);
+              const bossMeta = getBossIdentityForLevel(lvl);
+              const isCapLevel = lvl >= DIFFICULTY_CAP_LEVEL;
 
               return (
                 <div
@@ -490,7 +675,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-base font-black text-slate-900 dark:text-white">
                           Nível {lvl}
                         </span>
@@ -504,13 +689,21 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                             Disponível
                           </span>
                         )}
+                        {isCapLevel && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-500/15 text-purple-400 font-bold border border-purple-500/30">
+                            Teto Nv.15
+                          </span>
+                        )}
                       </div>
+                      <p className="text-xs font-bold text-amber-600 dark:text-amber-400 truncate max-w-[140px] mt-0.5">
+                        {bossMeta.name}
+                      </p>
                       <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 mt-0.5">
                         <Heart size={12} className="text-red-500 fill-red-500" /> {hp} HP
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 px-2 py-1 rounded-xl border border-amber-300 dark:border-amber-500/20">
+                    <div className="flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 px-2 py-1 rounded-xl border border-amber-300 dark:border-amber-500/20 shrink-0">
                       <Coins size={13} className="text-amber-600 dark:text-amber-400" /> +{coinsReward}
                     </div>
                   </div>
@@ -840,14 +1033,20 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           }`}
         />
 
-        {/* Rage Mode Banner */}
-        {isRageMode && (
-          <div className="w-full py-1.5 px-3 rounded-xl bg-red-600/20 border border-red-500/50 flex items-center justify-center gap-2 text-xs font-black text-red-300 uppercase tracking-wider animate-pulse z-10">
-            <Flame size={16} className="text-red-400 fill-red-400" />
-            <span>FASE 2 ATIVA! O CHEFE ESTÁ ENFURECIDO (-20% TEMPO POR RODADA)!</span>
-            <Flame size={16} className="text-red-400 fill-red-400" />
+        {/* Phase Banners */}
+        {isPhase3 ? (
+          <div className="w-full py-2 px-3 rounded-xl bg-red-600/30 border border-red-500/80 flex items-center justify-center gap-2 text-xs font-black text-red-200 uppercase tracking-wider animate-pulse z-10 shadow-lg shadow-red-900/50">
+            <Flame size={18} className="text-red-400 fill-red-400 shrink-0" />
+            <span className="text-center">FASE 3 ATIVA! FÚRIA TOTAL (ENRAGE) — CRÍTICO 1.5x / ERRO -2 ESCUDOS!</span>
+            <Flame size={18} className="text-red-400 fill-red-400 shrink-0" />
           </div>
-        )}
+        ) : isPhase2 ? (
+          <div className="w-full py-1.5 px-3 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center gap-2 text-xs font-black text-amber-300 uppercase tracking-wider animate-pulse z-10">
+            <Zap size={16} className="text-amber-400 fill-amber-400 shrink-0" />
+            <span className="text-center">FASE 2 ATIVA! SOBRECARGA ELEMENTAL (-20% TEMPO POR RODADA)!</span>
+            <Zap size={16} className="text-amber-400 fill-amber-400 shrink-0" />
+          </div>
+        ) : null}
 
         {/* BOSS SECTION */}
         <div className="w-full flex flex-col items-center gap-3 z-10 pt-4 sm:pt-6">
@@ -878,18 +1077,23 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl p-1 flex items-center justify-center shadow-2xl transition-all duration-300 ${
                 isBossRecoiling ? 'scale-90 rotate-6 bg-red-500' : 'scale-100'
               } ${
-                isRageMode
-                  ? 'bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 shadow-red-600/50 animate-pulse'
+                isPhase3
+                  ? 'bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 shadow-red-600/70 animate-pulse ring-4 ring-red-500/40'
+                  : isPhase2
+                  ? 'bg-gradient-to-tr from-amber-600 via-yellow-500 to-orange-500 shadow-amber-600/50 animate-pulse'
                   : 'bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-600 shadow-purple-900/50'
               }`}
             >
               <div className="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center overflow-hidden relative">
-                <Skull
-                  size={42}
-                  className={`transition-colors duration-300 ${
-                    isRageMode ? 'text-red-400' : 'text-purple-300'
-                  }`}
-                />
+                {battleState.bossIdentity.avatarIcon === 'flame' ? (
+                  <Flame size={42} className={isPhase3 ? 'text-red-400 fill-red-400/50' : 'text-amber-400'} />
+                ) : battleState.bossIdentity.avatarIcon === 'crown' ? (
+                  <Crown size={42} className={isPhase3 ? 'text-red-400' : 'text-amber-300'} />
+                ) : battleState.bossIdentity.avatarIcon === 'zap' ? (
+                  <Zap size={42} className={isPhase3 ? 'text-red-400' : 'text-cyan-300'} />
+                ) : (
+                  <Skull size={42} className={isPhase3 ? 'text-red-400' : 'text-purple-300'} />
+                )}
                 {isRageMode && (
                   <Flame
                     size={20}
@@ -901,19 +1105,25 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
             <div className="mt-2 text-center">
               <h3 className="text-base sm:text-lg font-black text-white flex items-center justify-center gap-1.5">
-                Lord Mathgoth
+                {battleState.bossIdentity.name}
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                    isRageMode
-                      ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                    isPhase3
+                      ? 'bg-red-500/30 text-red-200 border border-red-500/60 font-black animate-pulse'
+                      : isPhase2
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                       : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                   }`}
                 >
-                  {isRageMode ? 'FASE 2 • ENFURECIDO' : `FASE 1 • NÍVEL ${battleState.level}`}
+                  {isPhase3
+                    ? 'FASE 3 • FÚRIA (ENRAGE)'
+                    : isPhase2
+                    ? 'FASE 2 • SOBRECARGA'
+                    : `FASE 1 • NÍVEL ${battleState.level}`}
                 </span>
               </h3>
               <p className="text-[11px] text-slate-400 font-semibold">
-                Guardião das Equações Proibidas
+                {battleState.bossIdentity.title}
               </p>
             </div>
           </div>
@@ -947,6 +1157,39 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               />
             </div>
           </div>
+        </div>
+
+        {/* IN-COMBAT CONSUMABLES HUD */}
+        <div className="w-full flex items-center justify-center gap-2 px-2 z-10 flex-wrap">
+          <button
+            type="button"
+            disabled={isResolving || bossOracleCharges <= 0 || battleState.eliminatedOptions.length > 0}
+            onClick={handleUseOracle}
+            className={`py-1.5 px-3 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+              bossOracleCharges > 0 && battleState.eliminatedOptions.length === 0 && !isResolving
+                ? 'bg-purple-600/30 hover:bg-purple-600 border border-purple-500/60 text-purple-200 cursor-pointer active:scale-95 shadow-md shadow-purple-900/30'
+                : 'bg-slate-900/50 border border-slate-800 text-slate-500 cursor-not-allowed opacity-50'
+            }`}
+            title="Descarta 2 opções incorretas"
+          >
+            <Eye size={14} className="text-purple-400" />
+            <span>Oráculo 50/50 ({bossOracleCharges})</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={isResolving || bossTimeFreezeCharges <= 0 || battleState.isTimeFrozen}
+            onClick={handleUseTimeFreeze}
+            className={`py-1.5 px-3 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+              bossTimeFreezeCharges > 0 && !battleState.isTimeFrozen && !isResolving
+                ? 'bg-cyan-600/30 hover:bg-cyan-600 border border-cyan-500/60 text-cyan-200 cursor-pointer active:scale-95 shadow-md shadow-cyan-900/30'
+                : 'bg-slate-900/50 border border-slate-800 text-slate-500 cursor-not-allowed opacity-50'
+            }`}
+            title="Congela o cronômetro por 4 segundos"
+          >
+            <Snowflake size={14} className={battleState.isTimeFrozen ? 'text-cyan-300 animate-spin' : 'text-cyan-400'} />
+            <span>{battleState.isTimeFrozen ? 'Tempo Congelado!' : `Dilatação Temporal (${bossTimeFreezeCharges})`}</span>
+          </button>
         </div>
 
         {/* ROUND TIMER & CRITICAL WINDOW INDICATOR */}
@@ -1000,13 +1243,30 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
         {/* QUESTION DISPLAY CARD */}
         <div className="w-full p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-lg flex flex-col items-center text-center gap-3 z-10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               {battleState.currentQuestion.categoryLabel}
             </span>
             <span className="text-xs font-bold text-slate-400">
               {battleState.currentQuestion.title}
             </span>
+
+            {/* Cognitive Debuff Badges */}
+            {battleState.currentQuestion.debuff === 'fog' && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-600/30 text-slate-300 border border-slate-500/40">
+                🌫️ Névoa Algébrica
+              </span>
+            )}
+            {battleState.currentQuestion.debuff === 'mirror' && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-300 border border-purple-500/50">
+                🪞 Inversão Espectral
+              </span>
+            )}
+            {battleState.currentQuestion.debuff === 'time_siphon' && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/30 text-rose-300 border border-rose-500/50">
+                ⏳ Dreno Temporal (-25%)
+              </span>
+            )}
           </div>
 
           <p className="text-xs sm:text-sm font-semibold text-slate-300">
@@ -1014,7 +1274,14 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           </p>
 
           {/* Big Math Expression */}
-          <div className="py-2.5 px-6 rounded-xl bg-slate-950/80 border border-slate-800/80 shadow-inner">
+          <div
+            className={`py-2.5 px-6 rounded-xl bg-slate-950/80 border border-slate-800/80 shadow-inner ${
+              battleState.currentQuestion.debuff === 'fog'
+                ? 'filter blur-[2px] select-none hover:filter-none transition-all duration-300 cursor-pointer'
+                : ''
+            }`}
+            title={battleState.currentQuestion.debuff === 'fog' ? 'Névoa ativa: passe o mouse ou toque para focar' : undefined}
+          >
             <span className="text-2xl sm:text-3xl font-black font-mono tracking-wide text-white">
               {battleState.currentQuestion.displayExpression}
             </span>
@@ -1041,11 +1308,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 {battleState.currentQuestion.options.map((option, idx) => {
                   const isSelected = selectedOption === option;
                   const isCorrect = option === battleState.currentQuestion.correctAnswer;
+                  const isEliminated = battleState.eliminatedOptions?.includes(option);
 
                   let optionStyle =
                     'bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-white hover:border-slate-500';
 
-                  if (isResolving && lastRoundResult) {
+                  if (isEliminated) {
+                    optionStyle =
+                      'bg-slate-900/40 border-slate-800/60 text-slate-600 line-through opacity-25 cursor-not-allowed';
+                  } else if (isResolving && lastRoundResult) {
                     if (isCorrect) {
                       // Correct option is ALWAYS highlighted in vibrant emerald green with ring and glow
                       optionStyle =
@@ -1067,7 +1338,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                     <button
                       key={`${battleState.currentQuestion.id}_opt_${option}_${idx}`}
                       type="button"
-                      disabled={isResolving}
+                      disabled={isResolving || isEliminated}
                       onClick={() => {
                         setSelectedOption(option);
                         handleAnswerSubmit(option);

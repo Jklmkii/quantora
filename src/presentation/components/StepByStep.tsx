@@ -108,12 +108,27 @@ export const StepByStep: React.FC<StepByStepProps> = React.memo(({
       {isOpen && (
         <div id={contentId} className="p-4 md:p-5 flex flex-col gap-3 font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300">
           {steps.map((step, idx) => {
-            // Render markdown-like bolding for readability
-            const formatted = step.split('\n').map((line, lIdx) => {
+            // Render markdown-like bolding and clean headings for readability
+            const formatted = step.split('\n').map((rawLine, lIdx) => {
+              let line = rawLine;
+              const isHeading = line.startsWith('### ') || line.startsWith('## ');
+              if (isHeading) {
+                line = line.replace(/^#{2,3}\s+/, '');
+              }
+              // Limpar eventuais delimitadores brutos de LaTeX se presentes
+              line = line.replace(/\$\$/g, '').replace(/\$/g, '');
+
               // Convert **text** into <strong>text</strong>
               const parts = line.split(BOLD_REGEX);
               return (
-                <div key={lIdx} className="py-0.5">
+                <div
+                  key={lIdx}
+                  className={
+                    isHeading
+                      ? 'font-sans font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base border-b border-slate-200/60 dark:border-slate-700/60 pb-1 mb-1.5'
+                      : 'py-0.5'
+                  }
+                >
                   {parts.map((p, pIdx) => {
                     if (p.startsWith('**') && p.endsWith('**')) {
                       return (

@@ -208,8 +208,15 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
      indicando o estado de cada entrega com checkmarks verdes (`✅`).
   5. **Condução Proativa:** Concluir sempre oferecendo de forma direta o próximo passo lógico (ex: *"Quer que eu faça o commit dessas alterações?"* ou *"Pronto para testar visualmente com run_app.bat"*).
 
+## 17. Protocolo de Leitura Cirúrgica do Vault (Navegação Coarse-to-Fine)
+- **Motivação:** Ler notas markdown inteiras de centenas ou milhares de linhas satura rapidamente a janela de contexto do agente, aumenta o custo em tokens, gera latência desnecessária e induz o efeito de degradação atencional (*Lost in the Middle*).
+- **Diretrizes Mandatórias de Navegação:**
+  1. **Nível 1 (Descoberta Global):** Antes de abrir notas desconhecidas, consultar o manifesto leve `00 - Hub & Visao Geral/llms.txt` ou `00 - Hub & Visao Geral/vault_catalog.json` para identificar qual arquivo e seção contêm a informação necessária consumindo menos de 1k tokens.
+  2. **Nível 2 (Outline Indexing):** Caso precise inspecionar uma nota com mais de 100 linhas, rodar scanner de cabeçalhos (`rg "^#{1,3}\s" <arquivo> -n`) para mapear os intervalos de linhas exatos das seções sem ler o corpo do texto.
+  3. **Nível 3 (Fatiamento de Linhas):** Invocar a ferramenta de leitura com parâmetros de corte estritos (`StartLine` e `EndLine`), lendo apenas as 30 a 80 linhas necessárias para resolver a tarefa.
+
 ## Registro no Obsidian
-Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
+Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`20 - Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe
 e o histórico dos casos reais que motivaram cada seção.
 

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.12.0/schemas/plan.schema.json",
+  "projectId": "676d23fc-1dba-4551-9281-6f35286a6186",
+  "type": "frontend",
+  "name": "Navigation to Physics module computes uniform linear motion displacement",
+  "description": "When switching to the Fisica tab, the MRU module calculates position S = 100 m from initial position S0=0, velocity v=20 m/s and time t=5 s with step-by-step breakdown.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the homepage"
+    },
+    {
+      "type": "action",
+      "description": "Click on the Fisica tab in the top navigation bar"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the calculation result displays final position S = 100 m and the step-by-step resolution card is visible"
+    }
+  ]
+}

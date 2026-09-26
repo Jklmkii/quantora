@@ -20,6 +20,94 @@ export const UPGRADE_COST_MULTIPLIER = 1.5;
 export const BONUS_PER_UPGRADE_LEVEL = 3;
 
 /**
+ * Asymptotic Difficulty Cap:
+ * Arithmetic difficulty scales smoothly up to level 15.
+ * For levels >= 15, question difficulty freezes at level 15 (remaining mentally humanly solvable),
+ * while Boss HP, rewards, and debuffs continue scaling indefinitely.
+ */
+export const DIFFICULTY_CAP_LEVEL = 15;
+
+export function getEffectiveDifficultyLevel(level: number = 1): number {
+  return Math.min(DIFFICULTY_CAP_LEVEL, Math.max(1, Math.round(level)));
+}
+
+export const ORACLE_COST = 20;
+export const TIME_FREEZE_COST = 25;
+
+export type BossPhase = 1 | 2 | 3;
+
+export type BossDebuffType = 'none' | 'fog' | 'mirror' | 'time_siphon';
+
+export interface BossIdentity {
+  name: string;
+  title: string;
+  avatarIcon: 'crown' | 'skull' | 'flame' | 'zap';
+  themeColor: 'purple' | 'amber' | 'rose' | 'cyan' | 'emerald';
+}
+
+const BOSS_TITLES_PREFIX = [
+  'Titã',
+  'Guardião',
+  'Arcanista',
+  'Lorde',
+  'Colosso',
+  'Vanguardista',
+  'Espectro',
+  'Soberano',
+  'Monarca',
+  'Arauto',
+];
+
+const BOSS_TITLES_SUFFIX = [
+  'dos Fractais',
+  'do Vórtice',
+  'da Matriz',
+  'do Caos Numérico',
+  'do Zero Absoluto',
+  'das Equações',
+  'do Infinito',
+  'dos Vetores',
+  'das Derivadas',
+  'do Prisma',
+];
+
+/**
+ * Generates an epic procedural identity for any infinite tower level (N = 1, 2, ... infinity).
+ */
+export function getBossIdentityForLevel(level: number = 1): BossIdentity {
+  const safeLevel = Math.max(1, Math.round(level));
+  if (safeLevel === 1) {
+    return {
+      name: 'Lord Mathgoth',
+      title: 'O Guardião das Quatro Operações',
+      avatarIcon: 'crown',
+      themeColor: 'purple',
+    };
+  }
+
+  const prefix = BOSS_TITLES_PREFIX[(safeLevel - 2) % BOSS_TITLES_PREFIX.length];
+  const suffix =
+    BOSS_TITLES_SUFFIX[
+      Math.floor((safeLevel - 2) / BOSS_TITLES_PREFIX.length) % BOSS_TITLES_SUFFIX.length
+    ];
+  const icons: ('crown' | 'skull' | 'flame' | 'zap')[] = ['flame', 'skull', 'zap', 'crown'];
+  const colors: ('purple' | 'amber' | 'rose' | 'cyan' | 'emerald')[] = [
+    'amber',
+    'rose',
+    'cyan',
+    'purple',
+    'emerald',
+  ];
+
+  return {
+    name: `${prefix} ${suffix}`,
+    title: `Lorde Matemático do Nível ${safeLevel}`,
+    avatarIcon: icons[(safeLevel - 1) % icons.length],
+    themeColor: colors[(safeLevel - 1) % colors.length],
+  };
+}
+
+/**
  * Computes boss HP for a given discrete level (Level 1: 100, Level 2: 135, Level 3: 170...).
  */
 export function getBossHpForLevel(level: number = 1): number {
@@ -53,7 +141,7 @@ export function costForUpgrade(upgradeLevel: number = 0): number {
  * - Levels 8+: Advanced equations, powers, roots subtraction, and mixed arcane spells.
  */
 export function getAllowedTracksForLevel(level: number = 1): BossQuestionCategory[] {
-  const safeLevel = Math.max(1, Math.round(level));
+  const safeLevel = getEffectiveDifficultyLevel(level);
   if (safeLevel <= 2) {
     return ['mental_math'];
   }
@@ -67,19 +155,55 @@ export function getAllowedTracksForLevel(level: number = 1): BossQuestionCategor
 }
 
 /**
- * Computes boss phase (Phase 1: > 50% HP, Phase 2 Enraged: <= 50% HP).
+ * Computes boss phase:
+ * - Phase 1: > 50% HP
+ * - Phase 2 (Sobrecarga): > 25% and <= 50% HP
+ * - Phase 3 (Enrage Mode / Fúria Absoluta): <= 25% HP
  */
-export function getBossPhase(currentHp: number, maxHp: number): 1 | 2 {
-  return currentHp <= maxHp * 0.5 ? 2 : 1;
+export function getBossPhase(currentHp: number, maxHp: number): BossPhase {
+  if (currentHp <= maxHp * 0.25) {
+    return 3;
+  }
+  if (currentHp <= maxHp * 0.5) {
+    return 2;
+  }
+  return 1;
+}
+
+/**
+ * Rolls procedural debuffs for a given round based on level and battle phase.
+ */
+export function rollBossDebuffForRound(
+  level: number,
+  _round: number = 1,
+  phase: BossPhase = 1
+): BossDebuffType {
+  const safeLevel = Math.max(1, Math.round(level));
+  if (safeLevel <= 3) return 'none';
+
+  let debuffChance = 0.2;
+  if (safeLevel >= 8) debuffChance += 0.15;
+  if (phase === 2) debuffChance += 0.2;
+  if (phase === 3) debuffChance += 0.35;
+
+  const roll = Math.random();
+  if (roll > debuffChance) return 'none';
+
+  const pool: BossDebuffType[] = ['fog', 'mirror', 'time_siphon'];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 /**
  * Computes round time limit for a given boss level (15s on level 1, decreasing smoothly to 8s on level 8+).
- * In Phase 2 (Enraged, <= 50% HP), round time is reduced by ~20%.
+ * - Phase 2 (Sobrecarga): time reduced by ~20%.
+ * - Phase 3 (Enrage Mode): time reduced by ~30% (min 5s).
  */
-export function getRoundTimeLimitForLevel(level: number = 1, phase: 1 | 2 = 1): number {
-  const safeLevel = Math.max(1, Math.round(level));
+export function getRoundTimeLimitForLevel(level: number = 1, phase: BossPhase = 1): number {
+  const safeLevel = getEffectiveDifficultyLevel(level);
   const baseTime = Math.max(8, 16 - safeLevel);
+  if (phase === 3) {
+    return Math.max(5, Math.round(baseTime * 0.7));
+  }
   if (phase === 2) {
     return Math.max(6, Math.round(baseTime * 0.8));
   }
@@ -89,7 +213,7 @@ export function getRoundTimeLimitForLevel(level: number = 1, phase: 1 | 2 = 1): 
 /**
  * Computes critical hit time threshold proportional to the round time (~30% of time limit, min 2.0s).
  */
-export function getCriticalTimeThresholdForLevel(level: number = 1, phase: 1 | 2 = 1): number {
+export function getCriticalTimeThresholdForLevel(level: number = 1, phase: BossPhase = 1): number {
   const timeLimit = getRoundTimeLimitForLevel(level, phase);
   return Math.max(2.0, Math.round(timeLimit * 0.3 * 10) / 10);
 }
@@ -108,6 +232,7 @@ export interface BossQuestion {
   options: number[];
   explanation: string[];
   timeLimitSeconds: number;
+  debuff?: BossDebuffType;
 }
 
 export type DamageReason = 'critical' | 'standard' | 'timeout' | 'wrong';
@@ -138,7 +263,7 @@ export interface BossRoundResult {
 
 export interface BossBattleState {
   level: number;
-  phase: 1 | 2;
+  phase: BossPhase;
   bossHp: number;
   bossMaxHp: number;
   damageUpgradeLevel: number;
@@ -156,6 +281,12 @@ export interface BossBattleState {
   totalTimeSeconds: number;
   earnedXp: number;
   unlockedAchievements: string[];
+  // Consumables & procedural identity
+  oracleCharges: number;
+  timeFreezeCharges: number;
+  eliminatedOptions: number[];
+  isTimeFrozen: boolean;
+  bossIdentity: BossIdentity;
 }
 
 function getRandomInt(min: number, max: number): number {
@@ -177,8 +308,8 @@ function rollDamage(min: number, max: number, customRoll?: number): number {
 /**
  * Calculates damage dealt to the boss or player shield based on answer accuracy and response time.
  * - Standard Hit (3s - 10s): 15-20 damage (+ upgrade bonus) to boss, 0 shield damage
- * - Critical Hit (< 3s): 30-35 damage (+ upgrade bonus) to boss, 0 shield damage, isCritical = true
- * - Timeout (> 10s) or Wrong Answer: 0 damage to boss, 1 shield damage
+ * - Critical Hit (< 3s): 30-35 damage (+ upgrade bonus, 1.5x in Phase 3 Enrage) to boss, 0 shield damage, isCritical = true
+ * - Timeout or Wrong Answer: 0 damage to boss, 1 shield damage (2 shield damage in Phase 3 Enrage!)
  */
 export function calculateBossDamage(
   isCorrect: boolean,
@@ -186,13 +317,17 @@ export function calculateBossDamage(
   customRoll?: number,
   damageUpgradeLevel: number = 0,
   timeLimitSeconds: number = ROUND_TIME_LIMIT_SECONDS,
-  criticalThresholdSeconds: number = CRITICAL_TIME_THRESHOLD_SECONDS
+  criticalThresholdSeconds: number = CRITICAL_TIME_THRESHOLD_SECONDS,
+  phase: BossPhase = 1
 ): BossDamageResult {
+  const isEnrage = phase === 3;
+  const shieldLossOnMiss = isEnrage ? 2 : 1;
+
   if (!isCorrect) {
     return {
       damage: 0,
       isCritical: false,
-      shieldDamage: 1,
+      shieldDamage: shieldLossOnMiss,
       reason: 'wrong',
     };
   }
@@ -201,7 +336,7 @@ export function calculateBossDamage(
     return {
       damage: 0,
       isCritical: false,
-      shieldDamage: 1,
+      shieldDamage: shieldLossOnMiss,
       reason: 'timeout',
     };
   }
@@ -210,8 +345,10 @@ export function calculateBossDamage(
 
   if (responseTimeSeconds < criticalThresholdSeconds) {
     const baseDamage = rollDamage(CRITICAL_DAMAGE_MIN, CRITICAL_DAMAGE_MAX, customRoll);
+    const critMultiplier = isEnrage ? 1.5 : 1.0;
+    const finalDamage = Math.round((baseDamage + bonusDamage) * critMultiplier);
     return {
-      damage: baseDamage + bonusDamage,
+      damage: finalDamage,
       isCritical: true,
       shieldDamage: 0,
       reason: 'critical',
@@ -225,6 +362,18 @@ export function calculateBossDamage(
     shieldDamage: 0,
     reason: 'standard',
   };
+}
+
+/**
+ * Eliminates up to countToEliminate wrong options for the Oracle 50/50 consumable.
+ */
+export function eliminateWrongOptions(
+  correctAnswer: number,
+  options: number[],
+  countToEliminate: number = 2
+): number[] {
+  const wrongOptions = options.filter((opt) => opt !== correctAnswer);
+  return wrongOptions.slice(0, countToEliminate);
 }
 
 /**
@@ -312,16 +461,14 @@ function generateOptions(correctAnswer: number, candidateDivergences: number[]):
   return shuffleArray(Array.from(unique));
 }
 
-/**
- * Thematic Question Generator for Boss Battle.
- * Dynamically scales category tracks, operand ranges, and round timers based on the boss level.
- */
-export function generateBossQuestion(_round: number = 1, level: number = 1, phase: 1 | 2 = 1): BossQuestion {
-  const safeLevel = Math.max(1, Math.round(level));
+function generateBossQuestionInner(
+  _round: number,
+  safeLevel: number,
+  timeLimitSeconds: number
+): BossQuestion {
   const id = `boss_q_${Date.now()}_${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2, 7)}`;
   const allowedCategories = getAllowedTracksForLevel(safeLevel);
   const category = pickRandom(allowedCategories);
-  const timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel, phase);
 
   switch (category) {
     case 'equation': {
@@ -791,6 +938,31 @@ export function generateBossQuestion(_round: number = 1, level: number = 1, phas
   }
 }
 
+/**
+ * Thematic Question Generator for Boss Battle.
+ * Dynamically scales category tracks, operand ranges, and round timers based on the boss level.
+ * Difficulty reaches an asymptotic cap at level 15 (DIFFICULTY_CAP_LEVEL), while boss HP keeps scaling.
+ * Attaches dynamic procedural debuffs based on level and battle phase.
+ */
+export function generateBossQuestion(
+  round: number = 1,
+  level: number = 1,
+  phase: BossPhase = 1
+): BossQuestion {
+  const safeLevel = getEffectiveDifficultyLevel(level);
+  const debuff = rollBossDebuffForRound(level, round, phase);
+  let timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel, phase);
+  if (debuff === 'time_siphon') {
+    timeLimitSeconds = Math.max(5, Math.round(timeLimitSeconds * 0.75));
+  }
+  const baseQuestion = generateBossQuestionInner(round, safeLevel, timeLimitSeconds);
+  return {
+    ...baseQuestion,
+    timeLimitSeconds,
+    debuff,
+  };
+}
+
 function formatSuperscript(exp: number): string {
   const map: Record<string, string> = {
     '0': '⁰',
@@ -817,11 +989,14 @@ function formatSuperscript(exp: number): string {
  */
 export function createInitialBossBattleState(
   level: number = 1,
-  damageUpgradeLevel: number = 0
+  damageUpgradeLevel: number = 0,
+  oracleCharges: number = 0,
+  timeFreezeCharges: number = 0
 ): BossBattleState {
   const safeLevel = Math.max(1, Math.round(level));
   const hp = getBossHpForLevel(safeLevel);
   const safeUpgrade = Math.max(0, Math.round(damageUpgradeLevel));
+  const identity = getBossIdentityForLevel(safeLevel);
 
   return {
     level: safeLevel,
@@ -843,6 +1018,44 @@ export function createInitialBossBattleState(
     totalTimeSeconds: 0,
     earnedXp: 0,
     unlockedAchievements: [],
+    oracleCharges: Math.max(0, Math.round(oracleCharges)),
+    timeFreezeCharges: Math.max(0, Math.round(timeFreezeCharges)),
+    eliminatedOptions: [],
+    isTimeFrozen: false,
+    bossIdentity: identity,
+  };
+}
+
+/**
+ * Consumable: Uses 1 Oracle charge to discard 2 incorrect options in the active question.
+ */
+export function applyOracleInBattle(state: BossBattleState): BossBattleState {
+  if (state.oracleCharges <= 0 || state.eliminatedOptions.length > 0) {
+    return state;
+  }
+  const eliminated = eliminateWrongOptions(
+    state.currentQuestion.correctAnswer,
+    state.currentQuestion.options,
+    2
+  );
+  return {
+    ...state,
+    oracleCharges: Math.max(0, state.oracleCharges - 1),
+    eliminatedOptions: eliminated,
+  };
+}
+
+/**
+ * Consumable: Uses 1 Time Freeze charge to pause / freeze the active timer.
+ */
+export function applyTimeFreezeInBattle(state: BossBattleState): BossBattleState {
+  if (state.timeFreezeCharges <= 0 || state.isTimeFrozen) {
+    return state;
+  }
+  return {
+    ...state,
+    timeFreezeCharges: Math.max(0, state.timeFreezeCharges - 1),
+    isTimeFrozen: true,
   };
 }
 
@@ -873,7 +1086,8 @@ export function processRound(
     customDamageRoll,
     upgradeLevel,
     timeLimit,
-    criticalThreshold
+    criticalThreshold,
+    currentPhase
   );
 
   const bossHpBefore = state.bossHp;
@@ -911,7 +1125,10 @@ export function processRound(
   };
 
   const nextPhase = getBossPhase(newBossHp, state.bossMaxHp);
-  const nextQuestion = status === 'fighting' ? generateBossQuestion(state.round + 1, safeLevel, nextPhase) : state.currentQuestion;
+  const nextQuestion =
+    status === 'fighting'
+      ? generateBossQuestion(state.round + 1, safeLevel, nextPhase)
+      : state.currentQuestion;
 
   const nextState: BossBattleState = {
     ...state,
@@ -932,6 +1149,8 @@ export function processRound(
     totalTimeSeconds: state.totalTimeSeconds + responseTimeSeconds,
     earnedXp: state.earnedXp + xpEarned,
     unlockedAchievements: [...new Set([...state.unlockedAchievements, ...achievements])],
+    eliminatedOptions: [],
+    isTimeFrozen: false,
   };
 
   return { nextState, roundResult };

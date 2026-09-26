@@ -16,6 +16,9 @@ const BhaskaraModule = lazy(() =>
 const RegraDeTresModule = lazy(() =>
   import('./presentation/modules/RegraDeTresModule').then((m) => ({ default: m.RegraDeTresModule }))
 );
+const PitagorasModule = lazy(() =>
+  import('./presentation/modules/PitagorasModule').then((m) => ({ default: m.PitagorasModule }))
+);
 const PhysicsModule = lazy(() =>
   import('./presentation/modules/PhysicsModule').then((m) => ({ default: m.PhysicsModule }))
 );
@@ -107,6 +110,10 @@ export function App() {
 
           <div style={{ display: (activeTab === 'regra_simples' || activeTab === 'regra_composta') ? 'block' : 'none' }}>
             {(visitedTabs.has('regra_simples') || visitedTabs.has('regra_composta')) && <RegraDeTresModule />}
+          </div>
+
+          <div style={{ display: activeTab === 'pitagoras' ? 'block' : 'none' }}>
+            {visitedTabs.has('pitagoras') && <PitagorasModule />}
           </div>
 
           <div style={{ display: activeTab === 'physics' ? 'block' : 'none' }}>

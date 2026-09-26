@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.12.0/schemas/plan.schema.json",
+  "projectId": "676d23fc-1dba-4551-9281-6f35286a6186",
+  "type": "frontend",
+  "name": "Unlocking all features enables Blitz mode and launches 60s game screen",
+  "description": "User opens Settings, enables unlockAllFeatures, navigates to Treino Mental, and enters the 60s Blitz mode game screen.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the homepage"
+    },
+    {
+      "type": "action",
+      "description": "Click the Configurações button in the top navigation bar"
+    },
+    {
+      "type": "action",
+      "description": "Click the switch toggle for Desbloquear Todos os Recursos"
+    },
+    {
+      "type": "action",
+      "description": "Click the close button to dismiss the settings modal"
+    },
+    {
+      "type": "action",
+      "description": "Click on the Treino Mental tab in the top navigation bar"
+    },
+    {
+      "type": "action",
+      "description": "Click on the Modo Blitz game card"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the Blitz ready screen is displayed showing MODO BLITZ and the Iniciar Blitz 60s button"
+    }
+  ]
+}

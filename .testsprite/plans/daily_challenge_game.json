@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/TestSprite/testsprite-cli/v0.12.0/schemas/plan.schema.json",
+  "projectId": "676d23fc-1dba-4551-9281-6f35286a6186",
+  "type": "frontend",
+  "name": "Daily challenge displays deterministic problem and submits user choice",
+  "description": "User opens Treino Mental, locates the Daily Challenge card, selects an answer option and verifies the submission response.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to the homepage"
+    },
+    {
+      "type": "action",
+      "description": "Click on the Treino Mental tab in the top navigation bar"
+    },
+    {
+      "type": "action",
+      "description": "Click on the first multiple choice option button in the Desafio Diário card"
+    },
+    {
+      "type": "action",
+      "description": "Click the Confirmar Resposta button to submit the daily challenge answer"
+    },
+    {
+      "type": "assertion",
+      "description": "Verify the daily challenge displays the completion feedback status and solution explanation"
+    }
+  ]
+}

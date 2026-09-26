@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Atom,
   Pencil,
+  Triangle,
 } from 'lucide-react';
 import { useAppStore, type ActiveTab } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -67,6 +68,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
   const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: number }[] = useMemo(() => [
     { id: 'bhaskara', label: t.nav_bhaskara, icon: <Sigma size={20} /> },
     { id: 'regra_simples', label: t.nav_regra, icon: <Scale size={20} /> },
+    { id: 'pitagoras', label: t.nav_pitagoras || 'Pitágoras', icon: <Triangle size={20} className="rotate-90" /> },
     { id: 'physics', label: t.physics_title || 'Física', icon: <Atom size={20} /> },
     { id: 'quiz', label: t.nav_treino, icon: <Brain size={20} /> },
     {

@@ -94,13 +94,28 @@ stateDiagram-v2
     AvaliarVidaChefe --> PerguntaIniciada: Ambos Vivos
 ```
 
-### 📊 Parâmetros do Confronto
-* **Chefe:** $100$ Pontos de Vida (HP).
-* **Jogador:** $3$ Escudos de Proteção.
-* **Tempo por Rodada:** Limite estrito de $10$ segundos por questão.
-* **Golpe Crítico:** Acerto em **menos de 3 segundos** desfere entre **30 e 35 de dano** ao Chefe.
-* **Ataque Normal:** Acerto entre **3 e 10 segundos** causa entre **15 e 20 de dano**.
-* **Dano Sofrido:** Errar ou deixar o tempo estourar remove **1 escudo** do jogador.
+### 📊 Parâmetros do Confronto & Torre Procedural Infinita ($N = 1, \dots, \infty$)
+* **Escalonamento Contínuo de HP:** Fórmula pura $HP_{max}(N) = 100 \cdot (1 + 0.35 \cdot (N - 1))$.
+* **Teto Assintótico de Dificuldade ($N_{cap} = 15$):** A complexidade aritmética das perguntas escala até o nível 15; a partir daí, congela no patamar 15 (mantendo o cálculo mental humanamente viável), enquanto HP, frequência de debuffs e moedas continuam subindo sem limites.
+* **Economia de Moedas do Chefe (`bossCoins`):** Recompensa de vitória calculada como $10 + 5 \cdot N$.
+* **Forja de Upgrades Permanentes:** Bônus de dano base ($+3$ por nível) com custo base de 30 moedas e multiplicador geométrico de $1.5\times$.
+
+### 🔥 Fases Dinâmicas do Chefe
+1. **Fase 1 (HP > 50%):** Postura neutra com tempo padrão por questão (10s a 6s conforme o nível).
+2. **Fase 2 (25% < HP $\le$ 50% — Sobrecarga):** Chefe entra em estado de fúria moderada com avisos visuais.
+3. **Fase 3 (HP $\le$ 25% — *Enrage Mode*):**
+   * Vinheta visual avermelhada pulsante na tela.
+   * Dano crítico do jogador amplificado em $1.5\times$ (dano entre 45 e 52).
+   * Penalidade brutal: erros ou estouro de tempo drenam **2 escudos** do jogador instantaneamente.
+
+### 🌫️ Debuffs Cognitivos Dinâmicos
+* **Névoa Algébrica (`fog`):** Aplica blur interativo na área da pergunta, forçando o jogador a passar o cursor ou focar para revelar os números.
+* **Inversão Espectral (`mirror`):** Desafia a percepção espacial do jogador.
+* **Dreno Temporal (`time_siphon`):** Reduz o cronômetro da rodada em 25%.
+
+### 🧪 Consumíveis de Batalha (Compráveis no Arsenal)
+* **Oráculo da Clarividência (`oracle` — 20 moedas):** Elimina 2 alternativas incorretas da questão atual, deixando apenas a resposta correta e 1 distrator.
+* **Dilatação Temporal (`timeFreeze` — 25 moedas):** Pausa o cronômetro da rodada por 4 segundos completos.
 
 ### 🏆 Recompensas Especiais
 * **Vitória Padrão:** Concede **+250 XP** e desbloqueia a conquista `boss_slayer` (*Matador de Chefes*).
