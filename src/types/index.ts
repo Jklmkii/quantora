@@ -66,8 +66,8 @@ export interface RegraDeTresCompostaResult {
   equation: string;
 }
 
-export type CalculationType = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics';
-export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'quiz' | 'history' | 'settings';
+export type CalculationType = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'pitagoras';
+export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'pitagoras' | 'quiz' | 'history' | 'settings';
 
 export interface HistoryItem {
   id: string;
@@ -196,6 +196,8 @@ export interface UserProfileStats {
   highestBossLevelCleared?: number;
   bossCoins?: number;
   damageUpgradeLevel?: number;
+  bossOracleCharges?: number;
+  bossTimeFreezeCharges?: number;
   spacedBox5Count?: number;
   spacedCleanCount?: number;
   rare67Hits?: number;
@@ -224,6 +226,8 @@ export interface BossRushStats {
   highestBossLevelCleared?: number;
   bossCoins?: number;
   damageUpgradeLevel?: number;
+  bossOracleCharges?: number;
+  bossTimeFreezeCharges?: number;
 }
 
 export interface UserProfile {
@@ -658,3 +662,13 @@ export type AnyPhysicsResult =
   | MHSResult
   | PlanoInclinadoResult
   | EnergiaTrabalhoResult;
+
+// Teorema de Pitágoras & Trigonometria
+export type {
+  PitagorasSolveTarget,
+  PitagorasInput,
+  PitagorasOptions,
+  TrigRatios,
+  MetricRelations,
+  PitagorasResult,
+} from '../core/math/pitagoras';

@@ -35,9 +35,11 @@ import {
   coinsForLevel,
   costForUpgrade,
   BASE_VICTORY_XP,
+  ORACLE_COST,
+  TIME_FREEZE_COST,
 } from '../core/quiz/bossEngine';
 
-export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'quiz' | 'history' | 'settings';
+export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings';
 
 interface AppState {
   // Navigation
@@ -68,6 +70,8 @@ interface AppState {
   highestBossLevelCleared: number;
   bossCoins: number;
   damageUpgradeLevel: number;
+  bossOracleCharges: number;
+  bossTimeFreezeCharges: number;
   recordBossVictory: (
     levelOrTime: number,
     arg2?: number,
@@ -76,6 +80,8 @@ interface AppState {
     arg5?: number
   ) => void;
   purchaseDamageUpgrade: () => boolean;
+  buyBossConsumable: (type: 'oracle' | 'timeFreeze') => boolean;
+  consumeBossConsumableCharge: (type: 'oracle' | 'timeFreeze') => boolean;
   resetBossProgress: () => void;
 
   // Settings
@@ -149,6 +155,8 @@ const DEFAULT_PROFILE: UserProfile = {
     highestBossLevelCleared: 0,
     bossCoins: 0,
     damageUpgradeLevel: 0,
+    bossOracleCharges: 0,
+    bossTimeFreezeCharges: 0,
   },
 };
 
@@ -396,6 +404,8 @@ export const useAppStore = create<AppState>()(
       highestBossLevelCleared: 0,
       bossCoins: 0,
       damageUpgradeLevel: 0,
+      bossOracleCharges: 0,
+      bossTimeFreezeCharges: 0,
 
       recordBossVictory: (arg1, arg2, arg3, arg4, arg5) => {
         set((state) => {
@@ -528,11 +538,87 @@ export const useAppStore = create<AppState>()(
         return purchased;
       },
 
+      buyBossConsumable: (type) => {
+        let purchased = false;
+        set((state) => {
+          const cost = type === 'oracle' ? ORACLE_COST : TIME_FREEZE_COST;
+          const currentCoins = state.bossCoins || 0;
+
+          if (currentCoins < cost) {
+            return {};
+          }
+
+          purchased = true;
+          const nextCoins = currentCoins - cost;
+          const currentOracle = state.bossOracleCharges || 0;
+          const currentTimeFreeze = state.bossTimeFreezeCharges || 0;
+          const nextOracle = type === 'oracle' ? currentOracle + 1 : currentOracle;
+          const nextTimeFreeze = type === 'timeFreeze' ? currentTimeFreeze + 1 : currentTimeFreeze;
+
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+
+          return {
+            bossCoins: nextCoins,
+            bossOracleCharges: nextOracle,
+            bossTimeFreezeCharges: nextTimeFreeze,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                bossCoins: nextCoins,
+                bossOracleCharges: nextOracle,
+                bossTimeFreezeCharges: nextTimeFreeze,
+              },
+            },
+          };
+        });
+        return purchased;
+      },
+
+      consumeBossConsumableCharge: (type) => {
+        let used = false;
+        set((state) => {
+          const currentCharges =
+            type === 'oracle' ? state.bossOracleCharges || 0 : state.bossTimeFreezeCharges || 0;
+
+          if (currentCharges <= 0) {
+            return {};
+          }
+
+          used = true;
+          const currentOracle = state.bossOracleCharges || 0;
+          const currentTimeFreeze = state.bossTimeFreezeCharges || 0;
+          const nextOracle = type === 'oracle' ? Math.max(0, currentOracle - 1) : currentOracle;
+          const nextTimeFreeze =
+            type === 'timeFreeze' ? Math.max(0, currentTimeFreeze - 1) : currentTimeFreeze;
+
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+
+          return {
+            bossOracleCharges: nextOracle,
+            bossTimeFreezeCharges: nextTimeFreeze,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                bossOracleCharges: nextOracle,
+                bossTimeFreezeCharges: nextTimeFreeze,
+              },
+            },
+          };
+        });
+        return used;
+      },
+
       resetBossProgress: () => {
         set((state) => ({
           highestBossLevelCleared: 0,
           bossCoins: 0,
           damageUpgradeLevel: 0,
+          bossOracleCharges: 0,
+          bossTimeFreezeCharges: 0,
           profile: {
             ...state.profile,
             stats: {
@@ -540,6 +626,8 @@ export const useAppStore = create<AppState>()(
               highestBossLevelCleared: 0,
               bossCoins: 0,
               damageUpgradeLevel: 0,
+              bossOracleCharges: 0,
+              bossTimeFreezeCharges: 0,
             },
           },
         }));
@@ -949,7 +1037,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'quantora-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 6,
+      version: 7,
       migrate: (persistedState: any, version: number) => {
         const state = persistedState as any;
         if (!version || version < 2) {
@@ -1012,6 +1100,14 @@ export const useAppStore = create<AppState>()(
             state.unlockedFeatures = ['survival', 'blitz', 'boss_battle', 'spaced_repetition'];
           } else {
             state.unlockedFeatures = state.unlockedFeatures || ['survival'];
+          }
+        }
+        if (!version || version < 7) {
+          if (state.bossOracleCharges === undefined) state.bossOracleCharges = 0;
+          if (state.bossTimeFreezeCharges === undefined) state.bossTimeFreezeCharges = 0;
+          if (state?.profile?.stats) {
+            if (state.profile.stats.bossOracleCharges === undefined) state.profile.stats.bossOracleCharges = 0;
+            if (state.profile.stats.bossTimeFreezeCharges === undefined) state.profile.stats.bossTimeFreezeCharges = 0;
           }
         }
         return state;

@@ -23,6 +23,7 @@ import {
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
+import { playStreakFlame } from '../../core/platform/audio';
 
 interface DailyChallengeCardProps {
   className?: string;
@@ -99,6 +100,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
 
     if (correct) {
       setJustCompleted(true);
+      playStreakFlame();
       if ('vibrate' in navigator) navigator.vibrate?.([40, 60, 40]);
 
       if (typeof completeDailyChallenge === 'function') {

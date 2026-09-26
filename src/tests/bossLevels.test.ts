@@ -18,6 +18,11 @@ import {
   getCriticalTimeThresholdForLevel,
   generateBossQuestion,
   getBossPhase,
+  DIFFICULTY_CAP_LEVEL,
+  getEffectiveDifficultyLevel,
+  applyOracleInBattle,
+  applyTimeFreezeInBattle,
+  getBossIdentityForLevel,
 } from '../core/quiz/bossEngine';
 import { useAppStore } from '../store/useAppStore';
 
@@ -275,36 +280,42 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
     });
   });
 
-  describe('Fases Internas da Luta do Chefe (Fase 1 vs. Fase 2 Enfurecido)', () => {
-    it('determina a fase com base no limiar exato de 50% de HP (getBossPhase)', () => {
-      // 100 HP max: > 50 HP é Fase 1, <= 50 HP é Fase 2
+  describe('Fases Internas da Luta do Chefe (Fase 1, Fase 2 Sobrecarga e Fase 3 Fúria Enrage)', () => {
+    it('determina a fase com base nos limiares de 50% (Fase 2) e 25% (Fase 3 Enrage) de HP (getBossPhase)', () => {
+      // 100 HP max: > 50 HP é Fase 1, <= 50 e > 25 HP é Fase 2, <= 25 HP é Fase 3
       expect(getBossPhase(100, 100)).toBe(1);
       expect(getBossPhase(51, 100)).toBe(1);
       expect(getBossPhase(50, 100)).toBe(2);
-      expect(getBossPhase(49, 100)).toBe(2);
-      expect(getBossPhase(0, 100)).toBe(2);
+      expect(getBossPhase(26, 100)).toBe(2);
+      expect(getBossPhase(25, 100)).toBe(3);
+      expect(getBossPhase(10, 100)).toBe(3);
+      expect(getBossPhase(0, 100)).toBe(3);
 
-      // Nível 2 (135 HP max): 50% = 67.5
+      // Nível 2 (135 HP max): 50% = 67.5, 25% = 33.75
       expect(getBossPhase(68, 135)).toBe(1);
       expect(getBossPhase(67, 135)).toBe(2);
+      expect(getBossPhase(34, 135)).toBe(2);
+      expect(getBossPhase(33, 135)).toBe(3);
     });
 
-    it('reduz o tempo de rodada em ~20% na Fase 2 (Enfurecido)', () => {
-      // Nível 1: base = 15s -> Fase 2 = round(15 * 0.8) = 12s
+    it('reduz o tempo de rodada em ~20% na Fase 2 e ~30% na Fase 3', () => {
+      // Nível 1: base = 15s -> Fase 2 = round(15 * 0.8) = 12s -> Fase 3 = round(15 * 0.7) = 11s
       expect(getRoundTimeLimitForLevel(1, 1)).toBe(15);
       expect(getRoundTimeLimitForLevel(1, 2)).toBe(12);
+      expect(getRoundTimeLimitForLevel(1, 3)).toBe(11);
 
-      // Nível 8: base = 8s -> Fase 2 = round(8 * 0.8) = 6s
+      // Nível 8: base = 8s -> Fase 2 = round(8 * 0.8) = 6s -> Fase 3 = round(8 * 0.7) = 6s (ou min 5s)
       expect(getRoundTimeLimitForLevel(8, 1)).toBe(8);
       expect(getRoundTimeLimitForLevel(8, 2)).toBe(6);
+      expect(getRoundTimeLimitForLevel(8, 3)).toBe(6);
     });
 
-    it('recalcula a janela crítica proporcionalmente ao tempo reduzido da Fase 2', () => {
+    it('recalcula a janela crítica proporcionalmente ao tempo reduzido da Fase 2 e Fase 3', () => {
       // Nível 1: Fase 1 (15s) -> 4.5s; Fase 2 (12s) -> round(12 * 0.3 * 10)/10 = 3.6s
       expect(getCriticalTimeThresholdForLevel(1, 1)).toBe(4.5);
       expect(getCriticalTimeThresholdForLevel(1, 2)).toBe(3.6);
 
-      // Nível 8: Fase 1 (8s) -> 2.4s; Fase 2 (6s) -> round(6 * 0.3 * 10)/10 = 2.0s (ou min 2.0s)
+      // Nível 8: Fase 1 (8s) -> 2.4s; Fase 2 (6s) -> 2.0s
       expect(getCriticalTimeThresholdForLevel(8, 1)).toBe(2.4);
       expect(getCriticalTimeThresholdForLevel(8, 2)).toBe(2.0);
     });
@@ -321,12 +332,114 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       expect(r1.nextState.phase).toBe(1);
       expect(r1.nextState.currentQuestion.timeLimitSeconds).toBe(15);
 
-      // Golpe 2: Causa 30 de dano crítico -> HP vai para 40 (<= 50% => Fase 2 Enfurecido)
+      // Golpe 2: Causa 30 de dano crítico -> HP vai para 40 (<= 50% e > 25% => Fase 2 Sobrecarga)
       const r2 = processRound(r1.nextState, r1.nextState.currentQuestion.correctAnswer, 1.0, 30);
       expect(r2.nextState.bossHp).toBe(40);
       expect(r2.nextState.phase).toBe(2);
-      // Próxima pergunta deve ter timer da Fase 2 (12s no Nível 1)
       expect(r2.nextState.currentQuestion.timeLimitSeconds).toBe(12);
+
+      // Golpe 3: Causa 20 de dano padrão -> HP vai para 20 (<= 25% => Fase 3 Enrage)
+      const r3 = processRound(r2.nextState, r2.nextState.currentQuestion.correctAnswer, 4.0, 20);
+      expect(r3.nextState.bossHp).toBe(20);
+      expect(r3.nextState.phase).toBe(3);
+    });
+  });
+
+  describe('Torre Infinita, Teto de Dificuldade, Consumíveis e Identidade Procedural', () => {
+    it('aplica teto de dificuldade assintótico no nível 15 (DIFFICULTY_CAP_LEVEL)', () => {
+      expect(DIFFICULTY_CAP_LEVEL).toBe(15);
+      expect(getEffectiveDifficultyLevel(1)).toBe(1);
+      expect(getEffectiveDifficultyLevel(10)).toBe(10);
+      expect(getEffectiveDifficultyLevel(15)).toBe(15);
+      expect(getEffectiveDifficultyLevel(20)).toBe(15);
+      expect(getEffectiveDifficultyLevel(100)).toBe(15);
+    });
+
+    it('na Fase 3 (Enrage), erro ou timeout drena 2 escudos e acerto crítico ganha multiplicador 1.5x', () => {
+      // Erro na Fase 3 => 2 de dano de escudo
+      const missResult = calculateBossDamage(false, 2.0, undefined, 0, 10, 3.0, 3);
+      expect(missResult.shieldDamage).toBe(2);
+      expect(missResult.damage).toBe(0);
+
+      // Timeout na Fase 3 => 2 de dano de escudo
+      const timeoutResult = calculateBossDamage(true, 12.0, undefined, 0, 10, 3.0, 3);
+      expect(timeoutResult.shieldDamage).toBe(2);
+
+      // Crítico na Fase 3 (<3s com roll 30) => round(30 * 1.5) = 45 de dano
+      const critResult = calculateBossDamage(true, 1.5, 30, 0, 10, 3.0, 3);
+      expect(critResult.damage).toBe(45);
+      expect(critResult.isCritical).toBe(true);
+      expect(critResult.shieldDamage).toBe(0);
+    });
+
+    it('permite usar Oráculo para eliminar 2 alternativas erradas no estado puro', () => {
+      const state = createInitialBossBattleState(1, 0, 2, 1);
+      expect(state.oracleCharges).toBe(2);
+      expect(state.eliminatedOptions).toHaveLength(0);
+
+      const nextState = applyOracleInBattle(state);
+      expect(nextState.oracleCharges).toBe(1);
+      expect(nextState.eliminatedOptions).toHaveLength(2);
+      // Nenhuma das opções eliminadas é a resposta correta
+      expect(nextState.eliminatedOptions).not.toContain(state.currentQuestion.correctAnswer);
+    });
+
+    it('permite usar Congelar Tempo para congelar a rodada', () => {
+      const state = createInitialBossBattleState(1, 0, 1, 3);
+      expect(state.timeFreezeCharges).toBe(3);
+      expect(state.isTimeFrozen).toBe(false);
+
+      const nextState = applyTimeFreezeInBattle(state);
+      expect(nextState.timeFreezeCharges).toBe(2);
+      expect(nextState.isTimeFrozen).toBe(true);
+    });
+
+    it('gera identidades procedurais ricas para qualquer nível da torre', () => {
+      const bossLvl1 = getBossIdentityForLevel(1);
+      expect(bossLvl1.name).toBe('Lord Mathgoth');
+      expect(bossLvl1.title).toBe('O Guardião das Quatro Operações');
+
+      const bossLvl2 = getBossIdentityForLevel(2);
+      expect(bossLvl2.name).toBeTruthy();
+      expect(bossLvl2.title).toContain('Nível 2');
+
+      const bossLvl50 = getBossIdentityForLevel(50);
+      expect(bossLvl50.name).toBeTruthy();
+      expect(bossLvl50.title).toContain('Nível 50');
+    });
+
+    it('permite comprar consumíveis na store com moedas e consome as cargas corretamente', () => {
+      useAppStore.setState({
+        bossCoins: 50,
+        bossOracleCharges: 0,
+        bossTimeFreezeCharges: 0,
+      });
+
+      // Compra Oráculo (custa 20)
+      const boughtOracle = useAppStore.getState().buyBossConsumable('oracle');
+      expect(boughtOracle).toBe(true);
+      expect(useAppStore.getState().bossCoins).toBe(30); // 50 - 20 = 30
+      expect(useAppStore.getState().bossOracleCharges).toBe(1);
+
+      // Compra Congelar Tempo (custa 25)
+      const boughtFreeze = useAppStore.getState().buyBossConsumable('timeFreeze');
+      expect(boughtFreeze).toBe(true);
+      expect(useAppStore.getState().bossCoins).toBe(5); // 30 - 25 = 5
+      expect(useAppStore.getState().bossTimeFreezeCharges).toBe(1);
+
+      // Tentativa de compra sem saldo suficiente (tem 5, custo 20)
+      const failedBuy = useAppStore.getState().buyBossConsumable('oracle');
+      expect(failedBuy).toBe(false);
+      expect(useAppStore.getState().bossOracleCharges).toBe(1);
+
+      // Consome carga de oráculo
+      const usedOracle = useAppStore.getState().consumeBossConsumableCharge('oracle');
+      expect(usedOracle).toBe(true);
+      expect(useAppStore.getState().bossOracleCharges).toBe(0);
+
+      // Consome novamente sem saldo
+      const failedUse = useAppStore.getState().consumeBossConsumableCharge('oracle');
+      expect(failedUse).toBe(false);
     });
   });
 });

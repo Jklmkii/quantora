@@ -3,6 +3,7 @@ import { Award, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { ConfettiCanvas } from './ConfettiCanvas';
+import { playLevelUp } from '../../core/platform/audio';
 import type { AchievementCategory } from '../../types';
 
 const CATEGORY_STYLES: Record<
@@ -38,6 +39,8 @@ export const AchievementToast: React.FC = () => {
 
   useEffect(() => {
     if (!currentAch) return;
+
+    playLevelUp();
 
     const timer = setTimeout(() => {
       dismissAchievementToast();
