@@ -166,7 +166,7 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 
 ### F. Sincronização Obrigatória com o Obsidian (Obsidian-First — Foco Estrito no Desenvolvimento)
 * **Antes de Iniciar Qualquer Tarefa:** Sempre consulte as notas do projeto em `Obsidian-Vault/10 - Projetos/Quantora/` (`Decisoes & Estado Atual.md`, `Quantora - Visao Geral.md`, etc.) para verificar requisitos prévios, convenções de arquitetura e decisões já tomadas, minimizando retrabalho e consumo desnecessário de contexto.
-* **Ao Concluir ou Alterar Funcionalidades:** Sempre registre ou atualize o Obsidian com as novas decisões, mudanças de estado, correções de bugs em `Changelog & Historico de Bugs.md` e impactos nos módulos correspondentes.
+* **Ao Concluir ou Alterar Funcionalidades:** Sempre registre ou atualize o Obsidian com as novas decisões, mudanças de estado, correções de bugs em `Historico de Bugs.md` e impactos nos módulos correspondentes.
 * **Indexação Estrita de Prompts de Desenvolvimento:**
   A partir de agora, **todo prompt relacionado ao desenvolvimento deste programa deve ser salvo, indexado e correlacionado à alteração implementada no Obsidian**. Cada registro deve manter o vínculo estruturado entre:
   1. `💬 Requisito / Texto Original do Usuário (Ipsis Litteris)`
@@ -195,7 +195,7 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 ### G. Análise de Falhas, Causa Raiz & Prevenção no Vault (Regra Mandatória)
 * **Análise Prévia Obrigatória:** Toda falha recorrente ou relevante encontrada durante a execução (seja em testes, build, automação de CI/CD, comandos de terminal ou comportamento da UI) deve ser minuciosamente analisada **antes** de qualquer tentativa de correção.
 * **Proibição de Tentativa-e-Erro Cega:** O agente nunca deve aplicar "patches rápidos" sem compreender a causa raiz profunda do comportamento inesperado.
-* **Registro Obrigatório no Vault (`Changelog & Historico de Bugs.md`):**
+* **Registro Obrigatório no Vault (`Historico de Bugs.md`):**
   Para cada falha ou bug diagnosticado e resolvido, registrar rigorosamente:
   1. **Sintoma & Diagnóstico da Causa Raiz:** O que ocorreu e qual o mecanismo exato do defeito.
   2. **Solução Aplicada:** Como o defeito foi corrigido estruturalmente na fonte.
