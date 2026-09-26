@@ -6,11 +6,11 @@ Documento de persistência rápida de contexto e decisões de projeto para consu
 
 ## ⚡ Estado Atual do Projeto
 * **Nome Oficial:** Quantora
-* **Versão no Repositório:** `1.2.27`
+* **Versão no Repositório:** `1.2.29`
 * **Branch Ativa:** `main`
 * **Testes Automatizados:** 455 testes passando em 28 suítes (`100% verde`)
 * **Linter Oxlint:** 0 warnings e 0 errors em 100 arquivos
-* **Build de Produção:** Vite + TypeScript compilando limpo (<900ms)
+* **Build de Produção:** Vite + TypeScript compilando limpo (<650ms)
 
 ---
 
