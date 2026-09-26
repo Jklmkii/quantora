@@ -32,10 +32,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('todas');
   const t = useTranslation(language);
 
+  const currentLang = language;
+  const levelInfo = React.useMemo(() => calculateLevelInfo(profile?.totalXp || 0, currentLang), [profile?.totalXp, currentLang]);
+
   if (!isOpen) return null;
 
-  const currentLang = language;
-  const levelInfo = calculateLevelInfo(profile?.totalXp || 0, currentLang);
   const unlockedSet = new Set(profile?.unlockedAchievements || []);
 
   const stats = profile?.stats || {
