@@ -12,6 +12,29 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('big.js')) {
+              return 'vendor-math';
+            }
+            if (id.includes('zustand')) {
+              return 'vendor-state';
+            }
+            return 'vendor-libs';
+          }
+        },
+      },
+    },
+  },
   // @ts-expect-error vitest config
   test: {
     globals: true,

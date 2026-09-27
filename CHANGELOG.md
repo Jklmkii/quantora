@@ -10,6 +10,9 @@ Todas as alterações notáveis deste projeto são documentadas neste arquivo.
   - `electron` atualizado para `^44.4.5`.
   - `vite` atualizado para `^8.3.0` e `@tailwindcss/vite` para `^4.3.3`.
   - `vitest` atualizado para `^5.0.1`.
+- **⚡ Otimização Atômica & Prevenção de Global Scope Bleed (PR #66 — Jules AI Bolt):**
+  - Correção de vazamento de escopo global no `SettingsModal.tsx`, onde a variável não declarada `history.length` caía acidentalmente no `window.history.length` do navegador, mantendo botões de exportação e limpeza indevidamente habilitados quando o histórico da aplicação estava vazio.
+  - Extração atômica direta de `historyLength: s.history.length` via seletor `useShallow`, eliminando re-renderizações espúrias do modal quando operações matemáticas adicionam itens ao array de histórico.
 - **Validação Automatizada da Suíte QA:** 455 testes unitários e de integração aprovados em 28 suítes (100% verde) em ~2.1s.
 - **Análise Estática com Oxlint:** 0 avisos e 0 erros em 100 arquivos analisados.
 - **Build de Produção:** Compilação do bundle Vite concluída em ~523ms com código de saída 0.

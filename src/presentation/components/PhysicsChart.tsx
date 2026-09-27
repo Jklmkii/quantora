@@ -75,7 +75,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
 
     return (
       <div className={`w-full overflow-hidden rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 p-3 shadow-inner ${className}`}>
-        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans">
+        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans" style={{ contain: 'layout paint' }}>
           {/* Grade de fundo */}
           {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
             const x = padding.left + ratio * plotWidth;
@@ -175,7 +175,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
 
     return (
       <div className={`w-full overflow-hidden rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 p-3 shadow-inner ${className}`}>
-        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans">
+        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans" style={{ contain: 'layout paint' }}>
           {/* Solo */}
           <line x1={padding.left} y1={groundY} x2={padding.left + plotWidth} y2={groundY} stroke="#10b981" strokeWidth="2.5" strokeDasharray="6 3" />
           <text x={padding.left + plotWidth - 10} y={groundY + 16} textAnchor="end" className="fill-emerald-600 dark:fill-emerald-400 text-[10px] font-bold">
@@ -272,7 +272,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
 
     return (
       <div className={`w-full overflow-hidden rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 p-3 shadow-inner ${className}`}>
-        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans">
+        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans" style={{ contain: 'layout paint' }}>
           <line x1={centerX - 130} y1={centerY} x2={centerX + 130} y2={centerY} stroke="currentColor" className="text-slate-300 dark:text-slate-700" strokeDasharray="3 3" />
           <line x1={centerX} y1={centerY - 130} x2={centerX} y2={centerY + 130} stroke="currentColor" className="text-slate-300 dark:text-slate-700" strokeDasharray="3 3" />
 
@@ -370,7 +370,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
 
     return (
       <div className={`w-full overflow-hidden rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 p-3 shadow-inner ${className}`}>
-        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans">
+        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto select-none font-sans" style={{ contain: 'layout paint' }}>
           {/* Linha do Solo */}
           <line x1="25" y1={groundY} x2="575" y2={groundY} stroke="currentColor" className="text-slate-300 dark:text-slate-700" strokeWidth="2" />
 
@@ -527,7 +527,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
         <div className="mb-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           Balanço Energético (Joule - J)
         </div>
-        <svg viewBox={`0 0 ${svgWidth} 220`} className="w-full h-auto select-none font-sans">
+        <svg viewBox={`0 0 ${svgWidth} 220`} className="w-full h-auto select-none font-sans" style={{ contain: 'layout paint' }}>
           {bars.map((bar, idx) => {
             const y = 30 + idx * 55;
             const w = Math.max((bar.val / maxVal) * maxBarWidth, 4);

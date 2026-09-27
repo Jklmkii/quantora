@@ -9,6 +9,10 @@ autoUpdater.autoInstallOnAppQuit = true;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
+// Otimizações de consumo de memória RAM do processo V8 e Chromium
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=256 --optimize_for_size');
+app.commandLine.appendSwitch('disable-site-isolation-trials');
+
 let mainWindow = null;
 let quickPracticeWindow = null;
 let tray = null;

@@ -54,6 +54,7 @@ export const PitagorasChart: React.FC<PitagorasChartProps> = React.memo(({ resul
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-full select-none overflow-visible transition-all duration-300"
+          style={{ contain: 'layout paint' }}
         >
           <defs>
             <linearGradient id="pitagorasGrad" x1="0%" y1="0%" x2="100%" y2="100%">

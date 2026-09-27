@@ -112,7 +112,8 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    // Limita DPR a no máximo 2 para economizar GPU fillrate e RAM em telas 4K/Retina
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -162,7 +163,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
     const rect = container.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const newWidth = Math.floor(rect.width);
     const newHeight = Math.floor(rect.height);
 

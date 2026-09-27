@@ -17,6 +17,12 @@
   }
 }
 
+/* Virtualização nativa leve de listas longas (Histórico) */
+@utility cv-calc-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
+}
+
 /* Safe Area Insets for Mobile / Notches / Bottom Bars */
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);

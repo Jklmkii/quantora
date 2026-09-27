@@ -141,6 +141,7 @@ export const ParabolaChart: React.FC<ParabolaChartProps> = React.memo(({
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="w-full h-auto select-none overflow-visible"
+          style={{ contain: 'layout paint' }}
           role="img"
           aria-label="Gráfico da função quadrática"
         >

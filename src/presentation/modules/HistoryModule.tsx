@@ -143,7 +143,7 @@ export const HistoryModule: React.FC = () => {
             return (
               <div
                 key={item.id}
-                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                className={`cv-calc-item rounded-2xl border transition-all duration-200 overflow-hidden ${
                   item.isPinned
                     ? 'border-amber-300/80 dark:border-amber-700/60 bg-amber-50/20 dark:bg-amber-950/20'
                     : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm'
