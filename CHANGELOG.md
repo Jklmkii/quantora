@@ -2,6 +2,57 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.29] — Auto-Bump de Release & Atualização de Dependências (2026-09-26)
+
+### 🤖 CI/CD, Dependências & Performance
+- **Atualização de Dependências Principais (PR #53 via Dependabot):**
+  - `@capacitor/android` e `@capacitor/cli` atualizados para `^8.5.2` (SDK 36, Android 15/16).
+  - `electron` atualizado para `^44.4.5`.
+  - `vite` atualizado para `^8.3.0` e `@tailwindcss/vite` para `^4.3.3`.
+  - `vitest` atualizado para `^5.0.1`.
+- **Validação Automatizada da Suíte QA:** 455 testes unitários e de integração aprovados em 28 suítes (100% verde) em ~2.1s.
+- **Análise Estática com Oxlint:** 0 avisos e 0 erros em 100 arquivos analisados.
+- **Build de Produção:** Compilação do bundle Vite concluída em ~523ms com código de saída 0.
+
+---
+
+## [1.2.28] — Módulo de Pitágoras, Torre Procedural Infinita no Boss Battle & Consumíveis (2026-09-26)
+
+### 📐 Núcleo Matemático & Geometria Didática
+- **Teorema de Pitágoras & Relações Métricas e Trigonométricas (`src/core/math/pitagoras.ts`):**
+  - Motor didático completo para cálculo exato de hipotenusa ($c = \sqrt{a^2+b^2}$), cateto $a$ ($a = \sqrt{c^2-b^2}$) e cateto $b$ ($b = \sqrt{c^2-a^2}$) com tolerância arbitrária via `big.js`.
+  - Reconhecimento automático de Ternos Pitagóricos primitivos e múltiplos (ex: 3-4-5, 5-12-13, 8-15-17, 7-24-25, 1-1-$\sqrt{2}$).
+  - Relações métricas no triângulo retângulo: Altura relativa à hipotenusa ($h = \frac{a \cdot b}{c}$), projeções ortogonais dos catetos ($m = \frac{a^2}{c}, n = \frac{b^2}{c}$), área e perímetro.
+  - Razões trigonométricas fundamentais: $\sin(\alpha), \cos(\alpha), \tan(\alpha)$ com conversão precisa para graus decimais e ângulo complementar $\beta = 90^\circ - \alpha$.
+  - Diagrama cartesiano SVG interativo (`PitagorasChart.tsx`) com renderização vetorial dinâmica, indicação de ângulo reto de 90° e altura relativa pontilhada.
+  - Módulo didático no React 19 (`PitagorasModule.tsx`) com seletores rápidos de presets, resolução KaTeX passo a passo e persistência de histórico (`CalculationType: 'pitagoras'`).
+  - Suíte de 14 testes (10 unitários em `pitagoras.test.ts` e 4 de integração em `pitagorasModule.test.tsx`).
+
+### ⚔️ Batalha de Chefe & Game Design
+- **Torre Procedural Infinita ($N = 1, \dots, \infty$ — `src/core/quiz/bossEngine.ts`):**
+  - Escalonamento infinito de vida do chefe via fórmula contínua: $HP_{max}(N) = 100 \cdot (1 + 0.35 \cdot (N - 1))$.
+  - Teto assintótico de dificuldade aritmética ($N_{cap} = 15$): operações escalam em complexidade até o patamar 15 (mantendo cálculo mental humanamente viável), enquanto HP, debuffs e recompensas continuam crescendo sem limites.
+  - Títulos e identidades procedurais de chefes gerados parametricamente a partir de prefixos e sufixos épicos via FNV-1a.
+  - 3 Fases Dinâmicas: Fase 1 (HP > 50%), Fase 2 (25% < HP $\le$ 50% - Sobrecarga) e Fase 3 (HP $\le$ 25% - Enrage Mode, com efeito visual avermelhado, $1.5\times$ dano crítico e penalidade de perda de 2 escudos por erro).
+  - Debuffs cognitivos dinâmicos: Névoa Algébrica (`fog`), Inversão Espectral (`mirror`) e Dreno Temporal (`time_siphon`).
+  - Loja de Consumíveis compráveis com Moedas do Chefe (`bossCoins`): Oráculo da Clarividência (`oracle` — 20 moedas, remove 2 alternativas falsas) e Dilatação Temporal (`timeFreeze` — 25 moedas, pausa o cronômetro por 4s).
+  - Migração de estado da store Zustand para Schema v7 (`bossOracleCharges`, `bossTimeFreezeCharges`).
+
+### 🎵 Áudio & Efeitos Sonoros
+- **Expansão da Suíte de Áudio Procedural (`scripts/generate-sfx.cjs` & `audio.ts`):**
+  - 5 novos efeitos sonoros matemáticos sintetizados: `boss-victory`, `boss-shield-break`, `blitz-time-warning`, `level-up`, `streak-flame` (totalizando 11 SFX ultraleves offline em `public/sounds/`).
+
+---
+
+## [1.2.27] — Governança, Leitura Cirúrgica do Vault & Planos TestSprite (2026-09-26)
+
+### 🏛️ Governança & Qualidade Agêntica
+- **Protocolo de Leitura Cirúrgica do Vault (Coarse-to-Fine):** Formalizado em `GEMINI.md` (Seção 17) e `AGENTS.md` (Regra I) com busca em 3 níveis (Descoberta Global via `llms.txt`, Outline Indexing e Fatiamento de Linhas).
+- **Planos E2E no TestSprite CLI:** Adicionados 8 planos de automação em `.testsprite/plans/` cobrindo Bhaskara, Blitz, Daily Challenge, Physics MRU, Regra de Três, Settings Modal, Survival e Boss Battle.
+- **Desduplicação e Higienização do Vault:** Desduplicação do histórico de bugs forenses em `Historico de Bugs.md` e consolidação de lançamentos em `CHANGELOG.md`.
+
+---
+
 ## [1.2.26] — Auto-Bump de Release & Consolidação Multiplataforma (2026-09-23)
 
 ### 🤖 CI/CD, Versionamento & Empacotamento
