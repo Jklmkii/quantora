@@ -231,7 +231,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   key={item.mode}
                   type="button"
                   onClick={() => updateSettings({ theme: item.mode as ThemeMode })}
-                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border font-semibold transition-all touch-target ${
+                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border font-semibold transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
                     settings.theme === item.mode
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -258,7 +258,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   key={item.lang}
                   type="button"
                   onClick={() => updateSettings({ language: item.lang as AppLanguage })}
-                  className={`p-3 rounded-2xl border font-bold text-center transition-all touch-target ${
+                  className={`p-3 rounded-2xl border font-bold text-center transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
                     (settings.language || 'pt') === item.lang
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shadow-xs'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -398,7 +398,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   key={places}
                   type="button"
                   onClick={() => updateSettings({ decimalPlaces: places })}
-                  className={`p-3 rounded-2xl border font-semibold text-center transition-all touch-target ${
+                  className={`p-3 rounded-2xl border font-semibold text-center transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
                     settings.decimalPlaces === places
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -426,7 +426,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   key={item.sep}
                   type="button"
                   onClick={() => updateSettings({ decimalSeparator: item.sep as DecimalSeparator })}
-                  className={`p-3 rounded-2xl border font-semibold text-center transition-all touch-target ${
+                  className={`p-3 rounded-2xl border font-semibold text-center transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
                     settings.decimalSeparator === item.sep
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -449,7 +449,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 type="button"
                 onClick={handleExportJSON}
                 disabled={historyLength === 0}
-                className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
+                className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
               >
                 <Download size={16} /> {t.export_json}
               </button>
@@ -457,7 +457,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 type="button"
                 onClick={handleExportCSV}
                 disabled={historyLength === 0}
-                className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
+                className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
               >
                 <Download size={16} /> {t.export_csv}
               </button>
@@ -474,7 +474,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <button
                 type="button"
                 onClick={handleImport}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target"
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
               >
                 <Upload size={16} /> {t.import_json}
               </button>
@@ -496,14 +496,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                       clearHistory();
                       setConfirmClear(false);
                     }}
-                    className="flex-1 p-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs touch-target"
+                    className="flex-1 p-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
                   >
                     {t.confirm_clear}
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmClear(false)}
-                    className="p-3 rounded-2xl border border-slate-200 dark:border-slate-800 font-semibold text-xs touch-target"
+                    className="p-3 rounded-2xl border border-slate-200 dark:border-slate-800 font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
                   >
                     {t.cancel}
                   </button>
@@ -513,7 +513,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   type="button"
                   onClick={() => setConfirmClear(true)}
                   disabled={historyLength === 0}
-                  className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
+                  className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors font-semibold text-xs touch-target disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
                 >
                   <Trash2 size={16} /> {t.clear_history}
                 </button>
