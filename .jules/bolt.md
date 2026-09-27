@@ -7,3 +7,7 @@
 ## 2024-05-19 - Zustand useShallow hook for Selective State Subscription
 **Learning:** Components subscribing to a Zustand store without using a selector (e.g. `useAppStore()`) or failing to use `useShallow` when selecting objects/multiple fields will re-render whenever *any* state in the store updates. This creates severe performance bottlenecks in highly interactive React applications.
 **Action:** When extracting data from `useAppStore`, always write a specific selector and wrap it with `useShallow` (e.g., `useAppStore(useShallow(s => ({ data: s.data })))`) to limit component re-renders strictly to changes in the selected fields.
+
+## 2024-05-23 - Prevent Global State Bleed in React components
+**Learning:** In React components, using an undeclared `history.length` accidentally falls back to the browser's global `window.history.length` instead of crashing. This causes confusing bugs where lists appear to have items (because of browser navigation history) when the app state is empty. Furthermore, extracting the whole `history` array via Zustand when only the length is needed causes unnecessary re-renders every time an item is added.
+**Action:** Always explicitly define variables locally or extract exactly the needed primitive (e.g., `historyLength: s.history.length`) from the store via `useShallow` to ensure correct bindings and minimize re-renders.

@@ -24,12 +24,13 @@ const escapeCSVField = (val: unknown): string => {
 };
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
-  const { settings, updateSettings, clearHistory, importHistory } = useAppStore(
+  const { settings, updateSettings, clearHistory, importHistory, historyLength } = useAppStore(
     useShallow((s) => ({
       settings: s.settings,
       updateSettings: s.updateSettings,
       clearHistory: s.clearHistory,
       importHistory: s.importHistory,
+      historyLength: s.history.length,
     }))
   );
   const t = useTranslation(settings.language || 'pt');
@@ -440,14 +441,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           {/* History Management */}
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">
-              {t.backup_data} ({history.length} {t.saved_items})
+              {t.backup_data} ({historyLength} {t.saved_items})
             </label>
 
             <div className="grid grid-cols-2 gap-2 mb-2">
               <button
                 type="button"
                 onClick={handleExportJSON}
-                disabled={history.length === 0}
+                disabled={historyLength === 0}
                 className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
               >
                 <Download size={16} /> {t.export_json}
@@ -455,7 +456,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <button
                 type="button"
                 onClick={handleExportCSV}
-                disabled={history.length === 0}
+                disabled={historyLength === 0}
                 className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
               >
                 <Download size={16} /> {t.export_csv}
@@ -511,7 +512,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 <button
                   type="button"
                   onClick={() => setConfirmClear(true)}
-                  disabled={history.length === 0}
+                  disabled={historyLength === 0}
                   className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
                 >
                   <Trash2 size={16} /> {t.clear_history}
