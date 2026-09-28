@@ -58,25 +58,34 @@ export const HistoryModule: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-24 md:pb-12">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-5 rounded-3xl bg-gradient-to-r from-slate-900/10 via-indigo-900/10 to-slate-900/10 dark:from-slate-800/40 dark:to-indigo-950/40 border border-slate-200 dark:border-slate-800 backdrop-blur-sm">
-        <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <HistoryIcon className="text-indigo-600 dark:text-indigo-400" /> Histórico Local de Cálculos
+    <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-24 md:pb-12 animate-in fade-in duration-300">
+      {/* Header Banner Cósmico */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-cyan-400/10 via-transparent to-transparent pointer-events-none" />
+        <div className="z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+              Auditoria Local
+            </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2 font-mono">
+            <HistoryIcon className="text-cyan-400" />
+            <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+              Histórico Local de Cálculos
+            </span>
           </h2>
-          <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Seus últimos cálculos salvos no dispositivo, com busca e favoritos.
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Seus últimos cálculos salvos no dispositivo, com busca, filtros e favoritos.
           </p>
         </div>
 
-        <div className="text-xs font-bold px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 self-start md:self-auto">
+        <div className="text-xs font-mono font-bold px-3.5 py-2 rounded-xl cosmic-glass border border-slate-300 dark:border-cyan-500/30 text-cyan-300 self-start md:self-auto z-10 shadow-sm">
           {history.length} cálculo{history.length === 1 ? '' : 's'} armazenado{history.length === 1 ? '' : 's'}
         </div>
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="p-4 md:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-3">
+      <div className="p-5 md:p-6 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl flex flex-col md:flex-row gap-3">
         {/* Search Input */}
         <div className="relative flex-1 flex items-center">
           <Search size={18} className="absolute left-3.5 text-slate-400" />
@@ -86,7 +95,7 @@ export const HistoryModule: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Pesquisar por fórmula, equação ou data..."
             aria-label="Pesquisar por fórmula, equação ou data"
-            className="w-full pl-10 pr-4 py-2.5 min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 touch-manipulation"
+            className="w-full pl-10 pr-4 py-2.5 min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-950/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-xs md:text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400/50 transition-all"
           />
         </div>
 
@@ -95,7 +104,7 @@ export const HistoryModule: React.FC = () => {
           {(
             [
               { id: 'all', label: 'Todos' },
-              { id: 'pinned', label: 'Favoritos', icon: <Star size={12} className="fill-amber-400 text-amber-500" /> },
+              { id: 'pinned', label: 'Favoritos', icon: <Star size={12} className="fill-amber-400 text-amber-400" /> },
               { id: 'bhaskara', label: 'Bhaskara', icon: <Sigma size={12} /> },
               { id: 'regra_simples', label: 'Regra de 3', icon: <Scale size={12} /> },
               { id: 'physics', label: 'Física', icon: <Atom size={12} /> },
@@ -105,10 +114,10 @@ export const HistoryModule: React.FC = () => {
               key={filter.id}
               type="button"
               onClick={() => setTypeFilter(filter.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all touch-target ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold font-mono whitespace-nowrap transition-all cursor-pointer ${
                 typeFilter === filter.id
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  ? 'bg-cyan-400 text-slate-950 shadow-md shadow-cyan-400/30 scale-[1.02]'
+                  : 'cosmic-glass text-slate-600 dark:text-slate-300 hover:text-cyan-400'
               }`}
             >
               {'icon' in filter && filter.icon}

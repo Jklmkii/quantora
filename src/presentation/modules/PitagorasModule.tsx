@@ -107,16 +107,24 @@ export const PitagorasModule: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 animate-in fade-in-50 duration-300">
-      {/* Header do Módulo */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800/80 pb-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent flex items-center gap-2.5">
-            <Triangle className="text-indigo-600 dark:text-indigo-400 rotate-90" size={26} />
-            {t.pitagoras_title || 'Teorema de Pitágoras & Trigonometria'}
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
+      {/* Header Banner Cósmico */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-amber-500/20 backdrop-blur-2xl shadow-xl relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-amber-400/10 via-transparent to-transparent pointer-events-none" />
+        <div className="z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              Geometria & Trigonometria
+            </span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2 font-mono">
+            <Triangle className="text-amber-400 rotate-90" size={26} />
+            <span className="bg-gradient-to-r from-amber-400 via-orange-300 to-cyan-300 bg-clip-text text-transparent">
+              {t.pitagoras_title || 'Teorema de Pitágoras & Trigonometria'}
+            </span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {t.pitagoras_subtitle || 'Triângulo retângulo, relações métricas e razões trigonométricas fundamentais'}
+            {t.pitagoras_subtitle || 'Triângulo retângulo, relações métricas e razões trigonométricas fundamentais.'}
           </p>
         </div>
 
@@ -126,27 +134,27 @@ export const PitagorasModule: React.FC = () => {
             type="button"
             onClick={handleSaveHistory}
             disabled={savedToHistory}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all duration-200 self-start sm:self-auto ${
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition-all duration-200 self-start md:self-auto cursor-pointer z-10 active:scale-95 ${
               savedToHistory
-                ? 'bg-emerald-600 text-white'
-                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-indigo-500'
+                ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/30'
+                : 'bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 shadow-amber-500/25'
             }`}
           >
-            {savedToHistory ? <Check size={16} /> : <Bookmark size={16} />}
+            {savedToHistory ? <Check size={16} className="stroke-[3]" /> : <Bookmark size={16} />}
             {savedToHistory ? 'Salvo no Histórico' : 'Salvar no Histórico'}
           </button>
         )}
       </div>
 
-      {/* Seletor de Modo (Abas de Solução) */}
-      <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm">
+      {/* Seletor de Modo (Cápsulas Cósmicas) */}
+      <div className="flex flex-wrap gap-2 p-1.5 cosmic-glass rounded-2xl border border-slate-200/80 dark:border-amber-500/20 backdrop-blur-2xl shadow-md">
         <button
           type="button"
           onClick={() => { setMode('hypotenuse'); setSavedToHistory(false); }}
-          className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+          className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold font-mono transition-all duration-200 cursor-pointer ${
             mode === 'hypotenuse'
-              ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 scale-[1.02]'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-amber-300'
           }`}
         >
           {t.pitagoras_calc_hypotenuse || 'Calcular Hipotenusa (c)'}
@@ -154,10 +162,10 @@ export const PitagorasModule: React.FC = () => {
         <button
           type="button"
           onClick={() => { setMode('leg_b'); setSavedToHistory(false); }}
-          className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+          className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold font-mono transition-all duration-200 cursor-pointer ${
             mode === 'leg_b'
-              ? 'bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 scale-[1.02]'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-amber-300'
           }`}
         >
           {t.pitagoras_calc_leg_b || 'Calcular Cateto (b)'}
@@ -165,10 +173,10 @@ export const PitagorasModule: React.FC = () => {
         <button
           type="button"
           onClick={() => { setMode('leg_a'); setSavedToHistory(false); }}
-          className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+          className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold font-mono transition-all duration-200 cursor-pointer ${
             mode === 'leg_a'
-              ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 scale-[1.02]'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-amber-300'
           }`}
         >
           {t.pitagoras_calc_leg_a || 'Calcular Cateto (a)'}
@@ -179,9 +187,9 @@ export const PitagorasModule: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Painel Esquerdo: Inputs Numéricos e Presets */}
         <div className="lg:col-span-6 space-y-5">
-          <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 shadow-sm backdrop-blur-sm space-y-4">
+          <div className="p-6 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-amber-500/20 backdrop-blur-2xl shadow-xl space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
                 Parâmetros do Triângulo
               </span>
               <button
@@ -310,25 +318,25 @@ export const PitagorasModule: React.FC = () => {
                 <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">
                   {t.pitagoras_area || 'Área'}
                 </span>
-                <span className="text-base sm:text-lg font-black text-indigo-600 dark:text-indigo-400">
+                <span className="text-base sm:text-lg font-black text-amber-400 font-mono">
                   {calculation.result.metrics.formattedArea}
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800/80 shadow-sm backdrop-blur-sm">
-                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">
+              <div className="p-4 rounded-2xl cosmic-glass border border-slate-200/80 dark:border-amber-500/20 shadow-md">
+                <span className="text-[11px] font-bold text-slate-400 block font-mono">
                   {t.pitagoras_perimeter || 'Perímetro'}
                 </span>
-                <span className="text-base sm:text-lg font-black text-purple-600 dark:text-purple-400">
+                <span className="text-base sm:text-lg font-black text-cyan-400 font-mono">
                   {calculation.result.metrics.formattedPerimeter}
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800/80 shadow-sm backdrop-blur-sm col-span-2 sm:col-span-1">
-                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">
+              <div className="p-4 rounded-2xl cosmic-glass border border-slate-200/80 dark:border-amber-500/20 shadow-md col-span-2 sm:col-span-1">
+                <span className="text-[11px] font-bold text-slate-400 block font-mono">
                   {t.pitagoras_height || 'Altura (h)'}
                 </span>
-                <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">
+                <span className="text-base sm:text-lg font-black text-emerald-400 font-mono">
                   {calculation.result.metrics.formattedHeight}
                 </span>
               </div>
@@ -344,22 +352,22 @@ export const PitagorasModule: React.FC = () => {
               <PitagorasChart result={calculation.result} />
 
               {/* Tabela de Razões Trigonométricas */}
-              <div className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm shadow-sm space-y-3">
+              <div className="p-5 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-amber-500/20 backdrop-blur-2xl shadow-xl space-y-3">
                 <div className="flex items-center gap-2">
-                  <Sparkles size={16} className="text-indigo-500" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                  <Sparkles size={16} className="text-amber-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
                     {t.pitagoras_trig || 'Razões Trigonométricas (Ângulo α)'}
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-400 block font-medium">sen(α)</span>
-                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                <div className="grid grid-cols-3 gap-2.5 text-center">
+                  <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
+                    <span className="text-[11px] text-slate-400 block font-mono font-bold">sen(α)</span>
+                    <span className="text-sm font-black text-cyan-300 font-mono">
                       {calculation.result.trig.formattedSin}
                     </span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                  <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
                     <span className="text-[11px] text-slate-400 block font-medium">cos(α)</span>
                     <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
                       {calculation.result.trig.formattedCos}

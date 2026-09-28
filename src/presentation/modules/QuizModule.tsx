@@ -52,6 +52,8 @@ export const QuizModule: React.FC = () => {
     recordSpacedAnswer,
     unlockedFeatures,
     unlockAllFeatures,
+    quizSubmode,
+    setActiveTab,
   } = useAppStore(
     useShallow((s) => ({
       quizProgress: s.quizProgress,
@@ -67,6 +69,8 @@ export const QuizModule: React.FC = () => {
       recordSpacedAnswer: s.recordSpacedAnswer,
       unlockedFeatures: s.unlockedFeatures || ['survival'],
       unlockAllFeatures: s.settings?.unlockAllFeatures ?? false,
+      quizSubmode: s.quizSubmode,
+      setActiveTab: s.setActiveTab,
     }))
   );
   const settings = React.useMemo(
@@ -86,7 +90,12 @@ export const QuizModule: React.FC = () => {
   );
 
   // Screen View: 'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush'
-  const [screen, setScreen] = useState<'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush'>('lobby');
+  const [screen, setScreen] = useState<'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush'>(() => {
+    if (quizSubmode === 'blitz') return isBlitzUnlocked ? 'blitz' : 'lobby';
+    if (quizSubmode === 'boss_rush') return isBossUnlocked ? 'boss_rush' : 'lobby';
+    if (quizSubmode === 'survival' || quizSubmode === 'spaced') return 'playing';
+    return 'lobby';
+  });
 
   const effectiveScreen = useMemo(() => {
     if (screen === 'blitz' && !isBlitzUnlocked) return 'lobby';
@@ -95,7 +104,7 @@ export const QuizModule: React.FC = () => {
   }, [screen, isBlitzUnlocked, isBossUnlocked]);
 
   // Repetição Espaçada / Prática Focada State
-  const [isFocusedPractice, setIsFocusedPractice] = useState<boolean>(false);
+  const [isFocusedPractice, setIsFocusedPractice] = useState<boolean>(() => quizSubmode === 'spaced');
   const [masteryUnlocked, setMasteryUnlocked] = useState<boolean>(false);
   const [mountTime] = useState<number>(() => Date.now());
 
@@ -219,12 +228,12 @@ export const QuizModule: React.FC = () => {
     setScreen('playing');
   };
 
-  // Exit to Lobby
+  // Exit to Hub Cósmico (Retorna ao Hub principal)
   const handleExitToLobby = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setIsFocusedPractice(false);
     setMasteryUnlocked(false);
-    setScreen('lobby');
+    setActiveTab('hub');
   };
 
   // Restart current run
@@ -494,7 +503,7 @@ export const QuizModule: React.FC = () => {
           </div>
         }
       >
-        <BlitzGame onExit={() => setScreen('lobby')} />
+        <BlitzGame onExit={() => setActiveTab('hub')} />
       </React.Suspense>
     );
   }
@@ -514,7 +523,7 @@ export const QuizModule: React.FC = () => {
           </div>
         }
       >
-        <BossBattle onExit={() => setScreen('lobby')} />
+        <BossBattle onExit={() => setActiveTab('hub')} />
       </React.Suspense>
     );
   }

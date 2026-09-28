@@ -101,31 +101,40 @@ export const BhaskaraModule: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-24 md:pb-12">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-5 rounded-3xl bg-gradient-to-r from-indigo-900/20 via-purple-900/20 to-pink-900/20 border border-indigo-200/50 dark:border-indigo-800/40 backdrop-blur-sm">
-        <div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <Calculator className="text-indigo-600 dark:text-indigo-400" /> Equação do 2º Grau (Bhaskara)
+    <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-24 md:pb-12 animate-in fade-in duration-300">
+      {/* Header Banner Cósmico */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-cyan-400/10 via-transparent to-transparent pointer-events-none" />
+        <div className="z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+              Álgebra Didática
+            </span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2 font-mono">
+            <Calculator className="text-cyan-400" />
+            <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+              Equação do 2º Grau
+            </span>
           </h2>
-          <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Cálculo didático com discriminante (Δ), raízes reais/complexas, vértice e gráfico dinâmico.
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Cálculo didático com discriminante (Δ), raízes reais/complexas, coordenadas do vértice e parábola cartesiana.
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleReset}
-          className="self-start md:self-auto flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-target"
+          className="self-start md:self-auto flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 dark:border-cyan-500/30 cosmic-glass text-slate-700 dark:text-cyan-300 hover:border-cyan-400 transition-all cursor-pointer shadow-sm z-10 active:scale-95"
         >
           <RefreshCw size={14} /> Restaurar Exemplo
         </button>
       </div>
 
-      {/* Text Equation Parser Input (Feature Nova) */}
-      <div className="p-4 md:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-3">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-          <Sparkles size={14} className="text-indigo-500" />
+      {/* Text Equation Parser Input */}
+      <div className="p-5 md:p-6 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl flex flex-col gap-3">
+        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-mono">
+          <Sparkles size={14} className="text-cyan-400" />
           Entrada por Texto da Equação (Opcional)
         </label>
         <div className="flex flex-col sm:flex-row gap-2">
@@ -136,28 +145,28 @@ export const BhaskaraModule: React.FC = () => {
             onKeyDown={(e) => e.key === 'Enter' && handleParseTextEquation()}
             placeholder="Ex: 2x² - 3x + 1 = 0 ou x^2 = 9"
             aria-label="Entrada por Texto da Equação"
-            className="flex-1 px-4 py-3 min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 touch-manipulation"
+            className="flex-1 px-4 py-3 min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-950/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400/50 transition-all"
           />
           <button
             type="button"
             onClick={handleParseTextEquation}
-            className="px-5 py-3 min-h-[44px] rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 touch-target"
+            className="px-5 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-400 hover:to-sky-400 text-slate-950 text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
             Extrair Coeficientes
           </button>
         </div>
 
         {textParserNotice && (
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
             <CheckCircle2 size={16} /> {textParserNotice}
           </div>
         )}
       </div>
 
       {/* Individual Coeff Inputs Grid */}
-      <div className="p-5 md:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
-        <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Coeficientes: <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">ax² + bx + c = 0</span>
+      <div className="p-5 md:p-6 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl flex flex-col gap-4">
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
+          Coeficientes: <span className="text-cyan-400 font-black">ax² + bx + c = 0</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -199,7 +208,7 @@ export const BhaskaraModule: React.FC = () => {
           type="button"
           onClick={handleManualCalculate}
           disabled={!activeResult || Boolean(activeError)}
-          className="w-full mt-2 py-3.5 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 touch-target"
+          className="w-full mt-2 py-3.5 px-5 rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 disabled:opacity-40 text-slate-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
         >
           <Calculator size={18} /> Salvar no Histórico
         </button>
@@ -211,26 +220,26 @@ export const BhaskaraModule: React.FC = () => {
           {/* Key Metrics Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Delta Card */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div className="p-5 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl flex flex-col justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Discriminante</span>
-                <div className="text-3xl font-black text-slate-900 dark:text-white mt-1 font-mono">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Discriminante</span>
+                <div className="text-3xl font-black text-slate-900 dark:text-white mt-1 font-mono text-cyan-400">
                   Δ = {activeResult.delta}
                 </div>
               </div>
               <div className="mt-4">
                 {activeResult.delta > 0 && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                     2 raízes reais distintas
                   </span>
                 )}
                 {activeResult.delta === 0 && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                     1 raiz real dupla
                   </span>
                 )}
                 {activeResult.delta < 0 && (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
                     Raízes complexas (ℂ)
                   </span>
                 )}
@@ -238,21 +247,21 @@ export const BhaskaraModule: React.FC = () => {
             </div>
 
             {/* Roots Card */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Raízes Encontradas</span>
+            <div className="p-5 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl flex flex-col justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Raízes Encontradas</span>
               <div className="flex flex-col gap-1.5 mt-2 font-mono">
                 {activeResult.rootType === 'two_real' && (
                   <>
-                    <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                    <div className="text-lg font-bold text-cyan-400">
                       x₁ = {formatNumberSmart(activeResult.x1!, settings.decimalPlaces, settings.decimalSeparator)}
                     </div>
-                    <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                    <div className="text-lg font-bold text-cyan-400">
                       x₂ = {formatNumberSmart(activeResult.x2!, settings.decimalPlaces, settings.decimalSeparator)}
                     </div>
                   </>
                 )}
                 {activeResult.rootType === 'single_real' && (
-                  <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                  <div className="text-xl font-bold text-cyan-400">
                     x₁ = x₂ = {formatNumberSmart(activeResult.x1!, settings.decimalPlaces, settings.decimalSeparator)}
                   </div>
                 )}
@@ -269,10 +278,10 @@ export const BhaskaraModule: React.FC = () => {
             </div>
 
             {/* Vertex Card */}
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+            <div className="p-5 rounded-3xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-2xl shadow-xl flex flex-col justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Vértice da Parábola</span>
-                <div className="text-xl font-black text-slate-900 dark:text-white mt-1 font-mono">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Vértice da Parábola</span>
+                <div className="text-xl font-black text-slate-900 dark:text-white mt-1 font-mono text-cyan-300">
                   V = ({formatNumberSmart(activeResult.vertex.x, settings.decimalPlaces, settings.decimalSeparator)};{' '}
                   {formatNumberSmart(activeResult.vertex.y, settings.decimalPlaces, settings.decimalSeparator)})
                 </div>

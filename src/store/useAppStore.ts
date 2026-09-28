@@ -40,11 +40,15 @@ import {
 } from '../core/quiz/bossEngine';
 
 export type ActiveTab = 'hub' | 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings';
+export type QuizSubmode = 'survival' | 'blitz' | 'boss_rush' | 'daily' | 'spaced';
 
 interface AppState {
   // Navigation
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
+  quizSubmode: QuizSubmode;
+  setQuizSubmode: (submode: QuizSubmode) => void;
+  openQuizWithSubmode: (submode: QuizSubmode) => void;
 
   // Gamification & Profile
   profile: UserProfile;
@@ -239,6 +243,9 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       activeTab: 'hub',
       setActiveTab: (tab) => set({ activeTab: tab }),
+      quizSubmode: 'survival',
+      setQuizSubmode: (submode) => set({ quizSubmode: submode }),
+      openQuizWithSubmode: (submode) => set({ activeTab: 'quiz', quizSubmode: submode }),
 
       profile: DEFAULT_PROFILE,
       toastQueue: [],
@@ -1037,7 +1044,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'quantora-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 7,
+      version: 8,
       migrate: (persistedState: any, version: number) => {
         const state = persistedState as any;
         if (!version || version < 2) {
@@ -1109,6 +1116,10 @@ export const useAppStore = create<AppState>()(
             if (state.profile.stats.bossOracleCharges === undefined) state.profile.stats.bossOracleCharges = 0;
             if (state.profile.stats.bossTimeFreezeCharges === undefined) state.profile.stats.bossTimeFreezeCharges = 0;
           }
+        }
+        if (!version || version < 8) {
+          state.activeTab = 'hub';
+          if (state.quizSubmode === undefined) state.quizSubmode = 'survival';
         }
         return state;
       },

@@ -1,7 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { useAppStore } from './store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
-import { Navbar } from './presentation/components/Navbar';
+import { ModuleTopBar } from './presentation/components/ModuleTopBar';
 import { SettingsModal } from './presentation/components/SettingsModal';
 import { ProfileModal } from './presentation/components/ProfileModal';
 import { OnboardingModal } from './presentation/components/OnboardingModal';
@@ -123,8 +123,11 @@ export function App() {
         />
       ) : (
         <>
-          {/* Navigation Bar */}
-          <Navbar onOpenSettings={() => setIsSettingsOpen(true)} />
+          {/* Header Focado do Módulo (Sem HUD de abas!) */}
+          <ModuleTopBar
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onOpenProfile={() => setIsProfileOpen(true)}
+          />
 
           {/* Main Content Area */}
           <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-36 md:pb-16">

@@ -57,9 +57,11 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
     historyCount,
     unlockedFeatures,
     unlockAllFeatures,
+    openQuizWithSubmode,
   } = useAppStore(
     useShallow((s) => ({
       setActiveTab: s.setActiveTab,
+      openQuizWithSubmode: s.openQuizWithSubmode,
       profile: s.profile,
       quizProgress: s.quizProgress,
       blitzHighScore: s.profile?.stats?.blitzHighScore || 0,
@@ -236,6 +238,27 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
     }
   }, []);
 
+  // Ação de entrada direta no módulo/modo selecionado
+  const handleLaunchCard = useCallback(
+    (card: HubCard) => {
+      if (card.isLocked) return;
+      if (card.id === 'survival') {
+        openQuizWithSubmode('survival');
+      } else if (card.id === 'blitz') {
+        openQuizWithSubmode('blitz');
+      } else if (card.id === 'boss') {
+        openQuizWithSubmode('boss_rush');
+      } else if (card.id === 'daily') {
+        openQuizWithSubmode('daily');
+      } else if (card.id === 'spaced') {
+        openQuizWithSubmode('spaced');
+      } else {
+        setActiveTab(card.targetTab);
+      }
+    },
+    [openQuizWithSubmode, setActiveTab]
+  );
+
   // Atalhos de teclado (Setas Esquerda / Direita e Enter)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -249,14 +272,14 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
         scrollToCard(prev);
       } else if (e.key === 'Enter') {
         const activeCard = hubCards[activeIndex];
-        if (activeCard && !activeCard.isLocked) {
-          setActiveTab(activeCard.targetTab);
+        if (activeCard) {
+          handleLaunchCard(activeCard);
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeIndex, hubCards, scrollToCard, setActiveTab]);
+  }, [activeIndex, hubCards, scrollToCard, handleLaunchCard]);
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-x-hidden select-none py-2">
@@ -428,7 +451,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
                     onClick={(e) => {
                       e.stopPropagation();
                       if (isActive) {
-                        if (!card.isLocked) setActiveTab(card.targetTab);
+                        handleLaunchCard(card);
                       } else {
                         scrollToCard(idx);
                       }
