@@ -13,6 +13,7 @@ import {
   playRare67,
   playTestSound,
   playSfx,
+  playHubSwipe,
   _clearAudioCache,
 } from '../core/platform/audio';
 import { useAppStore } from '../store/useAppStore';
@@ -54,6 +55,7 @@ describe('Audio Platform Helper (SFX)', () => {
     expect(() => playStreakFlame()).not.toThrow();
     expect(() => playRare67()).not.toThrow();
     expect(() => playTestSound()).not.toThrow();
+    expect(() => playHubSwipe()).not.toThrow();
   });
 
   it('respects soundEnabled = false by suppressing playback', () => {
@@ -69,10 +71,15 @@ describe('Audio Platform Helper (SFX)', () => {
     }
     vi.stubGlobal('Audio', MockAudio);
 
+    const mockAudioContext = vi.fn();
+    vi.stubGlobal('AudioContext', mockAudioContext);
+
     playBossHitCritical();
     playComboTick();
+    playHubSwipe();
 
     expect(playMock).not.toHaveBeenCalled();
+    expect(mockAudioContext).not.toHaveBeenCalled();
   });
 
   it('plays sound when soundEnabled = true and volume > 0', () => {

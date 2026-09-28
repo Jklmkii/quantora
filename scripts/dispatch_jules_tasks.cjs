@@ -79,7 +79,7 @@ function createSession(task) {
       res.on('end', () => {
         try {
           resolve({ status: res.statusCode, data: JSON.parse(data) });
-        } catch (e) {
+        } catch {
           resolve({ status: res.statusCode, data });
         }
       });
@@ -105,7 +105,7 @@ function updateQuota(increment) {
     quota.usedCount += increment;
     fs.writeFileSync(QUOTA_FILE, JSON.stringify(quota, null, 2), 'utf8');
     console.log(`[Quota] Atualizada: ${quota.usedCount}/${quota.dailyLimit} utilizadas hoje (${quota.date})`);
-  } catch (err) {
+  } catch {
     console.error('[Quota Error]', err);
   }
 }
@@ -130,7 +130,7 @@ function updateQuota(increment) {
       } else {
         console.error(`   ❌ Falha ao criar sessão (HTTP ${res.status}):`, res.data);
       }
-    } catch (err) {
+    } catch {
       console.error(`   ❌ Erro de rede para [${task.id}]:`, err.message);
     }
   }
