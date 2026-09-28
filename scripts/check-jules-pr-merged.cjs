@@ -6,10 +6,24 @@ const https = require('https');
 const mainRoot = path.resolve(__dirname, '..');
 const stateDir = path.join(mainRoot, '.antigravity');
 const stateFile = path.join(stateDir, 'documented-jules-prs.json');
+const tokenFile = path.join(stateDir, 'github-token.txt');
+const logDir = path.join(stateDir, 'logs');
 
 if (!fs.existsSync(stateDir)) {
   fs.mkdirSync(stateDir, { recursive: true });
 }
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
+
+const logFile = path.join(logDir, 'hook-execution.log');
+function logHook(msg) {
+  try {
+    fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`, 'utf8');
+  } catch {}
+}
+
+const githubToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || (fs.existsSync(tokenFile) ? fs.readFileSync(tokenFile, 'utf8').trim() : '');
 
 let documentedPrs = [];
 if (fs.existsSync(stateFile)) {
@@ -21,6 +35,7 @@ if (fs.existsSync(stateFile)) {
 }
 
 function sendResponse(injectMessages = []) {
+  logHook(`Hook finalizado: ${injectMessages.length} mensagem(ns) injetada(s)`);
   if (injectMessages.length > 0) {
     const payload = {
       injectSteps: injectMessages.map(msg => ({
@@ -41,6 +56,7 @@ let started = false;
 function triggerCheck() {
   if (started) return;
   started = true;
+  logHook('Trigger disparado via PreInvocation.');
   checkPrs();
 }
 
@@ -54,16 +70,23 @@ setTimeout(() => {
 }, 80);
 
 function checkPrs() {
+  const reqHeaders = {
+    'User-Agent': 'Antigravity-Hook-Agent',
+    'Accept': 'application/vnd.github.v3+json'
+  };
+  if (githubToken) {
+    reqHeaders['Authorization'] = `Bearer ${githubToken}`;
+  }
+
   const req = https.get({
     hostname: 'api.github.com',
     path: '/repos/Jklmkii/quantora/pulls?state=closed&per_page=10',
-    headers: {
-      'User-Agent': 'Antigravity-Hook-Agent'
-    }
+    headers: reqHeaders
   }, (res) => {
     let raw = '';
     res.on('data', chunk => { raw += chunk; });
     res.on('end', () => {
+      logHook(`Resposta GitHub API: HTTP ${res.statusCode}`);
       if (res.statusCode !== 200) {
         sendResponse([]);
         return;
