@@ -29,3 +29,7 @@
 **Vulnerability:** A path traversal vulnerability was found in Electron's `will-navigate` event where `.startsWith(expectedDist)` was used without trailing slashes. An attacker could use a folder named `dist-malicious` to bypass the `dist` restriction.
 **Learning:** `path.resolve` drops trailing slashes, so using `startsWith` directly on the resolved path allows any matching prefix (e.g. `dist-malicious/test.html` matches `dist`).
 **Prevention:** Always append `path.sep` to the expected directory before using `.startsWith()`, or use proper path resolution/relative path checking (`!path.relative(expected, actual).startsWith('..')`).
+## 2024-05-18 - Missing String Length Bounds on Imported JSON History Items
+**Vulnerability:** The application was parsing and accepting JSON files for history import. Although the basic types were validated (e.g. `typeof item.id === 'string'`), there were no bounds checking on the lengths of these strings (`id`, `title`, `summary`, `details`).
+**Learning:** Even when basic type validation is present and a file size limit exists (e.g., 5MB), malicious actors can still exhaust memory and cause a Denial of Service (DoS) in the renderer or JS engine if a single JSON property is massively long.
+**Prevention:** Always enforce upper boundary lengths on all string inputs coming from external sources, especially inside schema validation loops for JSON arrays.
