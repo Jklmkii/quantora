@@ -6,50 +6,50 @@ const TOKEN_FILE = path.resolve(__dirname, '../.antigravity/jules-token.txt');
 const JULES_TOKEN = process.env.JULES_API_KEY || (fs.existsSync(TOKEN_FILE) ? fs.readFileSync(TOKEN_FILE, 'utf8').trim() : '');
 const QUOTA_FILE = path.resolve(__dirname, '../.antigravity/jules-quota.json');
 
-
 const tasks = [
   {
-    id: 'TASK-A',
-    role: 'Função 2: Engenheira de Testes (Test Coverage Guardian)',
-    title: 'Test Coverage: Expand audio.test.ts for playHubSwipe()',
-    prompt: `Ticket Determinístico — Test Coverage (Função 2 Jules AI):
-1. Sintoma Observável: A função playHubSwipe() foi implementada em src/core/platform/audio.ts para síntese sonora de navegação do Hub, mas ainda não possui cobertura de testes unitários na suíte src/tests/audio.test.ts.
-2. Localização Provável: src/tests/audio.test.ts
+    id: 'SUGG-1-SECURITY',
+    role: 'Função 5: Guardiã de Segurança (Sentinel 🛡️)',
+    title: 'Security: Insecure UUID Generation Fallback in QuizGenerator',
+    prompt: `Ticket Determinístico — Security (Função 5 Jules AI):
+1. Sintoma Observável: Em src/core/math/quizGenerator.ts na linha 127, o identificador de pergunta utiliza como fallback 'Math.random().toString(36).slice(2, 7)' caso 'globalThis.crypto?.randomUUID' não esteja disponível. O uso de Math.random() não é criptograficamente seguro e pode gerar colisões previsíveis.
+2. Localização Provável: src/core/math/quizGenerator.ts
 3. Critérios de Aceite:
-   - Adicionar teste verificando que playHubSwipe() é exportada e executa sem lançar exceções em ambiente de teste (not.toThrow()).
-   - Adicionar teste verificando que playHubSwipe() respeita soundEnabled = false da store Zustand suprimindo a execução.
+   - Substituir o fallback baseado em Math.random() por um fallback seguro utilizando crypto.getRandomValues ou um gerador determinístico seguro sem comprometer a entropia.
+   - Manter a assinatura do gerador de questões e garantir que 100% dos testes em src/tests/quizGenerator.test.ts continuem passando.
 4. Comando de Verificação:
-   npx vitest run src/tests/audio.test.ts && npm run lint`,
-    targetFiles: ['src/tests/audio.test.ts']
+   npx vitest run src/tests/quizGenerator.test.ts && npm run lint`,
+    targetFiles: ['src/core/math/quizGenerator.ts']
   },
   {
-    id: 'TASK-B',
-    role: 'Função 1: Guardiã de Acessibilidade & Semântica (Palette / A11y)',
-    title: 'A11y Audit: Add ARIA semantics and labels in CosmicHub.tsx',
-    prompt: `Ticket Determinístico — A11y Audit (Função 1 Jules AI):
-1. Sintoma Observável: Os botões de navegação, controles laterais (como voltar ao início e botão de configurações) e os cards do carrossel em src/presentation/components/CosmicHub.tsx necessitam de atributos ARIA explícitos (aria-label, role="region" ou role="tablist", aria-selected) para conformidade com acessibilidade WCAG AAA e leitores de tela.
-2. Localização Provável: src/presentation/components/CosmicHub.tsx
+    id: 'SUGG-2-PERFORMANCE',
+    role: 'Função 5: Otimizadora de Performance (Bolt ⚡)',
+    title: 'Performance: Redundant Inline Array Initialization in PhysicsChart.tsx',
+    prompt: `Ticket Determinístico — Performance (Função 5 Jules AI):
+1. Sintoma Observável: Em src/presentation/components/PhysicsChart.tsx, arrays literais como '[0, 0.25, 0.5, 0.75, 1]' e outros arrays de proporções de grade são recriados e alocados a cada ciclo de renderização dos gráficos de física dentro do corpo dos componentes SVG.
+2. Localização Provável: src/presentation/components/PhysicsChart.tsx
 3. Critérios de Aceite:
-   - Adicionar aria-label descritivo nos botões de ícone (ex: botão de voltar ao início e botão de configurações).
-   - Indicar role semântico no container do carrossel e aria-selected no card ativo.
-   - Manter 100% intacta a funcionalidade visual, o drag-to-scroll e os efeitos sonoros existentes.
+   - Extrair arrays estáticos constantes (como proporções de grade e divisores de eixos) para constantes fora do componente PhysicsChart (ex: GRID_RATIOS).
+   - Evitar alocações desnecessárias no garbage collector a cada re-render para manter 60 FPS consistentes.
+   - Preservar integralmente o desenho visual dos 5 tipos de gráficos SVG de física.
 4. Comando de Verificação:
    npm run build && npm run lint`,
-    targetFiles: ['src/presentation/components/CosmicHub.tsx']
+    targetFiles: ['src/presentation/components/PhysicsChart.tsx']
   },
   {
-    id: 'TASK-C',
-    role: 'Função 4: Especialista em Internacionalização (i18n Specialist)',
-    title: 'i18n Parity: Audit and synchronize translations.ts',
-    prompt: `Ticket Determinístico — i18n Specialist (Função 4 Jules AI):
-1. Sintoma Observável: O dicionário de traduções em src/core/i18n/translations.ts precisa de uma auditoria de paridade estrita de 100% entre os idiomas Português (pt) e Inglês (en), assegurando que novos termos e descrições do Hub possuam correspondência exata sem chaves faltantes.
-2. Localização Provável: src/core/i18n/translations.ts
+    id: 'SUGG-3-CODE-HEALTH',
+    role: 'Função 3: Higiene de Código & Tipagem Estrita (Code Hygiene)',
+    title: 'Code Health: Use of any type for activeResult in PhysicsModule',
+    prompt: `Ticket Determinístico — Code Health & Strict Typing (Função 3 Jules AI):
+1. Sintoma Observável: Em src/presentation/modules/PhysicsModule.tsx na linha 310, o código utiliza 'const anyRes = activeResult as any;' para acessar propriedades calculadas dos motores de física, contornando a checagem de tipos estrita do TypeScript.
+2. Localização Provável: src/presentation/modules/PhysicsModule.tsx
 3. Critérios de Aceite:
-   - Auditar as interfaces e os objetos de tradução pt e en garantindo paridade completa de chaves.
-   - Corrigir qualquer chave ausente ou divergência de tipos.
+   - Eliminar o cast 'as any' em activeResult.
+   - Utilizar as interfaces e tipos discriminados já exportados em src/types/index.ts (ou type guards adequados por 'selectedMode') para acessar as propriedades calculadas com tipagem estrita e segura.
+   - Garantir 0 erros de compilação no TypeScript.
 4. Comando de Verificação:
    npm run build && npm run lint`,
-    targetFiles: ['src/core/i18n/translations.ts']
+    targetFiles: ['src/presentation/modules/PhysicsModule.tsx']
   }
 ];
 
@@ -105,13 +105,13 @@ function updateQuota(increment) {
     quota.usedCount += increment;
     fs.writeFileSync(QUOTA_FILE, JSON.stringify(quota, null, 2), 'utf8');
     console.log(`[Quota] Atualizada: ${quota.usedCount}/${quota.dailyLimit} utilizadas hoje (${quota.date})`);
-  } catch {
+  } catch (err) {
     console.error('[Quota Error]', err);
   }
 }
 
 (async () => {
-  console.log(`=== Despachando ${tasks.length} Tarefas Determinísticas para a Jules AI ===\n`);
+  console.log(`=== Despachando ${tasks.length} Sugestões Auditadas para a Jules AI ===\n`);
   const dispatched = [];
 
   for (const task of tasks) {
@@ -130,7 +130,7 @@ function updateQuota(increment) {
       } else {
         console.error(`   ❌ Falha ao criar sessão (HTTP ${res.status}):`, res.data);
       }
-    } catch {
+    } catch (err) {
       console.error(`   ❌ Erro de rede para [${task.id}]:`, err.message);
     }
   }
@@ -140,7 +140,7 @@ function updateQuota(increment) {
   }
 
   fs.writeFileSync(
-    path.resolve(__dirname, '../.antigravity/dispatched-jules-sessions.json'),
+    path.resolve(__dirname, '../.antigravity/dispatched-suggestions-sessions.json'),
     JSON.stringify(dispatched, null, 2),
     'utf8'
   );
