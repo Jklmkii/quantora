@@ -218,9 +218,29 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
   2. **Nível 2 (Extração de Estrutura - Outline):** Para inspecionar a estrutura de uma nota específica, utilize comandos de outline por cabeçalhos (`rg "^#{1,3}\s" <caminho> -n`) para mapear os números de linha exatos de cada seção sem consumir o corpo do texto.
   3. **Nível 3 (Fatiamento Cirúrgico):** Utilize a ferramenta de leitura com parâmetros de intervalo estrito (`StartLine` e `EndLine`), lendo apenas as 30 a 80 linhas necessárias para resolver a tarefa, blindando a janela de contexto contra saturação (*"Lost in the Middle"*).
 
+### J. Link Mandatório de Acompanhamento de Commits (Regra Obrigatória)
+* **Princípio Mandatório:** Sempre que realizar um `git push` ou concluir uma tarefa que resulte em novo commit na branch `main` ou Pull Request, o agente DEVE expressamente fornecer o link clicável direto para o commit no GitHub (`https://github.com/Jklmkii/quantora/commit/<hash>`), permitindo ao desenvolvedor auditar e acompanhar o diff e os workflows de CI/CD em tempo real diretamente no navegador.
+
 ---
 
-## 🤖 6. Pull Request Conventions
+## 🤖 6. Carta de Funções & Atribuições da Jules AI no Quantora
+
+Para maximizar a eficiência, poupar a cota de tokens do Antigravity e manter a integridade da aplicação, a **Jules AI** possui 5 funções vitais e oficiais de atuação autônoma no repositório:
+
+1. **🎨 Função 1: Guardiã de Acessibilidade & Semântica Web (A11y Specialist / Palette):**
+   - Auditar e implementar atributos ARIA (`aria-label`, `aria-expanded`, `aria-controls`, `role`), navegação lógica por teclado (<kbd>Tab</kbd>, <kbd>Enter</kbd>, <kbd>Esc</kbd>), contraste de cores e conformidade WCAG AAA em novos componentes.
+2. **🧪 Função 2: Engenheira de Testes & Cobertura de Casos de Borda (Test Coverage Guardian):**
+   - Escrever e expandir suítes de testes automatizados com Vitest para funções puras, motores matemáticos (`precision.ts`, `bhaskara.ts`), física analítica, algoritmos de gamificação e novos helpers de plataforma (ex: `audio.ts`).
+3. **🧹 Função 3: Higiene de Código, Linter & Tipagem Estrita (Code Hygiene & Strict Typing):**
+   - Varredura e eliminação de warnings do Oxlint, erradicação de tipos `any`, refatoração para interfaces estritas em `src/types/index.ts` e remoção de importações ou variáveis mortas.
+4. **🌐 Função 4: Especialista em Internacionalização (i18n & Dicionários):**
+   - Manutenção de paridade 100% estrita entre os dicionários de Português (`pt`) e Inglês (`en`) em `src/core/i18n/translations.ts`, eliminando textos literais ou hardcoded nos componentes.
+5. **🛡️ Função 5: Guardiã Noturna de Segurança & Performance (Sentinel & Bolt):**
+   - Execução das rotinas diárias agendadas às 21:00 GMT-3 para detecção de vulnerabilidades em dependências npm (`audit`), otimização atômica com `React.memo` e profilaxia de performance em WebViews e Electron.
+
+---
+
+## 🚀 7. Pull Request Conventions
 
 * Use **Conventional Commits**:
   * `feat:` for new capabilities or math modes.

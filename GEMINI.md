@@ -52,6 +52,14 @@ Toda delegação para a Jules deve seguir a estrutura de um **Ticket Determinís
 3. **Critérios de Aceite:** O comportamento esperado após a alteração.
 4. **Comando de Verificação:** Qual comando de teste ou linter a Jules deve rodar antes de concluir (ex: `npx vitest run src/tests/...`, `npm run lint`).
 
+### 1.3. Carta de Funções Oficiais da Jules AI no Quantora (Papéis & Atribuições)
+A Jules AI opera sob 5 funções vitais pré-aprovadas para delegação autônoma contínua (poupar a cota de tokens do Antigravity e manter a integridade):
+1. **🎨 Função 1: Guardiã de Acessibilidade & Semântica (Palette / A11y):** Auditar e implementar atributos ARIA (`aria-label`, `aria-expanded`, `aria-controls`), navegação por teclado e conformidade WCAG AAA em componentes.
+2. **🧪 Função 2: Engenheira de Testes Unitários & Casos de Borda (Test Coverage Guardian):** Criar e expandir testes automatizados com Vitest para funções puras, motores matemáticos, física analítica e helpers de plataforma.
+3. **🧹 Função 3: Higiene de Código, Linter & Tipagem Estrita (Code Hygiene & Strict Typing):** Resolução de warnings do Oxlint, erradicação de `any` no TypeScript e tipagem estrita de interfaces.
+4. **🌐 Função 4: Especialista em Internacionalização (i18n & Dicionários):** Sincronização de paridade estrita entre dicionários `pt` e `en` em `translations.ts`.
+5. **🛡️ Função 5: Guardiã Noturna de Segurança & Performance (Sentinel 🛡️ & Bolt ⚡):** Execução das rotinas diárias das 21:00 GMT-3 para vulnerabilidades (`npm audit`), otimização com `React.memo` e profilaxia de bundles.
+
 ## 2. Verificação de Cota Diária da Jules
 - Antes de assumir que a API da Jules expõe a cota restante, confirmar isso na documentação
   real da API (não presumir a existência de um endpoint de consulta).
@@ -214,6 +222,9 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
   1. **Nível 1 (Descoberta Global):** Antes de abrir notas desconhecidas, consultar o manifesto leve `00 - Hub & Visao Geral/llms.txt` ou `00 - Hub & Visao Geral/vault_catalog.json` para identificar qual arquivo e seção contêm a informação necessária consumindo menos de 1k tokens.
   2. **Nível 2 (Outline Indexing):** Caso precise inspecionar uma nota com mais de 100 linhas, rodar scanner de cabeçalhos (`rg "^#{1,3}\s" <arquivo> -n`) para mapear os intervalos de linhas exatos das seções sem ler o corpo do texto.
   3. **Nível 3 (Fatiamento de Linhas):** Invocar a ferramenta de leitura com parâmetros de corte estritos (`StartLine` e `EndLine`), lendo apenas as 30 a 80 linhas necessárias para resolver a tarefa.
+
+## 18. Link Mandatório de Acompanhamento de Commits no GitHub
+- **Regra Obrigatória:** Sempre que realizar um `git push` ou concluir uma tarefa que resulte em novo commit na branch `main` ou Pull Request, o agente DEVE expressamente fornecer o link clicável direto para o commit no GitHub (`https://github.com/Jklmkii/quantora/commit/<hash>`), permitindo ao desenvolvedor auditar e acompanhar o diff e os workflows de CI/CD em tempo real diretamente no navegador.
 
 ## Registro no Obsidian
 Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`20 - Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
