@@ -1,0 +1,506 @@
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import {
+  Skull,
+  Zap,
+  Swords,
+  Sigma,
+  Atom,
+  Triangle,
+  Scale,
+  Calendar,
+  BookOpen,
+  History,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Trophy,
+  Bell,
+  Lock,
+} from 'lucide-react';
+import { useAppStore, type ActiveTab } from '../../store/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
+import { calculateLevelInfo } from '../../core/gamification/leveling';
+import { getTodayDateString } from '../../core/daily/dailyEngine';
+import logoImg from '../../assets/logo.webp';
+
+interface HubCard {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  icon: React.ReactNode;
+  neonColor: 'cyan' | 'purple' | 'amber' | 'emerald' | 'indigo';
+  targetTab: ActiveTab;
+  quizModeSubtrack?: string;
+  badge?: string;
+  statsLabel: string;
+  statsValue: string;
+  isLocked?: boolean;
+  unlockRequirement?: string;
+}
+
+interface CosmicHubProps {
+  onOpenSettings: () => void;
+  onOpenProfile: () => void;
+}
+
+export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProfile }) => {
+  const {
+    setActiveTab,
+    profile,
+    quizProgress,
+    blitzHighScore,
+    highestBossLevelCleared,
+    bossCoins,
+    dailyChallenge,
+    spacedRepetition,
+    historyCount,
+    unlockedFeatures,
+    unlockAllFeatures,
+  } = useAppStore(
+    useShallow((s) => ({
+      setActiveTab: s.setActiveTab,
+      profile: s.profile,
+      quizProgress: s.quizProgress,
+      blitzHighScore: s.profile?.stats?.blitzHighScore || 0,
+      highestBossLevelCleared: s.profile?.stats?.highestBossLevelCleared || 0,
+      bossCoins: s.profile?.stats?.bossCoins || 0,
+      dailyChallenge: s.dailyChallenge,
+      spacedRepetition: s.spacedRepetition,
+      historyCount: s.history.length,
+      unlockedFeatures: s.unlockedFeatures || ['survival'],
+      unlockAllFeatures: s.settings?.unlockAllFeatures ?? false,
+    }))
+  );
+
+  const levelInfo = calculateLevelInfo(profile?.totalXp || 0);
+  const isDailyCompleted = dailyChallenge?.lastCompletedDate === getTodayDateString();
+  const sobrevRecorde = quizProgress.survival?.recordCount || 0;
+  const isBlitzUnlocked = unlockAllFeatures || levelInfo.level >= 3 || unlockedFeatures.includes('blitz');
+  const isBossUnlocked = unlockAllFeatures || levelInfo.level >= 5 || unlockedFeatures.includes('boss_rush');
+
+  // Mapeamento de todos os módulos e modos do Quantora em cards independentes
+  const hubCards: HubCard[] = useMemo(() => [
+    {
+      id: 'survival',
+      title: 'Survival Mode',
+      subtitle: 'Educational Math training',
+      category: 'Arena Infinita',
+      neonColor: 'cyan',
+      targetTab: 'quiz',
+      badge: 'Full-Mix',
+      statsLabel: `Recorde: Conta #${sobrevRecorde}`,
+      statsValue: `${quizProgress.survival?.highScore || 0} XP`,
+      icon: <Skull size={64} className="stroke-[2.2] neon-glow-cyan" />,
+    },
+    {
+      id: 'blitz',
+      title: '60s Blitz',
+      subtitle: 'Glow glover electred speed training',
+      category: 'Speed Run',
+      neonColor: 'amber',
+      targetTab: 'quiz',
+      badge: '60 Segundos',
+      statsLabel: 'Recorde Blitz',
+      statsValue: `${blitzHighScore} pts`,
+      isLocked: !isBlitzUnlocked,
+      unlockRequirement: 'Nível 3 de XP',
+      icon: <Zap size={56} className="fill-amber-400 text-amber-300 neon-glow-amber stroke-[2]" />,
+    },
+    {
+      id: 'boss',
+      title: 'Boss Battle',
+      subtitle: 'Chain compaon toarn to Boss Battle',
+      category: 'Boss Rush',
+      neonColor: 'purple',
+      targetTab: 'quiz',
+      badge: 'Níveis & Forja',
+      statsLabel: `Nv. ${highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}`,
+      statsValue: `🪙 ${bossCoins} moedas`,
+      isLocked: !isBossUnlocked,
+      unlockRequirement: 'Nível 5 de XP',
+      icon: <Swords size={56} className="text-purple-300 neon-glow-purple stroke-[2]" />,
+    },
+    {
+      id: 'bhaskara',
+      title: 'Bhaskara',
+      subtitle: 'Equações quadráticas, raízes e parábola cartesiana',
+      category: 'Álgebra Didática',
+      neonColor: 'cyan',
+      targetTab: 'bhaskara',
+      badge: 'Δ & Vértice',
+      statsLabel: 'Equações Resolvidas',
+      statsValue: `${profile?.stats?.totalBhaskara || 0}`,
+      icon: <Sigma size={56} className="text-cyan-300 neon-glow-cyan stroke-[2]" />,
+    },
+    {
+      id: 'physics',
+      title: 'Física Clássica',
+      subtitle: '10 motores de cinemática, dinâmica, atrito e energia',
+      category: 'Mecânica Analítica',
+      neonColor: 'indigo',
+      targetTab: 'physics',
+      badge: '10 Motores',
+      statsLabel: 'Gráficos SVG',
+      statsValue: 'Interativos',
+      icon: <Atom size={56} className="text-indigo-300 neon-glow-cyan stroke-[2]" />,
+    },
+    {
+      id: 'pitagoras',
+      title: 'Pitágoras',
+      subtitle: 'Teorema de Pitágoras, triplas e relações trigonométricas',
+      category: 'Geometria & Trig',
+      neonColor: 'amber',
+      targetTab: 'pitagoras',
+      badge: 'Triângulo Retângulo',
+      statsLabel: 'Relações Métricas',
+      statsValue: 'Seno / Cosseno',
+      icon: <Triangle size={56} className="text-amber-300 neon-glow-amber rotate-90 stroke-[2]" />,
+    },
+    {
+      id: 'regra_de_tres',
+      title: 'Regra de Três',
+      subtitle: 'Proporcionalidade direta, inversa e regra composta',
+      category: 'Aritmética Proporcional',
+      neonColor: 'emerald',
+      targetTab: 'regra_simples',
+      badge: 'Simples & Composta',
+      statsLabel: 'Cálculos Realizados',
+      statsValue: `${profile?.stats?.totalRegraDeTres || 0}`,
+      icon: <Scale size={56} className="text-emerald-300 neon-glow-cyan stroke-[2]" />,
+    },
+    {
+      id: 'daily',
+      title: 'Desafio Diário',
+      subtitle: 'Desafio diário determinístico com algoritmo Mulberry32',
+      category: 'Daily Quest',
+      neonColor: 'amber',
+      targetTab: 'quiz',
+      badge: isDailyCompleted ? 'Concluído ✓' : 'Pendente !',
+      statsLabel: 'Sequência Atual',
+      statsValue: `🔥 ${profile?.streakDays || 1} dias`,
+      icon: <Calendar size={56} className="text-amber-300 neon-glow-amber stroke-[2]" />,
+    },
+    {
+      id: 'spaced',
+      title: 'Caderno de Erros',
+      subtitle: 'Fixação ativa com repetição espaçada e Active Recall',
+      category: 'Memória Leitner',
+      neonColor: 'cyan',
+      targetTab: 'quiz',
+      badge: 'Active Recall',
+      statsLabel: 'Itens em Memória',
+      statsValue: `${Object.keys(spacedRepetition?.cards || {}).length} fatos`,
+      icon: <BookOpen size={56} className="text-cyan-300 neon-glow-cyan stroke-[2]" />,
+    },
+    {
+      id: 'history',
+      title: 'Histórico & Dados',
+      subtitle: 'Auditoria de cálculos, cópia de fórmulas e exportação',
+      category: 'Registro Local',
+      neonColor: 'indigo',
+      targetTab: 'history',
+      badge: `${historyCount} Registros`,
+      statsLabel: 'Total Histórico',
+      statsValue: `${historyCount} itens`,
+      icon: <History size={56} className="text-indigo-300 neon-glow-cyan stroke-[2]" />,
+    },
+  ], [
+    sobrevRecorde,
+    quizProgress,
+    isBlitzUnlocked,
+    isBossUnlocked,
+    isDailyCompleted,
+    historyCount,
+    profile,
+    highestBossLevelCleared,
+    spacedRepetition,
+    blitzHighScore,
+    bossCoins,
+  ]);
+
+  // Índice do card central selecionado (inicia no Survival Mode: índice 0)
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Rolagem suave para centralizar o card ativo
+  const scrollToCard = useCallback((index: number) => {
+    setActiveIndex(index);
+    if (!carouselRef.current) return;
+    const container = carouselRef.current;
+    const cardElements = container.children;
+    if (cardElements[index]) {
+      const card = cardElements[index] as HTMLElement;
+      const scrollLeft = card.offsetLeft - container.offsetWidth / 2 + card.offsetWidth / 2;
+      container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+  }, []);
+
+  // Atalhos de teclado (Setas Esquerda / Direita e Enter)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const next = Math.min(hubCards.length - 1, activeIndex + 1);
+        scrollToCard(next);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prev = Math.max(0, activeIndex - 1);
+        scrollToCard(prev);
+      } else if (e.key === 'Enter') {
+        const activeCard = hubCards[activeIndex];
+        if (activeCard && !activeCard.isLocked) {
+          setActiveTab(activeCard.targetTab);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeIndex, hubCards, scrollToCard, setActiveTab]);
+
+  return (
+    <div className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-x-hidden select-none py-2">
+      {/* 1. TOP HEADER MINIMALISTA (Fiel à Imagem: Logo clean + Notificação + Perfil) */}
+      <div className="w-full flex items-center justify-between px-4 sm:px-8 z-30">
+        {/* Brand */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-slate-900 border border-cyan-400/50 flex items-center justify-center shadow-lg shadow-cyan-500/25 overflow-hidden">
+            <img src={logoImg} alt="Quantora" className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white font-mono flex items-center gap-2">
+              <span>Quantora</span>
+              <span className="hidden sm:inline text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
+                Cyber Arena
+              </span>
+            </h1>
+          </div>
+        </div>
+
+        {/* Quick Actions (Cápsulas de Vidro: Sino + Perfil) */}
+        <div className="flex items-center gap-3">
+          {/* Sino de Notificação / Desafio Diário */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('quiz')}
+            className="w-10 h-10 rounded-2xl cosmic-glass flex items-center justify-center text-slate-300 hover:text-cyan-300 hover:border-cyan-400/50 transition-all cursor-pointer shadow-md relative"
+            title="Desafio Diário"
+          >
+            <Bell size={18} />
+            {!isDailyCompleted && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-fuchsia-400 animate-ping" />
+            )}
+          </button>
+
+          {/* Cápsula de Perfil e Nível (Quartora / Lucas) */}
+          <button
+            type="button"
+            onClick={onOpenProfile}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl cosmic-glass border border-slate-700/60 hover:border-cyan-400/50 text-xs font-bold text-slate-200 transition-all cursor-pointer shadow-md"
+            title="Perfil do Jogador"
+          >
+            <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+              <Trophy size={13} className="text-amber-400" />
+            </div>
+            <span className="font-mono text-cyan-200">Nv. {levelInfo.level}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. O CARROSSEL HORIZONTAL DE CARDS FLUTUANTES (Scrolla para o nada!) */}
+      <div className="relative w-full my-auto py-6 sm:py-10 flex items-center overflow-hidden">
+        {/* Setas de Navegação Flutuantes nas Laterais */}
+        <button
+          type="button"
+          onClick={() => scrollToCard(Math.max(0, activeIndex - 1))}
+          disabled={activeIndex === 0}
+          className="hidden md:flex absolute left-4 z-40 w-12 h-12 rounded-full cosmic-glass border border-cyan-500/30 items-center justify-center text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer shadow-xl"
+          aria-label="Card anterior"
+        >
+          <ChevronLeft size={24} />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => scrollToCard(Math.min(hubCards.length - 1, activeIndex + 1))}
+          disabled={activeIndex === hubCards.length - 1}
+          className="hidden md:flex absolute right-4 z-40 w-12 h-12 rounded-full cosmic-glass border border-cyan-500/30 items-center justify-center text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer shadow-xl"
+          aria-label="Próximo card"
+        >
+          <ChevronRight size={24} />
+        </button>
+
+        {/* Trilho de Scroll Horizontal (Fading nas extremidades para o nada) */}
+        <div
+          ref={carouselRef}
+          className="w-full flex items-center gap-6 sm:gap-10 overflow-x-auto no-scrollbar scroll-smooth px-[calc(50vw-160px)] sm:px-[calc(50vw-200px)] py-4 snap-x snap-mandatory"
+          style={{
+            maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
+          }}
+        >
+          {hubCards.map((card, idx) => {
+            const isActive = idx === activeIndex;
+
+            return (
+              <div
+                key={card.id}
+                onClick={() => scrollToCard(idx)}
+                className={`snap-center shrink-0 w-[300px] sm:w-[360px] h-[480px] sm:h-[530px] rounded-[36px] flex flex-col items-center justify-between p-7 sm:p-8 text-center relative overflow-hidden transition-all duration-500 cursor-pointer select-none ${
+                  isActive
+                    ? 'cosmic-hero-card scale-100 sm:scale-105 z-20 opacity-100'
+                    : 'cosmic-glass-stage scale-90 opacity-40 hover:opacity-80 z-10'
+                }`}
+              >
+                {/* Reflexo Especular de Luz no Topo do Vidro */}
+                <div
+                  className={`absolute inset-x-0 top-0 h-44 pointer-events-none rounded-t-[36px] ${
+                    isActive
+                      ? 'bg-gradient-to-b from-cyan-400/25 via-white/10 to-transparent'
+                      : 'bg-gradient-to-b from-white/10 via-white/5 to-transparent'
+                  }`}
+                />
+
+                {/* Top Header do Card */}
+                <div className="flex flex-col items-center gap-1.5 z-10 w-full">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-[10px] font-mono font-black uppercase tracking-widest ${
+                        isActive ? 'text-cyan-300' : 'text-slate-400'
+                      }`}
+                    >
+                      {card.category}
+                    </span>
+                    {card.badge && (
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">
+                        {card.badge}
+                      </span>
+                    )}
+                  </div>
+                  <h2
+                    className={`font-black font-mono tracking-wide ${
+                      isActive
+                        ? 'text-2xl sm:text-3xl text-white drop-shadow-[0_2px_12px_rgba(255,255,255,0.4)]'
+                        : 'text-xl sm:text-2xl text-slate-300'
+                    }`}
+                  >
+                    {card.title}
+                  </h2>
+                  <p className="text-xs text-slate-400 max-w-[240px] line-clamp-2">
+                    {card.subtitle}
+                  </p>
+                </div>
+
+                {/* Centro do Card: Ícone Neon Bioluminescente */}
+                <div className="relative my-auto flex flex-col items-center justify-center z-10">
+                  <div
+                    className={`rounded-3xl flex items-center justify-center transition-all duration-500 ${
+                      isActive
+                        ? 'w-28 h-28 sm:w-32 sm:h-32 bg-cyan-500/10 dark:bg-cyan-950/70 border border-cyan-400/70 shadow-[0_0_45px_rgba(6,182,212,0.65)] scale-110'
+                        : 'w-24 h-24 bg-slate-900/40 border border-slate-700/50'
+                    }`}
+                  >
+                    {card.isLocked ? (
+                      <Lock size={44} className="text-slate-500" />
+                    ) : (
+                      card.icon
+                    )}
+                  </div>
+
+                  {card.isLocked && (
+                    <span className="text-[11px] font-mono font-bold text-amber-400 mt-2">
+                      🔒 Requer {card.unlockRequirement}
+                    </span>
+                  )}
+                </div>
+
+                {/* Rodapé do Card: Estatísticas + Botão Cápsula Luminoso */}
+                <div className="w-full flex flex-col items-center gap-3 z-10">
+                  <div className="w-full flex items-center justify-between text-xs font-mono font-bold text-slate-400 px-2 border-t border-slate-700/50 pt-2.5">
+                    <span>{card.statsLabel}</span>
+                    <span className="text-cyan-300">{card.statsValue}</span>
+                  </div>
+
+                  {/* Botão Cápsula ("Continue" no Ativo / "Selecionar" nos vizinhos) */}
+                  <button
+                    type="button"
+                    disabled={card.isLocked}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isActive) {
+                        if (!card.isLocked) setActiveTab(card.targetTab);
+                      } else {
+                        scrollToCard(idx);
+                      }
+                    }}
+                    className={`w-full py-3 rounded-full font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      isActive
+                        ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-400 hover:from-cyan-300 hover:to-sky-200 text-slate-950 shadow-[0_0_35px_rgba(6,182,212,0.8)] hover:scale-105 active:scale-95'
+                        : 'cosmic-glass text-slate-300 hover:text-white border border-slate-700 hover:border-cyan-400/50'
+                    }`}
+                  >
+                    {isActive ? (
+                      <>
+                        <span>Continue</span>
+                        <ArrowRight size={16} className="stroke-[3]" />
+                      </>
+                    ) : (
+                      <span>Selecionar</span>
+                    )}
+                  </button>
+
+                  {/* Indicadores de Traço na Base (Fiel ao Mockup) */}
+                  {isActive && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      {hubCards.map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-1 rounded-full transition-all duration-300 ${
+                            i === activeIndex
+                              ? 'w-6 bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)]'
+                              : 'w-2 bg-slate-700/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. BARRA INFERIOR / RODAPÉ COCKPIT (Fiel à Imagem) */}
+      <div className="w-full flex items-center justify-between px-4 sm:px-8 z-30">
+        {/* Canto Inferior Esquerdo: Seta de Ação + Código Digital */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => scrollToCard(0)}
+            className="w-10 h-10 rounded-full cosmic-glass border border-cyan-500/30 flex items-center justify-center text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all cursor-pointer shadow-lg"
+            title="Voltar ao início do Hub"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div className="hidden sm:flex flex-col text-[11px] font-mono text-cyan-400/80 leading-tight">
+            <span>SYS: 03:57.772</span>
+            <span className="text-[9px] text-slate-500">QUANTORA OS v1.2</span>
+          </div>
+        </div>
+
+        {/* Canto Inferior Direito: Configurações & Ajuste em Cápsula */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full cosmic-glass border border-slate-700/60 hover:border-cyan-400/50 text-xs font-mono text-slate-300 hover:text-white transition-all cursor-pointer shadow-md"
+          >
+            <span>Refined</span>
+            <span className="text-cyan-400">⚙</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

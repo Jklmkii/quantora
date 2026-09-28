@@ -39,7 +39,7 @@ import {
   TIME_FREEZE_COST,
 } from '../core/quiz/bossEngine';
 
-export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings';
+export type ActiveTab = 'hub' | 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings';
 
 interface AppState {
   // Navigation
@@ -237,7 +237,7 @@ function checkProgression(
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      activeTab: 'bhaskara',
+      activeTab: 'hub',
       setActiveTab: (tab) => set({ activeTab: tab }),
 
       profile: DEFAULT_PROFILE,

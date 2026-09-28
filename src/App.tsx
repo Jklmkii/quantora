@@ -3,11 +3,14 @@ import { useAppStore } from './store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Navbar } from './presentation/components/Navbar';
 import { SettingsModal } from './presentation/components/SettingsModal';
+import { ProfileModal } from './presentation/components/ProfileModal';
 import { OnboardingModal } from './presentation/components/OnboardingModal';
 import { UpdateBanner } from './presentation/components/UpdateBanner';
 import { AchievementToast } from './presentation/components/AchievementToast';
 import { FeatureUnlockToast } from './presentation/components/FeatureUnlockToast';
 import { Scratchpad } from './presentation/components/Scratchpad';
+import { CosmicHub } from './presentation/components/CosmicHub';
+import { LayoutGrid } from 'lucide-react';
 
 // Code-splitting: Lazy load content modules on demand
 const BhaskaraModule = lazy(() =>
@@ -42,13 +45,15 @@ function ModuleSkeleton() {
 }
 
 export function App() {
-  const { activeTab, theme } = useAppStore(
+  const { activeTab, setActiveTab, theme } = useAppStore(
     useShallow((s) => ({
       activeTab: s.activeTab,
+      setActiveTab: s.setActiveTab,
       theme: s.settings.theme,
     }))
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set([activeTab]));
 
   // Track visited tabs synchronously during render
@@ -110,36 +115,62 @@ export function App() {
       {/* Floating Scratchpad Board */}
       <Scratchpad />
 
-      {/* Navigation Bar */}
-      <Navbar onOpenSettings={() => setIsSettingsOpen(true)} />
+      {/* Main Experience: Cosmic Hub Carousel OR Inner Calculator/Game Modules */}
+      {activeTab === 'hub' ? (
+        <CosmicHub
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenProfile={() => setIsProfileOpen(true)}
+        />
+      ) : (
+        <>
+          {/* Navigation Bar */}
+          <Navbar onOpenSettings={() => setIsSettingsOpen(true)} />
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-36 md:pb-16">
-        <Suspense fallback={<ModuleSkeleton />}>
-          {/* Static Modules (Keep mounted to preserve state) */}
-          <div style={{ display: activeTab === 'bhaskara' ? 'block' : 'none' }}>
-            {visitedTabs.has('bhaskara') && <BhaskaraModule />}
-          </div>
+          {/* Main Content Area */}
+          <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-36 md:pb-16">
+            <Suspense fallback={<ModuleSkeleton />}>
+              {/* Static Modules (Keep mounted to preserve state) */}
+              <div style={{ display: activeTab === 'bhaskara' ? 'block' : 'none' }}>
+                {visitedTabs.has('bhaskara') && <BhaskaraModule />}
+              </div>
 
-          <div style={{ display: (activeTab === 'regra_simples' || activeTab === 'regra_composta') ? 'block' : 'none' }}>
-            {(visitedTabs.has('regra_simples') || visitedTabs.has('regra_composta')) && <RegraDeTresModule />}
-          </div>
+              <div style={{ display: (activeTab === 'regra_simples' || activeTab === 'regra_composta') ? 'block' : 'none' }}>
+                {(visitedTabs.has('regra_simples') || visitedTabs.has('regra_composta')) && <RegraDeTresModule />}
+              </div>
 
-          <div style={{ display: activeTab === 'pitagoras' ? 'block' : 'none' }}>
-            {visitedTabs.has('pitagoras') && <PitagorasModule />}
-          </div>
+              <div style={{ display: activeTab === 'pitagoras' ? 'block' : 'none' }}>
+                {visitedTabs.has('pitagoras') && <PitagorasModule />}
+              </div>
 
-          <div style={{ display: activeTab === 'physics' ? 'block' : 'none' }}>
-            {visitedTabs.has('physics') && <PhysicsModule />}
-          </div>
+              <div style={{ display: activeTab === 'physics' ? 'block' : 'none' }}>
+                {visitedTabs.has('physics') && <PhysicsModule />}
+              </div>
 
-          {/* Dynamic Modules (Unmount to reset state) */}
-          {activeTab === 'quiz' && <QuizModule />}
-          {activeTab === 'history' && <HistoryModule />}
-        </Suspense>
-      </main>
+              {/* Dynamic Modules (Unmount to reset state) */}
+              {activeTab === 'quiz' && <QuizModule />}
+              {activeTab === 'history' && <HistoryModule />}
+            </Suspense>
+          </main>
+
+          {/* Floating Return to Cosmic Hub Button */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('hub')}
+            className="fixed bottom-6 left-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full cosmic-glass border border-cyan-500/40 text-cyan-400 dark:text-cyan-300 font-semibold text-xs tracking-wider uppercase shadow-xl hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl group"
+            title="Voltar ao Hub Cósmico"
+            aria-label="Voltar ao Hub Cósmico"
+          >
+            <LayoutGrid className="w-4 h-4 text-cyan-400 group-hover:rotate-90 transition-transform duration-300" />
+            <span>Hub</span>
+          </button>
+        </>
+      )}
 
       {/* Modals */}
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+      />
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}

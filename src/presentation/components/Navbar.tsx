@@ -14,6 +14,7 @@ import {
   Atom,
   Pencil,
   Triangle,
+  LayoutGrid,
 } from 'lucide-react';
 import { useAppStore, type ActiveTab } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -66,6 +67,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
   const levelInfo = useMemo(() => calculateLevelInfo(profile?.totalXp || 0, settings.language || 'pt'), [profile?.totalXp, settings.language]);
 
   const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: number }[] = useMemo(() => [
+    { id: 'hub', label: 'Hub', icon: <LayoutGrid size={20} /> },
     { id: 'bhaskara', label: t.nav_bhaskara, icon: <Sigma size={20} /> },
     { id: 'regra_simples', label: t.nav_regra, icon: <Scale size={20} /> },
     { id: 'pitagoras', label: t.nav_pitagoras || 'Pitágoras', icon: <Triangle size={20} className="rotate-90" /> },
