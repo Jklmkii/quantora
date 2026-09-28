@@ -47,7 +47,14 @@ const STROKE_WIDTH_OPTIONS = [
   { label: 'Grossa', width: 8, dotSize: 'w-4 h-4' },
 ];
 
-export const Scratchpad: React.FC<ScratchpadProps> = ({
+/**
+ * ⚡ Bolt Performance Optimization
+ * 💡 What: Wrapped Scratchpad with React.memo()
+ * 🎯 Why: Scratchpad is a heavy canvas component placed in the main App layout. Without memo, it unnecessarily re-renders (and re-evaluates its layout tree) whenever the App state (like activeTab or theme) changes.
+ * 📊 Impact: Significantly reduces React diffing overhead when switching tabs or showing modals.
+ * 🔬 Measurement: Observe React DevTools Profiler while navigating tabs; Scratchpad will no longer re-render.
+ */
+export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
   className: _className = '',
   defaultOpen = false,
 }) => {
@@ -594,6 +601,6 @@ export const Scratchpad: React.FC<ScratchpadProps> = ({
       </div>
     </>
   );
-};
+});
 
 export default Scratchpad;
