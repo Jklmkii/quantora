@@ -11,7 +11,6 @@ import {
   Trophy,
   Zap,
   Swords,
-  Crown,
   BookOpen,
   CheckCircle2,
   Lock,
@@ -527,112 +526,265 @@ export const QuizModule: React.FC = () => {
     const sobrevRecorde = quizProgress.survival?.recordCount || 0;
 
     return (
-      <div className="flex flex-col items-center gap-6 max-w-2xl mx-auto pb-36 md:pb-16 select-none animate-in fade-in">
-        {/* Title & Subtitle */}
-        <div className="flex flex-col items-center text-center mt-2">
-          <h1 className="text-4xl sm:text-5xl font-black tracking-widest bg-gradient-to-r from-cyan-400 via-sky-300 to-fuchsia-400 bg-clip-text text-transparent font-mono drop-shadow-[0_4px_16px_rgba(6,182,212,0.35)]">
+      <div className="flex flex-col items-center gap-8 w-full max-w-5xl mx-auto pb-36 md:pb-16 select-none animate-in fade-in">
+        {/* Header & Subtitle */}
+        <div className="flex flex-col items-center text-center mt-1">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full cosmic-glass border border-cyan-500/30 text-[11px] font-mono font-bold text-cyan-700 dark:text-cyan-300 mb-3 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+            <Sparkles size={12} className="text-cyan-500 dark:text-cyan-400 animate-spin" />
+            <span>QUANTORA CYBER ARENA</span>
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-widest bg-gradient-to-r from-cyan-400 via-sky-200 to-fuchsia-400 bg-clip-text text-transparent font-mono drop-shadow-[0_4px_20px_rgba(6,182,212,0.45)]">
             {t.quiz_lobby_title}
           </h1>
-          <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-cyan-400/80 mt-2 max-w-md">
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-cyan-300/80 mt-2 max-w-md">
             {t.quiz_lobby_subtitle}
           </p>
-        </div>
 
-        {/* Difficulty Selectors (Pills) */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-xl shadow-inner">
-          <button
-            type="button"
-            onClick={() => setDifficultyMode('tranquilo')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
-              difficultyMode === 'tranquilo'
-                ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-400/60 dark:shadow-[0_0_12px_rgba(16,185,129,0.3)] shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <span>🌱</span> {t.diff_casual}
-          </button>
+          {/* Difficulty Selectors (Pills) */}
+          <div className="mt-4 flex items-center gap-2 p-1 rounded-2xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/25 backdrop-blur-xl shadow-inner">
+            <button
+              type="button"
+              onClick={() => setDifficultyMode('tranquilo')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
+                difficultyMode === 'tranquilo'
+                  ? 'bg-emerald-500/25 text-emerald-800 dark:text-emerald-300 border border-emerald-400/60 dark:shadow-[0_0_15px_rgba(16,185,129,0.4)] shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <span>🌱</span> {t.diff_casual}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setDifficultyMode('velocidade')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
-              difficultyMode === 'velocidade'
-                ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-400/60 dark:shadow-[0_0_12px_rgba(245,158,11,0.3)] shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <span>⚡</span> {t.diff_speed}
-          </button>
+            <button
+              type="button"
+              onClick={() => setDifficultyMode('velocidade')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
+                difficultyMode === 'velocidade'
+                  ? 'bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-400/60 dark:shadow-[0_0_15px_rgba(245,158,11,0.4)] shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <span>⚡</span> {t.diff_speed}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setDifficultyMode('brutal')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
-              difficultyMode === 'brutal'
-                ? 'bg-red-500/20 text-red-800 dark:text-red-300 border border-red-400/60 dark:shadow-[0_0_12px_rgba(239,68,68,0.3)] shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <span>🔥</span> {t.diff_brutal}
-          </button>
-        </div>
-
-        {/* 1. HERO CARD: Modo Sobrevivência (Full-Width, Central, Holográfico e Cósmico) */}
-        <div className="w-full p-7 sm:p-8 rounded-3xl cosmic-card border border-slate-200/90 dark:border-cyan-500/30 flex flex-col items-center text-center gap-4 group relative overflow-hidden dark:shadow-[0_12px_40px_rgba(6,182,212,0.15)]">
-          {/* Internal Cosmic Nebulas */}
-          <div className="absolute -top-10 -right-10 w-48 h-48 bg-cyan-500/15 dark:bg-cyan-500/25 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-purple-500/15 dark:bg-purple-600/20 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-
-          {/* Bioluminescent Skull Orb */}
-          <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-300 dark:border-cyan-400/50 text-cyan-600 dark:text-cyan-300 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-500/20 dark:shadow-[0_0_30px_rgba(6,182,212,0.45)]">
-            <Skull size={40} className="stroke-[2.5]" />
+            <button
+              type="button"
+              onClick={() => setDifficultyMode('brutal')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
+                difficultyMode === 'brutal'
+                  ? 'bg-red-500/25 text-red-800 dark:text-red-300 border border-red-400/60 dark:shadow-[0_0_15px_rgba(239,68,68,0.4)] shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <span>🔥</span> {t.diff_brutal}
+            </button>
           </div>
+        </div>
 
-          <div>
-            <div className="flex items-center justify-center gap-2">
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-wide font-mono">
-                {t.track_survival}
-              </h2>
-              <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-400/30">
-                Full-Mix
+        {/* 🌟 O PALCO PRINCIPAL (3 PLACAS DE VIDRO LADO A LADO - FIEL AO MOCKUP) */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-center justify-center my-2">
+          {/* CARD 1: 60s Blitz (Esquerda) */}
+          <div
+            onClick={() => isBlitzUnlocked && setScreen('blitz')}
+            className={`h-[450px] rounded-[32px] cosmic-glass-stage p-6 sm:p-7 flex flex-col items-center justify-between text-center relative overflow-hidden group transition-all duration-300 select-none ${
+              isBlitzUnlocked
+                ? 'cursor-pointer hover:scale-[1.02] hover:border-amber-400/50 hover:shadow-[0_0_35px_rgba(245,158,11,0.25)]'
+                : 'opacity-60 cursor-not-allowed border-slate-800/80'
+            }`}
+          >
+            {/* Top Specular Sheen (Reflexo de Vidro) */}
+            <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-white/10 via-white/5 to-transparent pointer-events-none rounded-t-[32px]" />
+
+            {/* Header do Card */}
+            <div className="flex flex-col items-center gap-1 z-10">
+              <span className="text-[10px] font-mono font-black uppercase tracking-widest text-amber-600 dark:text-amber-400/90">
+                Speed Run
               </span>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-wide">
+                60s Blitz
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">
+                {isBlitzUnlocked
+                  ? 'Agilidade mental contra o relógio (+2s acerto / -3s erro)'
+                  : 'Desbloqueia no Nível 3 de XP geral'}
+              </p>
             </div>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 mt-1 max-w-md">
-              {t.track_survival_sub}
-            </p>
+
+            {/* Ícone Neon Central */}
+            <div className="relative my-auto flex items-center justify-center z-10">
+              <div className="w-24 h-24 rounded-3xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300 shadow-lg dark:shadow-[0_0_30px_rgba(245,158,11,0.35)]">
+                {isBlitzUnlocked ? (
+                  <Zap size={48} className="fill-amber-400 text-amber-300 neon-glow-amber" />
+                ) : (
+                  <Lock size={36} className="text-slate-500" />
+                )}
+              </div>
+            </div>
+
+            {/* Estatísticas e Botão */}
+            <div className="w-full flex flex-col items-center gap-3 z-10">
+              <div className="w-full flex items-center justify-between text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400 px-1 border-t border-slate-200/80 dark:border-slate-800/80 pt-2.5">
+                <span>Recorde</span>
+                <span className="text-amber-600 dark:text-amber-300">{blitzHighScore} pts</span>
+              </div>
+              <button
+                type="button"
+                disabled={!isBlitzUnlocked}
+                className={`w-full py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all shadow-md touch-target flex items-center justify-center gap-1.5 ${
+                  isBlitzUnlocked
+                    ? 'bg-amber-500/20 hover:bg-amber-500 text-amber-800 dark:text-amber-300 hover:text-slate-950 border border-amber-400/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.6)] cursor-pointer'
+                    : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                }`}
+              >
+                {isBlitzUnlocked ? (
+                  <>
+                    <Zap size={14} className="fill-current" />
+                    <span>Jogar 60s</span>
+                  </>
+                ) : (
+                  <span>Nível 3</span>
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Quick Metrics Bar */}
-          <div className="w-full flex items-center justify-between text-xs font-bold pt-3 border-t border-slate-200/80 dark:border-slate-800/80 px-2 text-slate-600 dark:text-slate-300">
-            <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-300">
-              <Trophy size={15} className="text-amber-500 dark:text-amber-400" /> {t.record_prefix}: {t.account_prefix} #{sobrevRecorde}
-            </span>
-            <span className="font-mono text-cyan-700 dark:text-cyan-300">
-              {quizProgress.survival?.highScore || 0} {t.xp_survival}
-            </span>
-          </div>
-
-          {/* Primary Action Button (Cosmic Glow Capsule) */}
-          <button
-            type="button"
+          {/* CARD 2: Survival Mode (Centro - O Hero Imponente Neon) */}
+          <div
             onClick={() => handleStartTrack('sobrevivencia')}
-            className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-400 to-cyan-500 hover:from-cyan-400 hover:to-sky-300 text-slate-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/50 hover:scale-[1.02] active:scale-95 touch-target cursor-pointer flex items-center justify-center gap-2"
+            className="h-[510px] md:-translate-y-4 rounded-[36px] cosmic-hero-card p-7 sm:p-8 flex flex-col items-center justify-between text-center relative overflow-hidden group transition-all duration-300 select-none cursor-pointer hover:scale-[1.02]"
           >
-            <Zap size={16} className="fill-slate-950" />
-            <span>Iniciar Desafio</span>
-          </button>
+            {/* Top Specular Sheen (Reflexo de Vidro de Alta Luminosidade) */}
+            <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-cyan-400/20 via-white/10 to-transparent pointer-events-none rounded-t-[36px]" />
+
+            {/* Header do Card Hero */}
+            <div className="flex flex-col items-center gap-1.5 z-10">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono font-black uppercase tracking-widest text-cyan-700 dark:text-cyan-300">
+                  Arena Infinita
+                </span>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-400/40">
+                  Full-Mix
+                </span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono tracking-wide">
+                Survival Mode
+              </h2>
+              <p className="text-xs text-slate-600 dark:text-cyan-200/90 max-w-[220px]">
+                {t.track_survival_sub}
+              </p>
+            </div>
+
+            {/* Ícone do Crânio Neon Central (Fiel ao Mockup) */}
+            <div className="relative my-auto flex flex-col items-center justify-center z-10">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-cyan-500/10 dark:bg-cyan-950/60 border border-cyan-400/60 flex items-center justify-center text-cyan-600 dark:text-cyan-300 group-hover:scale-110 transition-transform duration-300 shadow-xl dark:shadow-[0_0_45px_rgba(6,182,212,0.6)]">
+                <Skull size={64} className="stroke-[2.2] neon-glow-cyan" />
+              </div>
+              {/* Partículas de energia e streak */}
+              <div className="flex items-center gap-2 mt-3 text-xs font-mono font-bold text-slate-600 dark:text-cyan-300/90">
+                <span>⚡ 20s / conta</span>
+                <span>•</span>
+                <span>🔥 Sem erros</span>
+              </div>
+            </div>
+
+            {/* Estatísticas e Botão de Cápsula Luminoso */}
+            <div className="w-full flex flex-col items-center gap-3.5 z-10">
+              <div className="w-full flex items-center justify-between text-xs font-mono font-bold text-slate-600 dark:text-slate-300 px-2 border-t border-slate-200/80 dark:border-cyan-500/30 pt-3">
+                <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-300">
+                  <Trophy size={15} className="text-amber-500 dark:text-amber-400" /> #{sobrevRecorde}
+                </span>
+                <span className="text-cyan-700 dark:text-cyan-300">
+                  {quizProgress.survival?.highScore || 0} XP
+                </span>
+              </div>
+
+              {/* Botão em formato de Cápsula Neon ("Continue" / "Iniciar") */}
+              <button
+                type="button"
+                className="w-full py-3.5 rounded-full bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-400 hover:from-cyan-300 hover:to-sky-200 text-slate-950 font-black text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(6,182,212,0.7)] hover:shadow-[0_0_45px_rgba(6,182,212,0.9)] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <span>Continue</span>
+                <ArrowRight size={18} className="stroke-[3]" />
+              </button>
+            </div>
+          </div>
+
+          {/* CARD 3: Boss Battle (Direita) */}
+          <div
+            onClick={() => isBossUnlocked && setScreen('boss_rush')}
+            className={`h-[450px] rounded-[32px] cosmic-glass-stage p-6 sm:p-7 flex flex-col items-center justify-between text-center relative overflow-hidden group transition-all duration-300 select-none ${
+              isBossUnlocked
+                ? 'cursor-pointer hover:scale-[1.02] hover:border-purple-400/50 hover:shadow-[0_0_35px_rgba(168,85,247,0.25)]'
+                : 'opacity-60 cursor-not-allowed border-slate-800/80'
+            }`}
+          >
+            {/* Top Specular Sheen (Reflexo de Vidro) */}
+            <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-purple-500/10 via-white/5 to-transparent pointer-events-none rounded-t-[32px]" />
+
+            {/* Header do Card */}
+            <div className="flex flex-col items-center gap-1 z-10">
+              <span className="text-[10px] font-mono font-black uppercase tracking-widest text-purple-600 dark:text-purple-400/90">
+                Boss Rush
+              </span>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-wide">
+                Boss Battle
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">
+                {isBossUnlocked
+                  ? 'Enfrente 10 chefes épicos com poderes e forja'
+                  : 'Desbloqueia no Nível 5 ou 1 Blitz'}
+              </p>
+            </div>
+
+            {/* Ícone Neon Central */}
+            <div className="relative my-auto flex items-center justify-center z-10">
+              <div className="w-24 h-24 rounded-3xl bg-purple-500/10 dark:bg-purple-950/40 border border-purple-500/30 flex items-center justify-center text-purple-500 dark:text-purple-300 group-hover:scale-110 transition-transform duration-300 shadow-lg dark:shadow-[0_0_30px_rgba(168,85,247,0.35)]">
+                {isBossUnlocked ? (
+                  <Swords size={48} className="text-purple-300 neon-glow-purple" />
+                ) : (
+                  <Lock size={36} className="text-slate-500" />
+                )}
+              </div>
+            </div>
+
+            {/* Estatísticas e Botão */}
+            <div className="w-full flex flex-col items-center gap-3 z-10">
+              <div className="w-full flex items-center justify-between text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400 px-1 border-t border-slate-200/80 dark:border-slate-800/80 pt-2.5">
+                <span>Nv. {highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}</span>
+                <span className="text-amber-600 dark:text-amber-300">🪙 {bossCoins}</span>
+              </div>
+              <button
+                type="button"
+                disabled={!isBossUnlocked}
+                className={`w-full py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all shadow-md touch-target flex items-center justify-center gap-1.5 ${
+                  isBossUnlocked
+                    ? 'bg-purple-500/20 hover:bg-purple-500 text-purple-800 dark:text-purple-300 hover:text-slate-950 border border-purple-400/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] cursor-pointer'
+                    : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                }`}
+              >
+                {isBossUnlocked ? (
+                  <>
+                    <Swords size={14} />
+                    <span>Lutar</span>
+                  </>
+                ) : (
+                  <span>Nível 5</span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* 2. CARD DO CADERNO DE ERROS (Repetição Espaçada & Active Recall) */}
-        <div className="w-full p-5 rounded-3xl cosmic-card border border-slate-200/80 dark:border-slate-800/90 hover:border-cyan-400/40 transition-all flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3">
+        {/* 2. RECURSOS COMPLEMENTARES (Caderno de Erros & Desafio Diário) */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+          {/* Card do Caderno de Erros */}
+          <div className="p-5 rounded-3xl cosmic-glass-stage flex flex-col justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-400/20 flex items-center justify-center shrink-0">
                 <BookOpen size={20} />
               </div>
-              <div className="text-left">
+              <div className="text-left min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">
                     {t.spaced_notebook_title}
                   </h3>
                   {dueCount > 0 ? (
@@ -645,147 +797,29 @@ export const QuizModule: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate mt-0.5">
                   {dueCount > 0
                     ? `${dueCount} ${dueCount === 1 ? t.spaced_due_count_singular : t.spaced_due_count_plural}`
                     : t.spaced_all_caught_up}
                 </p>
               </div>
             </div>
-
             {dueCount > 0 && (
               <button
                 type="button"
                 onClick={handleStartFocusedPractice}
-                className="px-4 py-2 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-cyan-500/30 active:scale-95 touch-target flex items-center gap-1.5 shrink-0 cursor-pointer"
+                className="w-full py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-cyan-500/30 active:scale-95 touch-target flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Zap size={14} className="fill-slate-950" />
                 {t.spaced_practice_btn}
               </button>
             )}
           </div>
-        </div>
 
-        {/* 3. Daily Challenge Card Prominently Embedded */}
-        <div className="w-full">
-          <DailyChallengeCard />
-        </div>
-
-        {/* 4. Special Game Modes Grid: Blitz & Boss Rush */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {/* Modo Blitz Card */}
-          <button
-            type="button"
-            disabled={!isBlitzUnlocked}
-            onClick={() => isBlitzUnlocked && setScreen('blitz')}
-            className={`p-5 rounded-3xl cosmic-card border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
-              isBlitzUnlocked
-                ? 'border-amber-500/30 hover:border-amber-400/60 group dark:shadow-[0_8px_30px_rgba(245,158,11,0.15)] active:scale-[0.98] cursor-pointer'
-                : 'border-slate-800/80 opacity-60 cursor-not-allowed'
-            }`}
-          >
-            <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform shadow-md ${
-                isBlitzUnlocked
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 group-hover:scale-110 dark:shadow-[0_0_20px_rgba(245,158,11,0.35)]'
-                  : 'bg-slate-800 text-slate-500 border border-slate-700'
-              }`}
-            >
-              {isBlitzUnlocked ? <Zap size={26} className="fill-amber-400" /> : <Lock size={22} />}
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">Modo Blitz</h3>
-                {isBlitzUnlocked ? (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                    60s
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                    <Lock size={10} /> Nível 3
-                  </span>
-                )}
-              </div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                {isBlitzUnlocked
-                  ? 'Agilidade mental contra o relógio (+2s acerto / -3s erro)'
-                  : 'Desbloqueia ao atingir o Nível 3 de XP geral.'}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-200/80 dark:border-slate-800/80 px-1 text-slate-600 dark:text-slate-400">
-              {isBlitzUnlocked ? (
-                <>
-                  <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
-                    <Flame size={14} className="fill-orange-400" /> Combo até 3x XP
-                  </span>
-                  <span className="font-mono text-amber-600 dark:text-amber-300">
-                    Recorde: {blitzHighScore} pts
-                  </span>
-                </>
-              ) : (
-                <span className="text-slate-500 text-[11px] flex items-center gap-1 mx-auto">
-                  <Lock size={12} /> Bloqueado até o Nível 3
-                </span>
-              )}
-            </div>
-          </button>
-
-          {/* Batalha de Chefe (Níveis & Forja) Card */}
-          <button
-            type="button"
-            disabled={!isBossUnlocked}
-            onClick={() => isBossUnlocked && setScreen('boss_rush')}
-            className={`p-5 rounded-3xl cosmic-card border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
-              isBossUnlocked
-                ? 'border-purple-500/30 hover:border-purple-400/60 group dark:shadow-[0_8px_30px_rgba(168,85,247,0.15)] active:scale-[0.98] cursor-pointer'
-                : 'border-slate-800/80 opacity-60 cursor-not-allowed'
-            }`}
-          >
-            <div
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform shadow-md ${
-                isBossUnlocked
-                  ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/40 group-hover:scale-110 dark:shadow-[0_0_20px_rgba(168,85,247,0.35)]'
-                  : 'bg-slate-800 text-slate-500 border border-slate-700'
-              }`}
-            >
-              {isBossUnlocked ? <Swords size={26} /> : <Lock size={22} />}
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">Batalha de Chefe</h3>
-                {isBossUnlocked ? (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30">
-                    Níveis & Forja
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 flex items-center gap-1">
-                    <Lock size={10} /> Nível 5 ou 1 Blitz
-                  </span>
-                )}
-              </div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                {isBossUnlocked
-                  ? 'Enfrente 10 chefes épicos com poderes e forja de runas'
-                  : 'Desbloqueia no Nível 5 de XP ou ao vencer 1 sessão de Blitz.'}
-              </p>
-            </div>
-            <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-200/80 dark:border-slate-800/80 px-1 text-slate-600 dark:text-slate-400">
-              {isBossUnlocked ? (
-                <>
-                  <span className="flex items-center gap-1 text-purple-700 dark:text-purple-300">
-                    <Crown size={14} className="text-amber-500 dark:text-amber-400" /> Nv. Máx: {highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}
-                  </span>
-                  <span className="font-mono text-amber-600 dark:text-amber-300 flex items-center gap-1">
-                    🪙 {bossCoins} {bossCoins === 1 ? 'moeda' : 'moedas'}
-                  </span>
-                </>
-              ) : (
-                <span className="text-slate-500 text-[11px] flex items-center gap-1 mx-auto">
-                  <Lock size={12} /> Bloqueado até o Nível 5 ou 1 Blitz
-                </span>
-              )}
-            </div>
-          </button>
+          {/* Card do Desafio Diário */}
+          <div className="w-full">
+            <DailyChallengeCard />
+          </div>
         </div>
       </div>
     );

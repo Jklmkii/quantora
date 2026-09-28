@@ -114,7 +114,7 @@ export function App() {
       <Navbar onOpenSettings={() => setIsSettingsOpen(true)} />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-6 md:pt-8 pb-36 md:pb-16">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-36 md:pb-16">
         <Suspense fallback={<ModuleSkeleton />}>
           {/* Static Modules (Keep mounted to preserve state) */}
           <div style={{ display: activeTab === 'bhaskara' ? 'block' : 'none' }}>
