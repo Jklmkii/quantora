@@ -1,0 +1,245 @@
+{
+  "state": {
+    "activeTab": "quiz",
+    "quizSubmode": "daily",
+    "profile": {
+      "totalXp": 22225,
+      "streakDays": 3,
+      "lastActiveDate": "2026-09-28",
+      "unlockedAchievements": [
+        "daily_starter",
+        "scratchpad_thinker",
+        "streak_3",
+        "crit_master",
+        "level_5",
+        "boss_slayer",
+        "boss_flawless",
+        "quiz_starter",
+        "blitz_speedster",
+        "level_10",
+        "daily_champion",
+        "spaced_clean"
+      ],
+      "stats": {
+        "totalCalculations": 0,
+        "totalBhaskara": 0,
+        "totalRegraDeTres": 0,
+        "totalQuizCorrect": 50,
+        "bestSurvivalRecord": 4,
+        "scratchpadUses": 135,
+        "dailyChallengesCompleted": 10,
+        "blitzHighScore": 960,
+        "blitzMaxCombo": 26,
+        "bossesDefeated": 13,
+        "flawlessBossVictories": 7,
+        "criticalHits": 0,
+        "highestBossLevelCleared": 3,
+        "bossCoins": 72,
+        "damageUpgradeLevel": 3,
+        "spacedBox5Count": 0,
+        "spacedCleanCount": 3,
+        "rare67Hits": 0,
+        "bossOracleCharges": 0,
+        "bossTimeFreezeCharges": 0
+      }
+    },
+    "unlockedFeatures": [
+      "survival",
+      "blitz",
+      "boss_battle",
+      "spaced_repetition"
+    ],
+    "hasScratchpadStrokes": false,
+    "dailyChallenge": {
+      "lastCompletedDate": "2026-09-28",
+      "history": [
+        {
+          "date": "2026-09-11",
+          "completedAt": 1789154948406,
+          "score": 150
+        },
+        {
+          "date": "2026-09-12",
+          "completedAt": 1789188274175,
+          "score": 150
+        },
+        {
+          "date": "2026-09-13",
+          "completedAt": 1789271035633,
+          "score": 150
+        },
+        {
+          "date": "2026-09-14",
+          "completedAt": 1789398019668,
+          "score": 150
+        },
+        {
+          "date": "2026-09-15",
+          "completedAt": 1789445679835,
+          "score": 150
+        },
+        {
+          "date": "2026-09-16",
+          "completedAt": 1789532555083,
+          "score": 150
+        },
+        {
+          "date": "2026-09-20",
+          "completedAt": 1789959332850,
+          "score": 150
+        },
+        {
+          "date": "2026-09-26",
+          "completedAt": 1790447195168,
+          "score": 150
+        },
+        {
+          "date": "2026-09-27",
+          "completedAt": 1790526406226,
+          "score": 150
+        },
+        {
+          "date": "2026-09-28",
+          "completedAt": 1790570130958,
+          "score": 150
+        }
+      ]
+    },
+    "highestBossLevelCleared": 3,
+    "bossCoins": 72,
+    "damageUpgradeLevel": 3,
+    "bossOracleCharges": 0,
+    "bossTimeFreezeCharges": 0,
+    "quizProgress": {
+      "survival": {
+        "highScore": 72,
+        "maxStreak": 3,
+        "recordCount": 4,
+        "totalAnswered": 18,
+        "totalCorrect": 12
+      },
+      "tracks": {
+        "soma": {
+          "currentLevel": 1,
+          "bestStreak": 0,
+          "recordCount": 0,
+          "totalCorrect": 0,
+          "totalAnswered": 0
+        },
+        "subtracao": {
+          "currentLevel": 1,
+          "bestStreak": 0,
+          "recordCount": 1,
+          "totalCorrect": 0,
+          "totalAnswered": 1
+        },
+        "multiplicacao": {
+          "currentLevel": 1,
+          "bestStreak": 0,
+          "recordCount": 0,
+          "totalCorrect": 0,
+          "totalAnswered": 0
+        },
+        "divisao": {
+          "currentLevel": 1,
+          "bestStreak": 0,
+          "recordCount": 0,
+          "totalCorrect": 0,
+          "totalAnswered": 0
+        },
+        "regra_simples": {
+          "currentLevel": 1,
+          "bestStreak": 0,
+          "recordCount": 0,
+          "totalCorrect": 0,
+          "totalAnswered": 0
+        }
+      }
+    },
+    "spacedRepetition": {
+      "cards": {
+        "soma:6+16": {
+          "id": "soma:6+16",
+          "track": "soma",
+          "operands": [
+            6,
+            16
+          ],
+          "box": 4,
+          "consecutiveCorrect": 3,
+          "lastReviewedAt": 1789600525577,
+          "lastQuestionCounter": 12,
+          "nextReviewTimestamp": 1790032525577,
+          "nextReviewQuestions": 52,
+          "hasGraduated": false,
+          "totalMistakes": 2,
+          "totalReviews": 5
+        },
+        "soma:11+18": {
+          "id": "soma:11+18",
+          "track": "soma",
+          "operands": [
+            11,
+            18
+          ],
+          "box": 3,
+          "consecutiveCorrect": 2,
+          "lastReviewedAt": 1789959403088,
+          "lastQuestionCounter": 14,
+          "nextReviewTimestamp": 1790045803088,
+          "nextReviewQuestions": 29,
+          "hasGraduated": false,
+          "totalMistakes": 2,
+          "totalReviews": 4
+        },
+        "sub:31-13": {
+          "id": "sub:31-13",
+          "track": "subtracao",
+          "operands": [
+            31,
+            13
+          ],
+          "box": 1,
+          "consecutiveCorrect": 0,
+          "lastReviewedAt": 1789959382112,
+          "lastQuestionCounter": 13,
+          "nextReviewTimestamp": 1789959982112,
+          "nextReviewQuestions": 15,
+          "hasGraduated": false,
+          "totalMistakes": 1,
+          "totalReviews": 1
+        },
+        "soma:24+38": {
+          "id": "soma:24+38",
+          "track": "soma",
+          "operands": [
+            24,
+            38
+          ],
+          "box": 1,
+          "consecutiveCorrect": 0,
+          "lastReviewedAt": 1790617334427,
+          "lastQuestionCounter": 17,
+          "nextReviewTimestamp": 1790617934427,
+          "nextReviewQuestions": 19,
+          "hasGraduated": false,
+          "totalMistakes": 1,
+          "totalReviews": 1
+        }
+      },
+      "globalQuestionsAnswered": 18
+    },
+    "settings": {
+      "theme": "light",
+      "language": "pt",
+      "decimalPlaces": 6,
+      "decimalSeparator": ",",
+      "historyLimit": 20,
+      "hasCompletedOnboarding": true,
+      "soundEnabled": true,
+      "soundVolume": 0.9
+    },
+    "history": []
+  },
+  "version": 8
+}

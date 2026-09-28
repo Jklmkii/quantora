@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { X, Moon, Sun, Laptop, Trash2, Download, Upload, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, Globe, Volume2, VolumeX, Unlock } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
-import type { DecimalPlaces, DecimalSeparator, ThemeMode, UpdaterStatus, AppLanguage } from '../../types';
+import type { DecimalPlaces, DecimalSeparator, ThemeMode, UpdaterStatus, AppLanguage, HistoryItem } from '../../types';
 import { validateHistorySchema } from '../../core/storage/historyValidator';
 import { useTranslation } from '../../core/i18n/translations';
 import { getDeviceLocalDateString } from '../../core/gamification/leveling';
@@ -147,6 +147,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     link.remove();
   };
 
+  // Export Full Profile Backup (State, XP, Stats, Settings, History)
+  const handleExportFullBackup = async () => {
+    const rawState = localStorage.getItem('quantora-storage');
+    const jsonStr = rawState || JSON.stringify({ state: useAppStore.getState(), version: 8 }, null, 2);
+    const defaultName = `quantora-perfil-backup-${getDeviceLocalDateString()}.json`;
+
+    if (window.electronAPI?.saveFile) {
+      const res = await window.electronAPI.saveFile(defaultName, jsonStr, [
+        { name: 'Backup do Perfil Quantora (*.json)', extensions: ['json'] },
+      ]);
+      if (res.success) {
+        showTemporaryStatus(t.backup_saved_success);
+      } else if (res.error) {
+        setImportStatus(`${t.export_error} ${res.error}`);
+      }
+      return;
+    }
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonStr);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', defaultName);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
   // Import JSON file (Native Electron Dialog or HTML5 file picker fallback)
   const handleImport = async () => {
     if (window.electronAPI?.openFile) {
@@ -155,7 +182,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       ]);
       if (res.canceled) return;
       if (res.success && res.data) {
-        importHistory(res.data);
+        const candidate = res.data as unknown as Record<string, unknown>;
+        if (candidate?.profile || (candidate?.state && typeof candidate.state === 'object' && (candidate.state as Record<string, unknown>).profile)) {
+          const ok = useAppStore.getState().restoreFullBackup(candidate);
+          if (ok) {
+            showTemporaryStatus(t.backup_profile_imported_success);
+            return;
+          }
+        }
+        importHistory(res.data as HistoryItem[]);
         showTemporaryStatus(t.backup_imported_success);
       } else {
         setImportStatus(res.error || t.backup_invalid);
@@ -181,6 +216,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target?.result as string);
+        if (parsed && typeof parsed === 'object' && (parsed.profile || parsed.state?.profile)) {
+          const ok = useAppStore.getState().restoreFullBackup(parsed);
+          if (ok) {
+            showTemporaryStatus(t.backup_profile_imported_success);
+            return;
+          }
+        }
         const validation = validateHistorySchema(parsed);
 
         if (validation.valid && validation.data) {
@@ -462,6 +504,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 <Download size={16} /> {t.export_csv}
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={handleExportFullBackup}
+              className="w-full mb-2 flex items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+            >
+              <Sparkles size={16} className="text-indigo-500" /> {t.export_profile_backup}
+            </button>
 
             <div className="flex flex-col gap-2">
               <input

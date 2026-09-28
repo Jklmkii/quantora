@@ -136,6 +136,9 @@ interface AppState {
 
   // Onboarding
   completeOnboarding: () => void;
+
+  // Full Profile Backup & Restore
+  restoreFullBackup: (backupData: unknown) => boolean;
 }
 
 const DEFAULT_PROFILE: UserProfile = {
@@ -1040,6 +1043,59 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           settings: { ...state.settings, hasCompletedOnboarding: true },
         })),
+
+      restoreFullBackup: (backupData: unknown) => {
+        try {
+          if (!backupData || typeof backupData !== 'object') return false;
+          const root = backupData as Record<string, unknown>;
+          const stateData = (root.state && typeof root.state === 'object' ? root.state : root) as Record<string, unknown>;
+          if (!stateData.profile || typeof stateData.profile !== 'object') return false;
+          const candidateProfile = stateData.profile as Record<string, unknown>;
+          if (typeof candidateProfile.totalXp !== 'number') return false;
+
+          set((current) => ({
+            profile: {
+              ...current.profile,
+              ...(candidateProfile as unknown as UserProfile),
+              stats: {
+                ...current.profile.stats,
+                ...((candidateProfile.stats as Record<string, unknown>) || {}),
+              },
+            },
+            unlockedFeatures: Array.isArray(stateData.unlockedFeatures)
+              ? (stateData.unlockedFeatures as string[])
+              : current.unlockedFeatures,
+            dailyChallenge: (stateData.dailyChallenge as DailyChallengeState) || current.dailyChallenge,
+            highestBossLevelCleared:
+              typeof stateData.highestBossLevelCleared === 'number'
+                ? stateData.highestBossLevelCleared
+                : current.highestBossLevelCleared,
+            bossCoins: typeof stateData.bossCoins === 'number' ? stateData.bossCoins : current.bossCoins,
+            damageUpgradeLevel:
+              typeof stateData.damageUpgradeLevel === 'number'
+                ? stateData.damageUpgradeLevel
+                : current.damageUpgradeLevel,
+            bossOracleCharges:
+              typeof stateData.bossOracleCharges === 'number'
+                ? stateData.bossOracleCharges
+                : current.bossOracleCharges,
+            bossTimeFreezeCharges:
+              typeof stateData.bossTimeFreezeCharges === 'number'
+                ? stateData.bossTimeFreezeCharges
+                : current.bossTimeFreezeCharges,
+            quizProgress: (stateData.quizProgress as QuizProgress) || current.quizProgress,
+            spacedRepetition: (stateData.spacedRepetition as SpacedRepetitionState) || current.spacedRepetition,
+            settings: {
+              ...current.settings,
+              ...((stateData.settings as Partial<AppSettings>) || {}),
+            },
+            history: Array.isArray(stateData.history) ? (stateData.history as HistoryItem[]) : current.history,
+          }));
+          return true;
+        } catch {
+          return false;
+        }
+      },
     }),
     {
       name: 'quantora-storage',

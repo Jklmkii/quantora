@@ -329,10 +329,26 @@ app.whenReady().then(() => {
         };
       }
 
+      // Support both Full Profile Backup and History Item Arrays
+      const isFullBackup = Boolean(
+        parsed && typeof parsed === 'object' && (parsed.profile || (parsed.state && parsed.state.profile))
+      );
+
+      if (isFullBackup) {
+        const stateObj = parsed.state || parsed;
+        if (typeof stateObj.profile?.totalXp !== 'number') {
+          return {
+            success: false,
+            error: 'Formato inválido: perfil de usuário corrompido ou sem XP válido.',
+          };
+        }
+        return { success: true, isFullBackup: true, data: parsed, path: filePath };
+      }
+
       if (!Array.isArray(parsed)) {
         return {
           success: false,
-          error: 'Formato inválido: o arquivo de backup deve conter uma lista (array) de itens.',
+          error: 'Formato inválido: o arquivo deve ser um backup completo de perfil ou lista de histórico.',
         };
       }
 
@@ -357,7 +373,7 @@ app.whenReady().then(() => {
         }
       }
 
-      return { success: true, data: parsed, path: filePath };
+      return { success: true, isFullBackup: false, data: parsed, path: filePath };
     } catch (err) {
       return { success: false, error: err.message };
     }

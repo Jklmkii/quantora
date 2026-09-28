@@ -657,5 +657,55 @@ describe('Empirical Stress Harness: 16 Achievements, Category Distribution & Per
       expect(calculateLevelInfo(4500).level).toBe(10);
     });
   });
+
+  // --------------------------------------------------------------------------
+  // 9. FULL PROFILE BACKUP & RESTORATION INTEGRITY
+  // --------------------------------------------------------------------------
+  describe('9. Full Profile Backup & Restoration Integrity', () => {
+    it('restores complete profile state atomically from backup payload', () => {
+      const mockBackup = {
+        state: {
+          profile: {
+            totalXp: 22225,
+            streakDays: 3,
+            lastActiveDate: '2026-09-28',
+            unlockedAchievements: ['daily_starter', 'level_10'],
+            stats: {
+              bossesDefeated: 13,
+              bossCoins: 72,
+              damageUpgradeLevel: 3,
+            },
+          },
+          highestBossLevelCleared: 3,
+          bossCoins: 72,
+          damageUpgradeLevel: 3,
+          settings: {
+            theme: 'light',
+          },
+        },
+        version: 8,
+      };
+
+      const success = useAppStore.getState().restoreFullBackup(mockBackup);
+      expect(success).toBe(true);
+
+      const state = useAppStore.getState();
+      expect(state.profile.totalXp).toBe(22225);
+      expect(state.profile.streakDays).toBe(3);
+      expect(state.profile.unlockedAchievements).toContain('level_10');
+      expect(state.profile.stats.bossesDefeated).toBe(13);
+      expect(state.highestBossLevelCleared).toBe(3);
+      expect(state.bossCoins).toBe(72);
+      expect(state.settings.theme).toBe('light');
+    });
+
+    it('rejects invalid or corrupted backup payloads without altering state', () => {
+      expect(useAppStore.getState().restoreFullBackup(null)).toBe(false);
+      expect(useAppStore.getState().restoreFullBackup(undefined)).toBe(false);
+      expect(useAppStore.getState().restoreFullBackup('invalid string')).toBe(false);
+      expect(useAppStore.getState().restoreFullBackup({ state: {} })).toBe(false);
+      expect(useAppStore.getState().restoreFullBackup({ state: { profile: { totalXp: 'not a number' } } })).toBe(false);
+    });
+  });
 });
 
