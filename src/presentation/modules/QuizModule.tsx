@@ -89,13 +89,38 @@ export const QuizModule: React.FC = () => {
     [userLevel, blitzHighScore, unlockedFeatures, unlockAllFeatures]
   );
 
-  // Screen View: 'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush'
-  const [screen, setScreen] = useState<'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush'>(() => {
+  // Repetição Espaçada / Prática Focada State
+  const [isFocusedPractice, setIsFocusedPractice] = useState<boolean>(() => quizSubmode === 'spaced');
+  const [masteryUnlocked, setMasteryUnlocked] = useState<boolean>(false);
+  const [mountTime] = useState<number>(() => Date.now());
+
+  // Screen View: 'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush' | 'daily'
+  const [screen, setScreen] = useState<'lobby' | 'playing' | 'game_over' | 'blitz' | 'boss_rush' | 'daily'>(() => {
+    if (quizSubmode === 'daily') return 'daily';
     if (quizSubmode === 'blitz') return isBlitzUnlocked ? 'blitz' : 'lobby';
     if (quizSubmode === 'boss_rush') return isBossUnlocked ? 'boss_rush' : 'lobby';
     if (quizSubmode === 'survival' || quizSubmode === 'spaced') return 'playing';
     return 'lobby';
   });
+
+  // Sincroniza dinamicamente a tela ativa se quizSubmode for alterado pelo Hub (padrão React: adjust state on prop/store change)
+  const [prevQuizSubmode, setPrevQuizSubmode] = useState(quizSubmode);
+  if (prevQuizSubmode !== quizSubmode) {
+    setPrevQuizSubmode(quizSubmode);
+    if (quizSubmode === 'daily') {
+      setScreen('daily');
+    } else if (quizSubmode === 'blitz') {
+      setScreen(isBlitzUnlocked ? 'blitz' : 'lobby');
+    } else if (quizSubmode === 'boss_rush') {
+      setScreen(isBossUnlocked ? 'boss_rush' : 'lobby');
+    } else if (quizSubmode === 'survival') {
+      setIsFocusedPractice(false);
+      setScreen('playing');
+    } else if (quizSubmode === 'spaced') {
+      setIsFocusedPractice(true);
+      setScreen('playing');
+    }
+  }
 
   const effectiveScreen = useMemo(() => {
     if (screen === 'blitz' && !isBlitzUnlocked) return 'lobby';
@@ -103,10 +128,6 @@ export const QuizModule: React.FC = () => {
     return screen;
   }, [screen, isBlitzUnlocked, isBossUnlocked]);
 
-  // Repetição Espaçada / Prática Focada State
-  const [isFocusedPractice, setIsFocusedPractice] = useState<boolean>(() => quizSubmode === 'spaced');
-  const [masteryUnlocked, setMasteryUnlocked] = useState<boolean>(false);
-  const [mountTime] = useState<number>(() => Date.now());
 
   const dueCards = useMemo(() => {
     return getDueCards(
@@ -525,6 +546,32 @@ export const QuizModule: React.FC = () => {
       >
         <BossBattle onExit={() => setActiveTab('hub')} />
       </React.Suspense>
+    );
+  }
+
+  // ==========================================
+  // SCREEN: DESAFIO DIÁRIO (Daily Challenge Focado)
+  // ==========================================
+  if (effectiveScreen === 'daily') {
+    return (
+      <div className="flex flex-col items-center gap-6 w-full max-w-xl mx-auto pb-36 md:pb-16 select-none animate-in fade-in">
+        <div className="w-full flex items-center justify-between px-1">
+          <button
+            type="button"
+            onClick={handleExitToLobby}
+            className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-white flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+          >
+            <ChevronLeft size={16} /> <span>← Hub</span>
+          </button>
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
+            {t.daily_challenge_title || 'Desafio Diário'}
+          </span>
+        </div>
+
+        <div className="w-full">
+          <DailyChallengeCard />
+        </div>
+      </div>
     );
   }
 

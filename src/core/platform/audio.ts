@@ -150,3 +150,58 @@ export function playRare67(): void {
 export function playTestSound(volume?: number): void {
   playSfx('combo-tick', volume);
 }
+
+// Instância compartilhada de AudioContext para micro-interações sintetizadas de baixa latência
+let sharedAudioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioCtx) return null;
+  if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+    try {
+      sharedAudioCtx = new AudioCtx();
+    } catch {
+      return null;
+    }
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+  return sharedAudioCtx;
+}
+
+/**
+ * Som harmônico sutil e espacial ao navegar ou deslizar entre cards no Hub
+ */
+export function playHubSwipe(): void {
+  try {
+    const { settings } = useAppStore.getState();
+    if (!settings?.soundEnabled) return;
+    const vol = (settings?.soundVolume ?? 0.5) * 0.22;
+    if (vol <= 0) return;
+
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    // Glissando ascendente suave estilo cristalino (420Hz -> 640Hz em 55ms)
+    osc.frequency.setValueAtTime(420, now);
+    osc.frequency.exponentialRampToValueAtTime(640, now + 0.055);
+
+    gain.gain.setValueAtTime(vol, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.06);
+  } catch {
+    // Ignora silenciosamente em ambientes restritos
+  }
+}
