@@ -426,6 +426,8 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
         {/* Trilho de Scroll Horizontal (Fading nas extremidades para o nada + Drag com Mouse) */}
         <div
           ref={carouselRef}
+          role="tablist"
+          aria-label="Carrossel de Modos"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUpOrLeave}
@@ -442,6 +444,8 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
             return (
               <div
                 key={card.id}
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => {
                   if (!hasDraggedRef.current) {
                     scrollToCard(idx);
@@ -593,6 +597,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
             onClick={() => scrollToCard(0)}
             className="w-10 h-10 rounded-full cosmic-glass border border-slate-300/80 dark:border-cyan-500/30 flex items-center justify-center text-slate-700 dark:text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all cursor-pointer shadow-md dark:shadow-lg bg-white/90 dark:bg-slate-900/60"
             title="Voltar ao início do Hub"
+            aria-label="Voltar ao início do Hub"
           >
             <ChevronLeft size={20} />
           </button>
@@ -607,6 +612,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
           <button
             type="button"
             onClick={onOpenSettings}
+            aria-label="Abrir configurações do sistema"
             className="flex items-center gap-2 px-3 py-1.5 rounded-full cosmic-glass border border-slate-300/80 dark:border-slate-700/60 hover:border-cyan-400/50 text-xs font-mono text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-all cursor-pointer shadow-md bg-white/90 dark:bg-slate-900/60"
           >
             <span>Refined</span>
