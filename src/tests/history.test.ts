@@ -59,4 +59,55 @@ describe('Validação de Integridade do Histórico', () => {
     const result = validateHistorySchema(unknownTypeData);
     expect(result.valid).toBe(false);
   });
+
+  it('deve rejeitar itens com propriedades excedendo limites de caracteres (DoS protection)', () => {
+    const longStringData = [
+      {
+        id: 'a'.repeat(101),
+        timestamp: Date.now(),
+        type: 'bhaskara' as const,
+        title: 'Título válido',
+        summary: 'Resumo válido',
+        details: 'Detalhes',
+      },
+    ];
+
+    expect(validateHistorySchema(longStringData).valid).toBe(false);
+
+    const longTitleData = [
+      {
+        id: 'calc_1',
+        timestamp: Date.now(),
+        type: 'bhaskara' as const,
+        title: 'b'.repeat(201),
+        summary: 'Resumo',
+        details: 'Detalhes',
+      },
+    ];
+    expect(validateHistorySchema(longTitleData).valid).toBe(false);
+
+    const longSummaryData = [
+      {
+        id: 'calc_1',
+        timestamp: Date.now(),
+        type: 'bhaskara' as const,
+        title: 'Titulo',
+        summary: 'c'.repeat(1001),
+        details: 'Detalhes',
+      },
+    ];
+    expect(validateHistorySchema(longSummaryData).valid).toBe(false);
+
+    const longDetailsData = [
+      {
+        id: 'calc_1',
+        timestamp: Date.now(),
+        type: 'bhaskara' as const,
+        title: 'Titulo',
+        summary: 'Resumo',
+        details: 'd'.repeat(10001),
+      },
+    ];
+    expect(validateHistorySchema(longDetailsData).valid).toBe(false);
+  });
 });

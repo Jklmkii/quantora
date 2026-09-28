@@ -343,12 +343,12 @@ app.whenReady().then(() => {
         if (
           !item ||
           typeof item !== 'object' ||
-          typeof item.id !== 'string' ||
+          typeof item.id !== 'string' || item.id.length > 100 ||
           typeof item.timestamp !== 'number' ||
           !validTypes.includes(item.type) ||
-          typeof item.title !== 'string' ||
-          typeof item.summary !== 'string' ||
-          typeof item.details !== 'string'
+          typeof item.title !== 'string' || item.title.length > 200 ||
+          typeof item.summary !== 'string' || item.summary.length > 1000 ||
+          typeof item.details !== 'string' || item.details.length > 10000
         ) {
           return {
             success: false,

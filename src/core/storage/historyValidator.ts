@@ -23,13 +23,13 @@ function validateHistoryItem(item: unknown): boolean {
   }
   const candidate = item as Record<string, unknown>;
   return (
-    typeof candidate.id === 'string' &&
+    typeof candidate.id === 'string' && candidate.id.length <= 100 &&
     typeof candidate.timestamp === 'number' &&
     typeof candidate.type === 'string' &&
     (VALID_TYPES as readonly string[]).includes(candidate.type) &&
-    typeof candidate.title === 'string' &&
-    typeof candidate.summary === 'string' &&
-    typeof candidate.details === 'string'
+    typeof candidate.title === 'string' && candidate.title.length <= 200 &&
+    typeof candidate.summary === 'string' && candidate.summary.length <= 1000 &&
+    typeof candidate.details === 'string' && candidate.details.length <= 10000
   );
 }
 
