@@ -1,15 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
-  Skull,
-  Zap,
-  Swords,
-  Sigma,
-  Atom,
-  Triangle,
-  Scale,
-  Calendar,
-  BookOpen,
-  History,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
@@ -23,12 +13,25 @@ import { calculateLevelInfo } from '../../core/gamification/leveling';
 import { getTodayDateString } from '../../core/daily/dailyEngine';
 import logoImg from '../../assets/logo.webp';
 
+import {
+  CosmicSkull3D,
+  CosmicLightning3D,
+  CosmicSwords3D,
+  CosmicBhaskara3D,
+  CosmicAtom3D,
+  CosmicPitagoras3D,
+  CosmicRegraDeTres3D,
+  CosmicDaily3D,
+  CosmicSpaced3D,
+  CosmicHistory3D,
+} from './CosmicIcons3D';
+
 interface HubCard {
   id: string;
   title: string;
   subtitle: string;
   category: string;
-  icon: React.ReactNode;
+  renderIcon: (isActive: boolean) => React.ReactNode;
   neonColor: 'cyan' | 'purple' | 'amber' | 'emerald' | 'indigo';
   targetTab: ActiveTab;
   quizModeSubtrack?: string;
@@ -81,7 +84,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
   const isBlitzUnlocked = unlockAllFeatures || levelInfo.level >= 3 || unlockedFeatures.includes('blitz');
   const isBossUnlocked = unlockAllFeatures || levelInfo.level >= 5 || unlockedFeatures.includes('boss_rush');
 
-  // Mapeamento de todos os módulos e modos do Quantora em cards independentes
+  // Mapeamento de todos os módulos e modos do Quantora em cards com ícones 3D em Glassmorphism
   const hubCards: HubCard[] = useMemo(() => [
     {
       id: 'survival',
@@ -93,7 +96,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: 'Full-Mix',
       statsLabel: `Recorde: Conta #${sobrevRecorde}`,
       statsValue: `${quizProgress.survival?.highScore || 0} XP`,
-      icon: <Skull size={64} className="stroke-[2.2] neon-glow-cyan" />,
+      renderIcon: (isActive) => <CosmicSkull3D size={isActive ? 88 : 66} />,
     },
     {
       id: 'blitz',
@@ -107,7 +110,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       statsValue: `${blitzHighScore} pts`,
       isLocked: !isBlitzUnlocked,
       unlockRequirement: 'Nível 3 de XP',
-      icon: <Zap size={56} className="fill-amber-400 text-amber-300 neon-glow-amber stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicLightning3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'boss',
@@ -121,7 +124,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       statsValue: `🪙 ${bossCoins} moedas`,
       isLocked: !isBossUnlocked,
       unlockRequirement: 'Nível 5 de XP',
-      icon: <Swords size={56} className="text-purple-300 neon-glow-purple stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicSwords3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'bhaskara',
@@ -133,7 +136,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: 'Δ & Vértice',
       statsLabel: 'Equações Resolvidas',
       statsValue: `${profile?.stats?.totalBhaskara || 0}`,
-      icon: <Sigma size={56} className="text-cyan-300 neon-glow-cyan stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicBhaskara3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'physics',
@@ -145,7 +148,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: '10 Motores',
       statsLabel: 'Gráficos SVG',
       statsValue: 'Interativos',
-      icon: <Atom size={56} className="text-indigo-300 neon-glow-cyan stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicAtom3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'pitagoras',
@@ -157,7 +160,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: 'Triângulo Retângulo',
       statsLabel: 'Relações Métricas',
       statsValue: 'Seno / Cosseno',
-      icon: <Triangle size={56} className="text-amber-300 neon-glow-amber rotate-90 stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicPitagoras3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'regra_de_tres',
@@ -169,7 +172,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: 'Simples & Composta',
       statsLabel: 'Cálculos Realizados',
       statsValue: `${profile?.stats?.totalRegraDeTres || 0}`,
-      icon: <Scale size={56} className="text-emerald-300 neon-glow-cyan stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicRegraDeTres3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'daily',
@@ -181,7 +184,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: isDailyCompleted ? 'Concluído ✓' : 'Pendente !',
       statsLabel: 'Sequência Atual',
       statsValue: `🔥 ${profile?.streakDays || 1} dias`,
-      icon: <Calendar size={56} className="text-amber-300 neon-glow-amber stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicDaily3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'spaced',
@@ -193,7 +196,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: 'Active Recall',
       statsLabel: 'Itens em Memória',
       statsValue: `${Object.keys(spacedRepetition?.cards || {}).length} fatos`,
-      icon: <BookOpen size={56} className="text-cyan-300 neon-glow-cyan stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicSpaced3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'history',
@@ -205,7 +208,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       badge: `${historyCount} Registros`,
       statsLabel: 'Total Histórico',
       statsValue: `${historyCount} itens`,
-      icon: <History size={56} className="text-indigo-300 neon-glow-cyan stroke-[2]" />,
+      renderIcon: (isActive) => <CosmicHistory3D size={isActive ? 84 : 64} />,
     },
   ], [
     sobrevRecorde,
@@ -220,6 +223,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
     blitzHighScore,
     bossCoins,
   ]);
+
 
   // Índice do card central selecionado (inicia no Survival Mode: índice 0)
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -414,24 +418,36 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
                   </p>
                 </div>
 
-                {/* Centro do Card: Ícone Neon Bioluminescente */}
-                <div className="relative my-auto flex flex-col items-center justify-center z-10">
+                {/* Centro do Card: Ícone 3D em Glassmorphism com ambientação fiel ao protótipo */}
+                <div className="relative my-auto flex items-center justify-center z-10 w-full py-2">
+                  {/* Detalhes de ambientação do protótipo no card ativo do Survival Mode */}
+                  {isActive && card.id === 'survival' && (
+                    <>
+                      <span className="absolute -left-1 sm:left-2 text-xs font-mono font-black tracking-widest text-cyan-400/40 select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]">
+                        XP
+                      </span>
+                      <span className="absolute -right-1 sm:right-2 text-xs font-mono font-black tracking-widest text-fuchsia-400/40 select-none drop-shadow-[0_0_8px_rgba(217,70,239,0.6)]">
+                        XP
+                      </span>
+                    </>
+                  )}
+
                   <div
-                    className={`rounded-3xl flex items-center justify-center transition-all duration-500 ${
+                    className={`rounded-3xl flex items-center justify-center transition-all duration-500 relative ${
                       isActive
-                        ? 'w-28 h-28 sm:w-32 sm:h-32 bg-cyan-500/10 dark:bg-cyan-950/70 border border-cyan-400/70 shadow-[0_0_45px_rgba(6,182,212,0.65)] scale-110'
-                        : 'w-24 h-24 bg-slate-900/40 border border-slate-700/50'
+                        ? 'p-2 sm:p-3 bg-gradient-to-b from-cyan-500/15 via-transparent to-sky-950/40 border border-cyan-400/60 shadow-[0_0_50px_rgba(6,182,212,0.4)] scale-110'
+                        : 'p-2 bg-slate-900/30 border border-slate-700/40'
                     }`}
                   >
                     {card.isLocked ? (
                       <Lock size={44} className="text-slate-500" />
                     ) : (
-                      card.icon
+                      card.renderIcon(isActive)
                     )}
                   </div>
 
                   {card.isLocked && (
-                    <span className="text-[11px] font-mono font-bold text-amber-400 mt-2">
+                    <span className="absolute -bottom-5 text-[11px] font-mono font-bold text-amber-400">
                       🔒 Requer {card.unlockRequirement}
                     </span>
                   )}

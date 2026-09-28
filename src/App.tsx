@@ -10,6 +10,7 @@ import { AchievementToast } from './presentation/components/AchievementToast';
 import { FeatureUnlockToast } from './presentation/components/FeatureUnlockToast';
 import { Scratchpad } from './presentation/components/Scratchpad';
 import { CosmicHub } from './presentation/components/CosmicHub';
+import { CosmicBackgroundCanvas } from './presentation/components/CosmicBackgroundCanvas';
 import { LayoutGrid } from 'lucide-react';
 
 // Code-splitting: Lazy load content modules on demand
@@ -90,7 +91,10 @@ export function App() {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-cyan-500 selection:text-white transition-colors duration-200 overflow-x-hidden">
-      {/* Cosmic Nebula Background Glows & Grid Pattern */}
+      {/* Dynamic Cosmic Background Canvas (Constelações Dinâmicas & Orbs de Nebulosa) */}
+      <CosmicBackgroundCanvas />
+
+      {/* Cosmic Nebula Ambient Glows */}
       <div
         className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
         style={{ contain: 'strict' }}
@@ -99,8 +103,6 @@ export function App() {
         <div className="absolute -top-32 -left-32 w-96 h-96 sm:w-[500px] sm:h-[500px] rounded-full bg-cyan-500/10 dark:bg-cyan-500/15 blur-[120px]" />
         <div className="absolute top-1/3 -right-32 w-96 h-96 sm:w-[500px] sm:h-[500px] rounded-full bg-purple-500/10 dark:bg-purple-600/15 blur-[140px]" />
         <div className="absolute -bottom-32 left-1/4 w-96 h-96 sm:w-[600px] sm:h-[600px] rounded-full bg-indigo-500/10 dark:bg-indigo-600/10 blur-[130px]" />
-        {/* Subtle Celestial Grid / Constellation Dots Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#6366f1_1px,transparent_1px)] dark:bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.12] dark:opacity-[0.08]" />
       </div>
 
       {/* Updater Toast Banner */}
