@@ -88,11 +88,11 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
   return (
     <>
       {/* Top Header Bar (Desktop & Mobile) */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md pt-safe">
+      <header className="sticky top-0 z-40 w-full cosmic-glass border-b border-slate-200/70 dark:border-cyan-500/20 pt-safe transition-all">
         <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 min-w-0">
           {/* Brand */}
           <div className="flex items-center gap-2.5 min-w-0 shrink-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/90 dark:bg-slate-900 border border-indigo-500/30 overflow-hidden flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/90 dark:bg-slate-900 border border-cyan-500/40 overflow-hidden flex items-center justify-center shadow-md shadow-cyan-500/20 shrink-0">
               {logoError ? (
                 <span className="text-base font-black bg-gradient-to-tr from-cyan-400 via-indigo-400 to-fuchsia-400 bg-clip-text text-transparent select-none">
                   Q
@@ -111,17 +111,17 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none truncate">
                 Quantora
               </h1>
-              <p className="hidden xl:block text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">
+              <p className="hidden xl:block text-[11px] font-medium text-slate-500 dark:text-cyan-400/80 truncate">
                 {t.app_subtitle}
               </p>
             </div>
           </div>
 
           {/* Subtle Vertical Divider between Brand and Nav */}
-          <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
+          <div className="hidden lg:block h-6 w-px bg-slate-200/80 dark:bg-slate-800 shrink-0" />
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shrink min-w-0 overflow-x-auto no-scrollbar">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 dark:bg-slate-900/70 p-1.5 rounded-2xl border border-slate-200/70 dark:border-cyan-500/20 backdrop-blur-md shrink min-w-0 overflow-x-auto no-scrollbar shadow-inner">
             {tabs.map((tab) => {
               const isActive =
                 activeTab === tab.id ||
@@ -130,9 +130,9 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 lg:px-3 lg:py-1.5 xl:px-3.5 xl:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all touch-target shrink-0 ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 lg:px-3 lg:py-1.5 xl:px-3.5 xl:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all touch-target shrink-0 cursor-pointer ${
                     isActive
-                      ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                      ? 'bg-white dark:bg-slate-800/90 text-cyan-600 dark:text-cyan-300 shadow-sm border border-slate-200/80 dark:border-cyan-500/40 dark:shadow-[0_0_15px_rgba(6,182,212,0.25)]'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                   title={tab.label}
@@ -141,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
                   {tab.icon}
                   <span className={isActive ? 'inline' : 'hidden lg:inline'}>{tab.label}</span>
                   {tab.badge !== undefined && (
-                    <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold">
+                    <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-cyan-100 dark:bg-cyan-900/60 text-cyan-700 dark:text-cyan-300 font-bold">
                       {tab.badge}
                     </span>
                   )}
@@ -158,10 +158,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={() => setActiveTab('quiz')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all touch-target shadow-xs cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all touch-target cursor-pointer ${
                   isDailyCompleted
-                    ? 'border-emerald-300 bg-emerald-100 text-emerald-800 hover:bg-emerald-200/80 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40'
-                    : 'border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200/80 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-400 dark:hover:bg-amber-900/40'
+                    ? 'border-emerald-300/80 bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20 dark:border-emerald-500/40 dark:bg-emerald-950/40 dark:text-emerald-300 dark:shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                    : 'border-amber-300/80 bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-400 dark:shadow-[0_0_12px_rgba(245,158,11,0.2)]'
                 }`}
                 title={
                   isDailyCompleted
@@ -192,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(true)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200/80 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-900/40 font-bold text-xs transition-all touch-target shadow-xs cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-300/80 bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-400 dark:shadow-[0_0_12px_rgba(245,158,11,0.15)] font-bold text-xs transition-all touch-target cursor-pointer"
                 title={`${levelInfo.title} • ${profile?.totalXp || 0} XP (${t.profile_title})`}
                 aria-label={t.profile_title}
               >
@@ -207,7 +207,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
             </div>
 
             {/* Subtle Divider between Status Badges and Tools */}
-            <div className="hidden sm:block h-5 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
+            <div className="hidden sm:block h-5 w-px bg-slate-200/80 dark:bg-slate-800 shrink-0" />
 
             {/* Utility Tools Group */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -215,10 +215,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={toggleScratchpad}
-                className={`relative p-2 sm:p-2.5 rounded-xl border transition-colors touch-target flex items-center justify-center cursor-pointer shrink-0 ${
+                className={`relative p-2 sm:p-2.5 rounded-xl border transition-all touch-target flex items-center justify-center cursor-pointer shrink-0 ${
                   isScratchpadOpen
-                    ? 'border-amber-400 bg-amber-500/20 text-amber-400'
-                    : 'border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800'
+                    ? 'border-amber-400 bg-amber-500/20 text-amber-600 dark:text-amber-300 dark:shadow-[0_0_12px_rgba(245,158,11,0.3)]'
+                    : 'border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300'
                 }`}
                 title="Lousa de Rascunho"
                 aria-label="Lousa de Rascunho"
@@ -233,7 +233,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={cycleTheme}
-                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer shrink-0"
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300 transition-all touch-target flex items-center justify-center cursor-pointer shrink-0"
                 title={`${t.theme_prefix}: ${settings.theme} (${t.theme_cycle_tooltip})`}
                 aria-label={t.theme}
               >
@@ -246,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={onOpenSettings}
-                className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center cursor-pointer shrink-0"
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300 transition-all touch-target flex items-center justify-center cursor-pointer shrink-0"
                 title={t.settings_title}
                 aria-label={t.settings_title}
               >
@@ -264,7 +264,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
       <div className="md:hidden fixed bottom-4 inset-x-0 z-40 flex items-center justify-center gap-2.5 px-3 pb-safe pointer-events-none select-none">
         {/* Main Floating Pill Dock */}
         <nav
-          className="pointer-events-auto flex items-center gap-1 p-1.5 rounded-full bg-slate-900/90 dark:bg-slate-900/95 border border-white/15 dark:border-slate-800/90 backdrop-blur-xl shadow-2xl shadow-black/40"
+          className="pointer-events-auto flex items-center gap-1 p-1.5 rounded-full cosmic-glass border border-slate-200/80 dark:border-cyan-500/30 backdrop-blur-xl shadow-2xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
           aria-label="Navegação móvel"
         >
           {tabs.map((tab) => {
@@ -275,26 +275,26 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center justify-center transition-all duration-200 touch-target ${
+                className={`relative flex items-center justify-center transition-all duration-200 touch-target cursor-pointer ${
                   isActive
-                    ? 'px-3.5 py-2 rounded-full bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 shadow-inner'
-                    : 'p-2.5 rounded-full text-slate-400 hover:text-white active:scale-95'
+                    ? 'px-3.5 py-2 rounded-full bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-400/50 dark:shadow-[0_0_12px_rgba(6,182,212,0.3)]'
+                    : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95'
                 }`}
                 title={tab.label}
                 aria-label={tab.label}
               >
                 <div className="relative flex items-center justify-center">
-                  <span className={isActive ? 'text-indigo-300' : 'text-slate-400'}>
+                  <span className={isActive ? 'text-cyan-700 dark:text-cyan-300' : 'text-slate-500 dark:text-slate-400'}>
                     {tab.icon}
                   </span>
                   {tab.badge !== undefined && (
-                    <span className="absolute -top-1 -right-2 px-1 text-[9px] rounded-full bg-indigo-500 text-white font-bold leading-tight shadow-xs">
+                    <span className="absolute -top-1 -right-2 px-1 text-[9px] rounded-full bg-cyan-500 text-white font-bold leading-tight shadow-xs">
                       {tab.badge}
                     </span>
                   )}
                 </div>
                 {isActive && (
-                  <span className="ml-1.5 text-xs font-semibold text-indigo-200 whitespace-nowrap">
+                  <span className="ml-1.5 text-xs font-semibold text-cyan-800 dark:text-cyan-200 whitespace-nowrap">
                     {tab.label}
                   </span>
                 )}
@@ -307,10 +307,10 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
         <button
           type="button"
           onClick={toggleScratchpad}
-          className={`pointer-events-auto relative w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl shadow-2xl transition-all duration-200 touch-target shrink-0 ${
+          className={`pointer-events-auto relative w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl shadow-2xl transition-all duration-200 touch-target shrink-0 cursor-pointer ${
             isScratchpadOpen
               ? 'bg-amber-500 text-slate-950 border border-amber-300 shadow-amber-500/30 scale-105'
-              : 'bg-slate-900/90 dark:bg-slate-900/95 border border-white/15 dark:border-slate-800/90 text-amber-400 hover:scale-105 active:scale-95'
+              : 'cosmic-glass border border-slate-200/80 dark:border-amber-400/40 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95'
           }`}
           title="Lousa de Rascunho"
           aria-label="Lousa de Rascunho"

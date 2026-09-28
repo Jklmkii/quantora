@@ -530,22 +530,22 @@ export const QuizModule: React.FC = () => {
       <div className="flex flex-col items-center gap-6 max-w-2xl mx-auto pb-36 md:pb-16 select-none animate-in fade-in">
         {/* Title & Subtitle */}
         <div className="flex flex-col items-center text-center mt-2">
-          <h1 className="text-4xl sm:text-5xl font-black tracking-widest bg-gradient-to-r from-cyan-400 via-indigo-300 to-fuchsia-400 bg-clip-text text-transparent font-mono drop-shadow-[0_4px_12px_rgba(99,102,241,0.25)]">
+          <h1 className="text-4xl sm:text-5xl font-black tracking-widest bg-gradient-to-r from-cyan-400 via-sky-300 to-fuchsia-400 bg-clip-text text-transparent font-mono drop-shadow-[0_4px_16px_rgba(6,182,212,0.35)]">
             {t.quiz_lobby_title}
           </h1>
-          <p className="text-xs sm:text-sm font-semibold text-slate-400 mt-2 max-w-md">
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-cyan-400/80 mt-2 max-w-md">
             {t.quiz_lobby_subtitle}
           </p>
         </div>
 
         {/* Difficulty Selectors (Pills) */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-inner">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl cosmic-glass border border-slate-200/80 dark:border-cyan-500/20 backdrop-blur-xl shadow-inner">
           <button
             type="button"
             onClick={() => setDifficultyMode('tranquilo')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
               difficultyMode === 'tranquilo'
-                ? 'bg-emerald-100 dark:bg-slate-800 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/50 shadow-sm'
+                ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-400/60 dark:shadow-[0_0_12px_rgba(16,185,129,0.3)] shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -555,9 +555,9 @@ export const QuizModule: React.FC = () => {
           <button
             type="button"
             onClick={() => setDifficultyMode('velocidade')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
               difficultyMode === 'velocidade'
-                ? 'bg-amber-100 dark:bg-amber-400/10 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.25)]'
+                ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-400/60 dark:shadow-[0_0_12px_rgba(245,158,11,0.3)] shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -567,9 +567,9 @@ export const QuizModule: React.FC = () => {
           <button
             type="button"
             onClick={() => setDifficultyMode('brutal')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 touch-target cursor-pointer ${
               difficultyMode === 'brutal'
-                ? 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400 border border-red-300 dark:border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.25)]'
+                ? 'bg-red-500/20 text-red-800 dark:text-red-300 border border-red-400/60 dark:shadow-[0_0_12px_rgba(239,68,68,0.3)] shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -577,25 +577,23 @@ export const QuizModule: React.FC = () => {
           </button>
         </div>
 
-        {/* 1. HERO CARD: Modo Sobrevivência (Full-Width, Central e Imponente) */}
-        <button
-          type="button"
-          onClick={() => handleStartTrack('sobrevivencia')}
-          className="w-full p-7 rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950/70 dark:via-slate-900 dark:to-purple-950/60 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/70 dark:hover:to-purple-900/70 border border-indigo-200 dark:border-indigo-500/40 hover:border-indigo-300 dark:hover:border-cyan-400/80 transition-all flex flex-col items-center text-center gap-3.5 group shadow-indigo-900/5 dark:shadow-2xl hover:shadow-indigo-500/20 active:scale-[0.99] touch-target cursor-pointer relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/20 transition-all" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-fuchsia-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-fuchsia-500/20 transition-all" />
+        {/* 1. HERO CARD: Modo Sobrevivência (Full-Width, Central, Holográfico e Cósmico) */}
+        <div className="w-full p-7 sm:p-8 rounded-3xl cosmic-card border border-slate-200/90 dark:border-cyan-500/30 flex flex-col items-center text-center gap-4 group relative overflow-hidden dark:shadow-[0_12px_40px_rgba(6,182,212,0.15)]">
+          {/* Internal Cosmic Nebulas */}
+          <div className="absolute -top-10 -right-10 w-48 h-48 bg-cyan-500/15 dark:bg-cyan-500/25 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-purple-500/15 dark:bg-purple-600/20 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
 
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-indigo-500/30">
-            <Skull size={34} className="stroke-[2.5]" />
+          {/* Bioluminescent Skull Orb */}
+          <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-300 dark:border-cyan-400/50 text-cyan-600 dark:text-cyan-300 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-500/20 dark:shadow-[0_0_30px_rgba(6,182,212,0.45)]">
+            <Skull size={40} className="stroke-[2.5]" />
           </div>
 
           <div>
             <div className="flex items-center justify-center gap-2">
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-wide">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-wide font-mono">
                 {t.track_survival}
               </h2>
-              <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-cyan-300 border border-indigo-200 dark:border-indigo-500/30">
+              <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-400/30">
                 Full-Mix
               </span>
             </div>
@@ -604,21 +602,32 @@ export const QuizModule: React.FC = () => {
             </p>
           </div>
 
-          <div className="w-full flex items-center justify-between text-xs font-bold pt-3 border-t border-slate-200 dark:border-slate-800/80 px-2 text-slate-600 dark:text-slate-300">
-            <span className="flex items-center gap-1.5 text-indigo-700 dark:text-indigo-300">
+          {/* Quick Metrics Bar */}
+          <div className="w-full flex items-center justify-between text-xs font-bold pt-3 border-t border-slate-200/80 dark:border-slate-800/80 px-2 text-slate-600 dark:text-slate-300">
+            <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-300">
               <Trophy size={15} className="text-amber-500 dark:text-amber-400" /> {t.record_prefix}: {t.account_prefix} #{sobrevRecorde}
             </span>
             <span className="font-mono text-cyan-700 dark:text-cyan-300">
               {quizProgress.survival?.highScore || 0} {t.xp_survival}
             </span>
           </div>
-        </button>
+
+          {/* Primary Action Button (Cosmic Glow Capsule) */}
+          <button
+            type="button"
+            onClick={() => handleStartTrack('sobrevivencia')}
+            className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-400 to-cyan-500 hover:from-cyan-400 hover:to-sky-300 text-slate-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-400/50 hover:scale-[1.02] active:scale-95 touch-target cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Zap size={16} className="fill-slate-950" />
+            <span>Iniciar Desafio</span>
+          </button>
+        </div>
 
         {/* 2. CARD DO CADERNO DE ERROS (Repetição Espaçada & Active Recall) */}
-        <div className="w-full p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col gap-3 shadow-sm dark:shadow-xl">
+        <div className="w-full p-5 rounded-3xl cosmic-card border border-slate-200/80 dark:border-slate-800/90 hover:border-cyan-400/40 transition-all flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-cyan-100 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-400/20 flex items-center justify-center shrink-0">
                 <BookOpen size={20} />
               </div>
               <div className="text-left">
@@ -627,17 +636,16 @@ export const QuizModule: React.FC = () => {
                     {t.spaced_notebook_title}
                   </h3>
                   {dueCount > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30 text-[10px] font-mono font-bold animate-pulse">
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold animate-pulse">
                       {dueCount} {t.spaced_due_badge}
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-400/30 text-[10px] font-mono font-bold flex items-center gap-1">
                       <CheckCircle2 size={10} /> 100% em dia
                     </span>
                   )}
                 </div>
                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                  {/* Lógica de concordância gramatical */}
                   {dueCount > 0
                     ? `${dueCount} ${dueCount === 1 ? t.spaced_due_count_singular : t.spaced_due_count_plural}`
                     : t.spaced_all_caught_up}
@@ -649,7 +657,7 @@ export const QuizModule: React.FC = () => {
               <button
                 type="button"
                 onClick={handleStartFocusedPractice}
-                className="px-4 py-2 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-cyan-500/20 active:scale-95 touch-target flex items-center gap-1.5 shrink-0"
+                className="px-4 py-2 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-cyan-500/30 active:scale-95 touch-target flex items-center gap-1.5 shrink-0 cursor-pointer"
               >
                 <Zap size={14} className="fill-slate-950" />
                 {t.spaced_practice_btn}
@@ -670,16 +678,16 @@ export const QuizModule: React.FC = () => {
             type="button"
             disabled={!isBlitzUnlocked}
             onClick={() => isBlitzUnlocked && setScreen('blitz')}
-            className={`p-5 rounded-3xl border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
+            className={`p-5 rounded-3xl cosmic-card border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
               isBlitzUnlocked
-                ? 'bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 hover:from-amber-950/60 border-amber-500/40 hover:border-amber-400 group shadow-xl hover:shadow-amber-500/10 active:scale-[0.98] cursor-pointer'
-                : 'bg-slate-900/50 border-slate-800/80 opacity-70 cursor-not-allowed'
+                ? 'border-amber-500/30 hover:border-amber-400/60 group dark:shadow-[0_8px_30px_rgba(245,158,11,0.15)] active:scale-[0.98] cursor-pointer'
+                : 'border-slate-800/80 opacity-60 cursor-not-allowed'
             }`}
           >
             <div
               className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform shadow-md ${
                 isBlitzUnlocked
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 group-hover:scale-110 shadow-amber-500/20'
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 group-hover:scale-110 dark:shadow-[0_0_20px_rgba(245,158,11,0.35)]'
                   : 'bg-slate-800 text-slate-500 border border-slate-700'
               }`}
             >
@@ -687,30 +695,30 @@ export const QuizModule: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                <h3 className="text-lg font-black text-white">Modo Blitz</h3>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">Modo Blitz</h3>
                 {isBlitzUnlocked ? (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                     60s
                   </span>
                 ) : (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
                     <Lock size={10} /> Nível 3
                   </span>
                 )}
               </div>
-              <p className="text-xs font-medium text-slate-400 mt-0.5">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                 {isBlitzUnlocked
                   ? 'Agilidade mental contra o relógio (+2s acerto / -3s erro)'
                   : 'Desbloqueia ao atingir o Nível 3 de XP geral.'}
               </p>
             </div>
-            <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-800/80 px-1 text-slate-400">
+            <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-200/80 dark:border-slate-800/80 px-1 text-slate-600 dark:text-slate-400">
               {isBlitzUnlocked ? (
                 <>
-                  <span className="flex items-center gap-1 text-orange-400">
+                  <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
                     <Flame size={14} className="fill-orange-400" /> Combo até 3x XP
                   </span>
-                  <span className="font-mono text-amber-300">
+                  <span className="font-mono text-amber-600 dark:text-amber-300">
                     Recorde: {blitzHighScore} pts
                   </span>
                 </>
@@ -727,16 +735,16 @@ export const QuizModule: React.FC = () => {
             type="button"
             disabled={!isBossUnlocked}
             onClick={() => isBossUnlocked && setScreen('boss_rush')}
-            className={`p-5 rounded-3xl border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
+            className={`p-5 rounded-3xl cosmic-card border transition-all flex flex-col items-center text-center gap-2.5 relative overflow-hidden touch-target ${
               isBossUnlocked
-                ? 'bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-950 hover:from-purple-950/60 border-purple-500/40 hover:border-purple-400 group shadow-xl hover:shadow-purple-500/10 active:scale-[0.98] cursor-pointer'
-                : 'bg-slate-900/50 border-slate-800/80 opacity-70 cursor-not-allowed'
+                ? 'border-purple-500/30 hover:border-purple-400/60 group dark:shadow-[0_8px_30px_rgba(168,85,247,0.15)] active:scale-[0.98] cursor-pointer'
+                : 'border-slate-800/80 opacity-60 cursor-not-allowed'
             }`}
           >
             <div
               className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform shadow-md ${
                 isBossUnlocked
-                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 group-hover:scale-110 shadow-purple-500/20'
+                  ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/40 group-hover:scale-110 dark:shadow-[0_0_20px_rgba(168,85,247,0.35)]'
                   : 'bg-slate-800 text-slate-500 border border-slate-700'
               }`}
             >
@@ -744,30 +752,30 @@ export const QuizModule: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                <h3 className="text-lg font-black text-white">Batalha de Chefe</h3>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">Batalha de Chefe</h3>
                 {isBossUnlocked ? (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30">
                     Níveis & Forja
                   </span>
                 ) : (
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30 flex items-center gap-1">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 flex items-center gap-1">
                     <Lock size={10} /> Nível 5 ou 1 Blitz
                   </span>
                 )}
               </div>
-              <p className="text-xs font-medium text-slate-400 mt-0.5">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                 {isBossUnlocked
                   ? 'Enfrente 10 chefes épicos com poderes e forja de runas'
                   : 'Desbloqueia no Nível 5 de XP ou ao vencer 1 sessão de Blitz.'}
               </p>
             </div>
-            <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-800/80 px-1 text-slate-400">
+            <div className="w-full flex items-center justify-between text-xs font-bold pt-2 border-t border-slate-200/80 dark:border-slate-800/80 px-1 text-slate-600 dark:text-slate-400">
               {isBossUnlocked ? (
                 <>
-                  <span className="flex items-center gap-1 text-purple-300">
-                    <Crown size={14} className="text-amber-400" /> Nv. Máx: {highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}
+                  <span className="flex items-center gap-1 text-purple-700 dark:text-purple-300">
+                    <Crown size={14} className="text-amber-500 dark:text-amber-400" /> Nv. Máx: {highestBossLevelCleared > 0 ? highestBossLevelCleared : 1}
                   </span>
-                  <span className="font-mono text-amber-300 flex items-center gap-1">
+                  <span className="font-mono text-amber-600 dark:text-amber-300 flex items-center gap-1">
                     🪙 {bossCoins} {bossCoins === 1 ? 'moeda' : 'moedas'}
                   </span>
                 </>
@@ -789,8 +797,8 @@ export const QuizModule: React.FC = () => {
   if (effectiveScreen === 'game_over') {
     return (
       <div className="flex flex-col items-center gap-6 max-w-xl mx-auto pb-24 md:pb-12 select-none animate-in fade-in">
-        <div className="w-full p-8 rounded-3xl bg-slate-950 text-white border border-red-900/60 shadow-2xl flex flex-col items-center text-center gap-6">
-          <div className="w-16 h-16 rounded-3xl bg-red-950/60 border border-red-800 text-red-400 flex items-center justify-center">
+        <div className="w-full p-8 rounded-3xl cosmic-card text-slate-900 dark:text-white border border-red-500/40 shadow-2xl dark:shadow-[0_0_40px_rgba(239,68,68,0.2)] flex flex-col items-center text-center gap-6">
+          <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/40 text-red-500 dark:text-red-400 flex items-center justify-center shadow-lg shadow-red-500/20">
             <Skull size={36} />
           </div>
 
@@ -913,16 +921,16 @@ export const QuizModule: React.FC = () => {
 
       {/* Main Game Card */}
       <div
-        className={`relative p-6 sm:p-8 rounded-3xl bg-slate-950 text-white border transition-all duration-300 shadow-2xl flex flex-col items-center gap-6 overflow-hidden ${
+        className={`relative p-6 sm:p-8 rounded-3xl cosmic-card text-slate-900 dark:text-white border transition-all duration-300 shadow-2xl flex flex-col items-center gap-6 overflow-hidden ${
           flashColor === 'emerald'
-            ? 'border-emerald-500 shadow-emerald-500/20'
+            ? 'border-emerald-400 dark:shadow-[0_0_30px_rgba(16,185,129,0.35)]'
             : flashColor === 'red'
-            ? 'border-red-500 shadow-red-500/20'
-            : 'border-slate-800/90 shadow-indigo-950/40'
+            ? 'border-red-500 dark:shadow-[0_0_30px_rgba(239,68,68,0.35)]'
+            : 'border-slate-200/80 dark:border-cyan-500/30 dark:shadow-[0_12px_40px_rgba(6,182,212,0.15)]'
         }`}
       >
-        {/* Subtle Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-gradient-to-b from-indigo-500/10 to-transparent blur-3xl pointer-events-none" />
+        {/* Subtle Cosmic Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-gradient-to-b from-cyan-500/10 dark:from-cyan-500/20 to-transparent blur-3xl pointer-events-none" />
 
         {/* Status Row */}
         <div className="w-full flex items-start justify-between gap-4 z-10">
