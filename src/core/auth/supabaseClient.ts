@@ -85,21 +85,43 @@ export async function getCurrentSession(): Promise<Session | null> {
   }
 }
 
-export async function signInWithGoogle(): Promise<{ error: Error | null }> {
+export async function signInWithGoogle(): Promise<{ error: Error | null; url?: string }> {
   const client = getSupabase();
   if (!client) {
     return { error: new Error('Supabase não configurado. Adicione a URL e a Anon Key.') };
   }
 
   try {
-    const redirectUrl = typeof window !== 'undefined' ? window.location.origin : undefined;
-    const { error } = await client.auth.signInWithOAuth({
+    const redirectUrl = typeof window !== 'undefined' && window.location.origin.startsWith('http')
+      ? window.location.origin
+      : undefined;
+
+    const { data, error } = await client.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
+        skipBrowserRedirect: true,
       },
     });
-    return { error: error ? new Error(error.message) : null };
+
+    if (error) {
+      if (error.message.includes('not enabled') || error.message.includes('Unsupported provider')) {
+        return {
+          error: new Error(
+            'O login com Google precisa ser habilitado no painel do Supabase (Authentication -> Providers -> Google). Use Email e Senha abaixo para entrar agora!'
+          ),
+        };
+      }
+      return { error: new Error(error.message) };
+    }
+
+    if (data?.url) {
+      if (typeof window !== 'undefined') {
+        window.open(data.url, '_blank');
+      }
+    }
+
+    return { error: null, url: data?.url };
   } catch (err) {
     return { error: err instanceof Error ? err : new Error(String(err)) };
   }
