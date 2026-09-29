@@ -1,9 +1,13 @@
 import { createClient, type SupabaseClient, type User, type Session } from '@supabase/supabase-js';
 
-// Resolve configuration from Vite env or user localStorage overrides
+// Default project credentials (can be overridden by .env or localStorage)
+const DEFAULT_SUPABASE_URL = 'https://zdejyzjmrjefefjptkqq.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_4A3f4SO9Yat82l1-Pxq5-w_78PqB9mn';
+
+// Resolve configuration from Vite env, default project keys, or user localStorage overrides
 export function getSupabaseCredentials(): { url: string; anonKey: string } {
-  const envUrl = (import.meta as { env?: Record<string, string> }).env?.VITE_SUPABASE_URL || '';
-  const envKey = (import.meta as { env?: Record<string, string> }).env?.VITE_SUPABASE_ANON_KEY || '';
+  const envUrl = (import.meta as { env?: Record<string, string> }).env?.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const envKey = (import.meta as { env?: Record<string, string> }).env?.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
   if (typeof window !== 'undefined' && window.localStorage) {
     try {
