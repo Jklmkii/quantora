@@ -42,11 +42,17 @@ function createWindow() {
   // Apply CSP only in production via session headers to keep Vite HMR intact during dev
   if (!isDev) {
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+      // Do not apply app's local offline CSP to external OAuth authentication pages (Google, Supabase)
+      if (details.url && !details.url.startsWith('file://')) {
+        callback({ responseHeaders: details.responseHeaders });
+        return;
+      }
+
       callback({
         responseHeaders: {
           ...details.responseHeaders,
           'Content-Security-Policy': [
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';",
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self';",
           ],
         },
       });
@@ -291,17 +297,24 @@ app.whenReady().then(() => {
   ipcMain.handle('auth:openOAuth', async (event, { url }) => {
     return new Promise((resolve) => {
       const authWindow = new BrowserWindow({
-        width: 500,
+        width: 480,
         height: 650,
         parent: mainWindow || undefined,
         modal: true,
         show: true,
         autoHideMenuBar: true,
-        title: 'Login com Google — Quantora',
+        title: 'Quantora — Login com Google',
+        icon: path.join(__dirname, '../build/icon.ico'),
+        backgroundColor: '#131314',
         webPreferences: {
           nodeIntegration: false,
           contextIsolation: true,
         },
+      });
+
+      // Prevent external page title from overwriting the branded window title
+      authWindow.on('page-title-updated', (e) => {
+        e.preventDefault();
       });
 
       authWindow.webContents._isOAuth = true;
