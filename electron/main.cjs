@@ -269,6 +269,48 @@ app.whenReady().then(() => {
   });
 
 
+  // Native OAuth Window Handler for Google Login in Desktop
+  ipcMain.handle('auth:openOAuth', async (event, { url }) => {
+    return new Promise((resolve) => {
+      const authWindow = new BrowserWindow({
+        width: 500,
+        height: 650,
+        parent: mainWindow || undefined,
+        modal: true,
+        show: true,
+        autoHideMenuBar: true,
+        title: 'Login com Google — Quantora',
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+        },
+      });
+
+      // Emulate standard Chrome User Agent to bypass Google's disallowed_useragent
+      authWindow.webContents.setUserAgent(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+      );
+
+      authWindow.loadURL(url);
+
+      let handled = false;
+      const checkUrl = (targetUrl) => {
+        if (!targetUrl || handled) return;
+        if (targetUrl.includes('access_token=') || targetUrl.includes('code=')) {
+          handled = true;
+          authWindow.destroy();
+          resolve({ success: true, url: targetUrl });
+        }
+      };
+
+      authWindow.webContents.on('will-redirect', (e, targetUrl) => checkUrl(targetUrl));
+      authWindow.webContents.on('will-navigate', (e, targetUrl) => checkUrl(targetUrl));
+      authWindow.on('closed', () => {
+        if (!handled) resolve({ success: false, canceled: true });
+      });
+    });
+  });
+
   // Save File Dialog
   ipcMain.handle('dialog:saveFile', async (event, { defaultName, content, filters }) => {
     try {

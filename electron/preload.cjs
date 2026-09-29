@@ -35,5 +35,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('tray:new-question', subscription);
     return () => ipcRenderer.removeListener('tray:new-question', subscription);
   },
+
+  openOAuth: (url) =>
+    ipcRenderer.invoke('auth:openOAuth', { url }),
 });
 

@@ -116,7 +116,29 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
     }
 
     if (data?.url) {
-      if (typeof window !== 'undefined') {
+      const electronAPI = typeof window !== 'undefined'
+        ? (window as unknown as { electronAPI?: { openOAuth?: (url: string) => Promise<{ success: boolean; url?: string }> } }).electronAPI
+        : undefined;
+
+      if (electronAPI?.openOAuth) {
+        const result = await electronAPI.openOAuth(data.url);
+        if (result?.success && result.url) {
+          const hashOrSearch = result.url.includes('#') ? result.url.split('#')[1] : result.url.split('?')[1];
+          if (hashOrSearch) {
+            const params = new URLSearchParams(hashOrSearch);
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+
+            if (accessToken && refreshToken) {
+              await client.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+              return { error: null, url: data.url };
+            }
+          }
+        }
+      } else if (typeof window !== 'undefined') {
         window.open(data.url, '_blank');
       }
     }
