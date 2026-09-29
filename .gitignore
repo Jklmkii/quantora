@@ -27,3 +27,8 @@ release
 *.sw?
 .agents/
 .antigravity/
+
+# Environment variables
+.env
+.env.*
+!.env.example
