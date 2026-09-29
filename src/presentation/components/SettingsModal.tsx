@@ -447,7 +447,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                   }`}
                 >
-                  {places} {t.decimals_suffix}
+                  <div>{places} {t.decimals_suffix}</div>
+                  {places === 2 && (
+                    <div className="text-[10px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Aprox. didático</div>
+                  )}
                 </button>
               ))}
             </div>

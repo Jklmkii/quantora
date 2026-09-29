@@ -39,12 +39,13 @@ import {
 } from '../../core/physics';
 
 export const PhysicsModule: React.FC = () => {
-  const { language, decimalPlaces, decimalSeparator, addHistoryItem } = useAppStore(
+  const { language, decimalPlaces, decimalSeparator, addHistoryItem, updateSettings } = useAppStore(
     useShallow((s) => ({
       language: s.settings.language || 'pt',
       decimalPlaces: s.settings.decimalPlaces,
       decimalSeparator: s.settings.decimalSeparator,
       addHistoryItem: s.addHistoryItem,
+      updateSettings: s.updateSettings,
     }))
   );
   const settings = React.useMemo(
@@ -309,13 +310,65 @@ export const PhysicsModule: React.FC = () => {
     const res: Record<string, string> = {};
     const anyRes = activeResult as any;
 
+    const metricLabels: Record<string, { label: string; unit?: string; approx?: boolean }> = {
+      // MCU
+      radius: { label: 'Raio da Trajetória (R)', unit: 'm' },
+      period: { label: 'Período (T)', unit: 's' },
+      frequency: { label: 'Frequência (f)', unit: 'Hz' },
+      frequencyRpm: { label: 'Frequência (RPM)', unit: 'RPM' },
+      omega: { label: 'Vel. Angular (ω)', unit: 'rad/s', approx: true },
+      vLinear: { label: 'Vel. Tangencial (v)', unit: 'm/s', approx: true },
+      vLinearKmh: { label: 'Vel. Linear (km/h)', unit: 'km/h', approx: true },
+      aCentripeta: { label: 'Acel. Centrípeta (acp)', unit: 'm/s²', approx: true },
+      // MHS
+      length: { label: 'Comprimento (L)', unit: 'm' },
+      mass: { label: 'Massa (m)', unit: 'kg' },
+      k: { label: 'Const. Elástica (k)', unit: 'N/m' },
+      amplitude: { label: 'Amplitude (A)', unit: 'm' },
+      // Plano Inclinado
+      angleDeg: { label: 'Ângulo de Inclinação (θ)', unit: '°' },
+      frictionCoef: { label: 'Coef. Atrito (μ)' },
+      peso: { label: 'Força Peso (P)', unit: 'N', approx: true },
+      normal: { label: 'Força Normal (N)', unit: 'N', approx: true },
+      fat: { label: 'Força Atrito (Fat)', unit: 'N', approx: true },
+      appliedForce: { label: 'Força Aplicada (F)', unit: 'N' },
+      aceleracao: { label: 'Aceleração (a)', unit: 'm/s²', approx: true },
+      // Trabalho e Energia
+      force: { label: 'Força (F)', unit: 'N' },
+      distance: { label: 'Deslocamento (d)', unit: 'm' },
+      work: { label: 'Trabalho (W)', unit: 'J', approx: true },
+      power: { label: 'Potência (P)', unit: 'W', approx: true },
+      powerCv: { label: 'Potência (cv)', unit: 'cv', approx: true },
+      powerHp: { label: 'Potência (hp)', unit: 'hp', approx: true },
+      ec: { label: 'Energia Cinética (Ec)', unit: 'J', approx: true },
+      ep: { label: 'Energia Potencial (Ep)', unit: 'J', approx: true },
+      em: { label: 'Energia Mecânica (Em)', unit: 'J', approx: true },
+      // MRU / MRUV
+      s: { label: 'Posição Final (S)', unit: 'm' },
+      s0: { label: 'Posição Inicial (S₀)', unit: 'm' },
+      v: { label: 'Velocidade (v)', unit: 'm/s' },
+      v0: { label: 'Velocidade Inicial (v₀)', unit: 'm/s' },
+      a: { label: 'Aceleração (a)', unit: 'm/s²' },
+      t: { label: 'Tempo (t)', unit: 's' },
+      stoppingDistance: { label: 'Dist. de Parada', unit: 'm', approx: true },
+    };
+
     if (anyRes.formattedValues && typeof anyRes.formattedValues === 'object') {
-      Object.assign(res, anyRes.formattedValues);
+      for (const [k, rawVal] of Object.entries(anyRes.formattedValues)) {
+        if (typeof rawVal !== 'string') continue;
+        const info = metricLabels[k];
+        const label = info?.label || k.toUpperCase();
+        const hasUnit = info?.unit ? ` ${info.unit}` : '';
+        const isDecimal = rawVal.includes(',') || rawVal.includes('.');
+        const prefix = (info?.approx && isDecimal) ? '≈ ' : '';
+        res[label] = `${prefix}${rawVal}${hasUnit}`;
+      }
     }
-    if (anyRes.formattedS0) res['Posição Inicial (S₀)'] = `${anyRes.formattedS0} m`;
-    if (anyRes.formattedS) res['Posição Final (S)'] = `${anyRes.formattedS} m`;
-    if (anyRes.formattedV) res['Velocidade (v)'] = `${anyRes.formattedV} m/s`;
-    if (anyRes.formattedT) res['Tempo (t)'] = `${anyRes.formattedT} s`;
+
+    if (anyRes.formattedS0 && !res['Posição Inicial (S₀)']) res['Posição Inicial (S₀)'] = `${anyRes.formattedS0} m`;
+    if (anyRes.formattedS && !res['Posição Final (S)']) res['Posição Final (S)'] = `${anyRes.formattedS} m`;
+    if (anyRes.formattedV && !res['Velocidade (v)']) res['Velocidade (v)'] = `${anyRes.formattedV} m/s`;
+    if (anyRes.formattedT && !res['Tempo (t)']) res['Tempo (t)'] = `${anyRes.formattedT} s`;
     if (anyRes.formattedTQueda) res['Tempo de Queda'] = `${anyRes.formattedTQueda} s`;
     if (anyRes.formattedVImpacto) res['Velocidade de Impacto'] = `${anyRes.formattedVImpacto} m/s`;
     if (anyRes.formattedVTerminal) res['Velocidade Terminal (vt)'] = `${anyRes.formattedVTerminal} m/s`;
@@ -326,14 +379,14 @@ export const PhysicsModule: React.FC = () => {
     if (anyRes.formattedAlcance) res['Alcance Horizontal'] = `${anyRes.formattedAlcance} m`;
     if (anyRes.formattedTSubida) res['Tempo de Subida'] = `${anyRes.formattedTSubida} s`;
     if (anyRes.formattedTVoo) res['Tempo de Voo'] = `${anyRes.formattedTVoo} s`;
-    if (anyRes.formattedPeriod) res['Período (T)'] = `${anyRes.formattedPeriod} s`;
-    if (anyRes.formattedFrequency) res['Frequência (f)'] = `${anyRes.formattedFrequency} Hz`;
-    if (anyRes.formattedOmega) res['Velocidade Angular (ω)'] = `${anyRes.formattedOmega} rad/s`;
-    if (anyRes.aceleracao !== undefined) res['Aceleração'] = `${anyRes.aceleracao} m/s²`;
-    if (anyRes.normal !== undefined) res['Força Normal'] = `${anyRes.normal} N`;
-    if (anyRes.fat !== undefined) res['Força de Atrito'] = `${anyRes.fat} N`;
-    if (anyRes.peso !== undefined) res['Força Peso'] = `${anyRes.peso} N`;
-    if (anyRes.appliedForce !== undefined) res['Força Aplicada (F)'] = `${anyRes.appliedForce} N`;
+    if (anyRes.formattedPeriod && !res['Período (T)']) res['Período (T)'] = `${anyRes.formattedPeriod} s`;
+    if (anyRes.formattedFrequency && !res['Frequência (f)']) res['Frequência (f)'] = `${anyRes.formattedFrequency} Hz`;
+    if (anyRes.formattedOmega && !res['Velocidade Angular (ω)']) res['Velocidade Angular (ω)'] = `${anyRes.formattedOmega} rad/s`;
+    if (anyRes.aceleracao !== undefined && !res['Aceleração (a)']) res['Aceleração (a)'] = `${anyRes.aceleracao} m/s²`;
+    if (anyRes.normal !== undefined && !res['Força Normal (N)']) res['Força Normal (N)'] = `${anyRes.normal} N`;
+    if (anyRes.fat !== undefined && !res['Força Atrito (Fat)']) res['Força Atrito (Fat)'] = `${anyRes.fat} N`;
+    if (anyRes.peso !== undefined && !res['Força Peso (P)']) res['Força Peso (P)'] = `${anyRes.peso} N`;
+    if (anyRes.appliedForce !== undefined && !res['Força Aplicada (F)']) res['Força Aplicada (F)'] = `${anyRes.appliedForce} N`;
 
     return res;
   }, [activeResult]);
@@ -615,10 +668,31 @@ export const PhysicsModule: React.FC = () => {
         {/* Left Column: Form Parameters */}
         <div className="lg:col-span-5 space-y-4">
           <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-            <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-500" />
-              Parâmetros de Entrada
-            </h2>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-indigo-500" />
+                Parâmetros de Entrada
+              </h2>
+              {/* Seletor Rápido de Precisão Decimal / Valores Aproximados */}
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700/80 text-[11px]">
+                <span className="text-slate-500 dark:text-slate-400 font-semibold px-1">Casas:</span>
+                {([2, 4, 6] as const).map((dec) => (
+                  <button
+                    key={dec}
+                    type="button"
+                    onClick={() => updateSettings({ decimalPlaces: dec })}
+                    className={`px-2 py-0.5 rounded-lg transition-all font-semibold ${
+                      decimalPlaces === dec
+                        ? 'bg-indigo-600 text-white shadow-xs font-bold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300'
+                    }`}
+                    title={dec === 2 ? '2 casas (Aproximado / Didático)' : `${dec} casas decimais`}
+                  >
+                    {dec === 2 ? '2 (Aprox)' : dec}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* MRU Form */}
             {mode === 'mru' && (
@@ -960,10 +1034,10 @@ export const PhysicsModule: React.FC = () => {
                   key={key}
                   className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm"
                 >
-                  <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">
+                  <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 tracking-tight truncate" title={key}>
                     {key}
                   </div>
-                  <div className="text-base sm:text-lg font-bold text-indigo-600 dark:text-indigo-400 font-mono mt-0.5 truncate">
+                  <div className="text-base sm:text-lg font-bold text-indigo-600 dark:text-indigo-400 font-mono mt-0.5 truncate" title={val}>
                     {val}
                   </div>
                 </div>

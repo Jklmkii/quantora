@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAppStore } from '../../store/useAppStore';
 import type {
   PhysicsChartData,
   PhysicsMode,
@@ -22,6 +23,22 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
   chartData,
   className = '',
 }) => {
+  const decimalPlaces = useAppStore((state) => state.settings.decimalPlaces) ?? 2;
+  const separator = useAppStore((state) => state.settings.decimalSeparator) ?? ',';
+
+  // Helper didático para formatação numérica limpa e aproximada
+  const fmt = (val: number | undefined, dec = decimalPlaces): string => {
+    if (val === undefined || val === null || isNaN(val)) return '= 0';
+    if (Number.isInteger(val)) return `= ${val}`;
+    const fixed = val.toFixed(dec);
+    const trimmed = fixed.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '');
+    const formatted = separator === ',' ? trimmed.replace('.', ',') : trimmed;
+    return `≈ ${formatted}`;
+  };
+
+  const fmtBare = (val: number | undefined, dec = decimalPlaces): string => {
+    return fmt(val, dec).replace(/^(=|≈)\s*/, '');
+  };
 
   const svgWidth = 600;
   const svgHeight = 340;
@@ -202,7 +219,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
             <g>
               <circle cx={scaleX(points[0].x)} cy={scaleY(points[0].y)} r="5" className="fill-indigo-500 stroke-white dark:stroke-slate-900" strokeWidth="2" />
               <text x={scaleX(points[0].x) + 8} y={scaleY(points[0].y) - 6} className="fill-indigo-600 dark:fill-indigo-400 text-[11px] font-bold">
-                Início (0, {points[0].y.toFixed(1)}m)
+                Início (0, {fmtBare(points[0].y)}m)
               </text>
             </g>
           )}
@@ -213,7 +230,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
               <circle cx={scaleX(data.apex.x)} cy={scaleY(data.apex.y)} r="6" className="fill-amber-500 stroke-white dark:stroke-slate-900" strokeWidth="2" />
               <line x1={scaleX(data.apex.x)} y1={scaleY(data.apex.y)} x2={scaleX(data.apex.x)} y2={groundY} stroke="#f59e0b" strokeWidth="1" strokeDasharray="2 2" />
               <text x={scaleX(data.apex.x)} y={scaleY(data.apex.y) - 10} textAnchor="middle" className="fill-amber-600 dark:fill-amber-400 text-[11px] font-bold">
-                H_max = {data.apex.y.toFixed(2)}m
+                H_max {fmt(data.apex.y)} m
               </text>
             </g>
           )}
@@ -223,7 +240,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
             <g>
               <circle cx={scaleX(data.range.x)} cy={scaleY(0)} r="6" className="fill-cyan-500 stroke-white dark:stroke-slate-900" strokeWidth="2" />
               <text x={scaleX(data.range.x)} y={scaleY(0) - 10} textAnchor="middle" className="fill-cyan-600 dark:fill-cyan-400 text-[11px] font-bold">
-                Alcance = {data.range.x.toFixed(2)}m
+                Alcance {fmt(data.range.x)} m
               </text>
             </g>
           )}
@@ -280,7 +297,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
 
           <line x1={centerX} y1={centerY} x2={particleX} y2={particleY} stroke="#818cf8" strokeWidth="1.5" />
           <text x={(centerX + particleX) / 2 - 8} y={(centerY + particleY) / 2 - 8} className="fill-indigo-500 font-mono text-xs font-bold">
-            R = {data.radius}m
+            R {fmt(data.radius)} m
           </text>
 
           <circle cx={centerX} cy={centerY} r="3.5" className="fill-slate-600 dark:fill-slate-300" />
@@ -288,20 +305,20 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
 
           <line x1={particleX} y1={particleY} x2={vx} y2={vy} stroke="#10b981" strokeWidth="3" markerEnd="url(#arrowGreen)" />
           <text x={vx + 6} y={vy + 4} className="fill-emerald-500 font-bold text-xs">
-            v = {data.vLinear} m/s
+            v {fmt(data.vLinear)} m/s
           </text>
 
           <line x1={particleX} y1={particleY} x2={ax} y2={ay} stroke="#f97316" strokeWidth="2.5" markerEnd="url(#arrowOrange)" />
           <text x={ax - 10} y={ay + 15} className="fill-orange-500 font-bold text-xs">
-            a_cp = {data.aCentripeta} m/s²
+            a_cp {fmt(data.aCentripeta)} m/s²
           </text>
 
           <circle cx={particleX} cy={particleY} r="8" className="fill-indigo-600 stroke-white dark:stroke-slate-900" strokeWidth="2.5" />
 
           <g transform="translate(25, 25)">
-            <rect width="140" height="70" rx="8" className="fill-slate-100/90 dark:fill-slate-800/90 stroke-slate-200 dark:stroke-slate-700" />
+            <rect width="145" height="70" rx="8" className="fill-slate-100/90 dark:fill-slate-800/90 stroke-slate-200 dark:stroke-slate-700" />
             <text x="12" y="22" className="fill-slate-500 dark:fill-slate-400 text-[11px] font-semibold">Vel. Angular (ω):</text>
-            <text x="12" y="38" className="fill-indigo-600 dark:fill-indigo-400 font-mono font-bold text-xs">{data.omega} rad/s</text>
+            <text x="12" y="38" className="fill-indigo-600 dark:fill-indigo-400 font-mono font-bold text-xs">{fmtBare(data.omega)} rad/s</text>
             <text x="12" y="56" className="fill-slate-400 text-[10px]">Movimento Anti-horário</text>
           </g>
 
@@ -540,7 +557,7 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
                 <rect x={chartLeft + 50} y={y} width={maxBarWidth} height={barHeight} rx="6" className="fill-slate-100 dark:fill-slate-800" />
                 <rect x={chartLeft + 50} y={y} width={w} height={barHeight} rx="6" fill={bar.color} opacity={0.9} />
                 <text x={chartLeft + 50 + w + 10} y={y + 20} className={`${bar.text} font-mono font-bold text-xs`}>
-                  {bar.val.toFixed(2)} J
+                  {fmtBare(bar.val)} J
                 </text>
               </g>
             );
