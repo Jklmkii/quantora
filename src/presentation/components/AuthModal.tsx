@@ -15,6 +15,7 @@ import {
 import {
   isSupabaseConfigured,
   getSupabaseCredentials,
+  getSupabase,
   getCurrentUser,
   signInWithGoogle,
   signInWithEmailPassword,
@@ -57,6 +58,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setCurrentUser(user);
       setConfigured(isSupabaseConfigured());
     });
+
+    const client = getSupabase();
+    if (!client) return;
+
+    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -87,6 +99,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setIsSubmitting(false);
     if (error) {
       setStatusMessage({ text: error.message, isError: true });
+    } else {
+      const user = await getCurrentUser();
+      if (user) {
+        setCurrentUser(user);
+        setStatusMessage({ text: 'Login com Google realizado com sucesso!' });
+        handleTriggerSync();
+      }
     }
   };
 

@@ -212,6 +212,24 @@ function setupTray() {
 app.on('web-contents-created', (event, contents) => {
   // Prevent navigation to external sites inside the app window
   contents.on('will-navigate', (event, url) => {
+    // Allow OAuth navigations for Supabase and Google authentication
+    if (contents._isOAuth) return;
+
+    try {
+      const parsedUrl = new URL(url);
+      if (
+        parsedUrl.hostname.endsWith('supabase.co') ||
+        parsedUrl.hostname.endsWith('google.com') ||
+        parsedUrl.hostname.endsWith('google.com.br') ||
+        parsedUrl.hostname.endsWith('gstatic.com') ||
+        parsedUrl.hostname.endsWith('accounts.google.com')
+      ) {
+        return;
+      }
+    } catch {
+      // Malformed URL, fall through
+    }
+
     if (isDev && url.startsWith('http://localhost:5173')) return;
 
     if (!isDev) {
@@ -286,6 +304,8 @@ app.whenReady().then(() => {
         },
       });
 
+      authWindow.webContents._isOAuth = true;
+
       // Emulate standard Chrome User Agent to bypass Google's disallowed_useragent
       authWindow.webContents.setUserAgent(
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
@@ -296,15 +316,26 @@ app.whenReady().then(() => {
       let handled = false;
       const checkUrl = (targetUrl) => {
         if (!targetUrl || handled) return;
-        if (targetUrl.includes('access_token=') || targetUrl.includes('code=')) {
+        // Do not intercept the callback request heading to Supabase server
+        if (targetUrl.includes('/auth/v1/callback')) return;
+
+        if (
+          targetUrl.includes('access_token=') ||
+          targetUrl.includes('refresh_token=') ||
+          targetUrl.includes('code=') ||
+          targetUrl.includes('error=')
+        ) {
           handled = true;
-          authWindow.destroy();
+          setTimeout(() => {
+            if (!authWindow.isDestroyed()) authWindow.destroy();
+          }, 150);
           resolve({ success: true, url: targetUrl });
         }
       };
 
       authWindow.webContents.on('will-redirect', (e, targetUrl) => checkUrl(targetUrl));
       authWindow.webContents.on('will-navigate', (e, targetUrl) => checkUrl(targetUrl));
+      authWindow.webContents.on('did-navigate', (e, targetUrl) => checkUrl(targetUrl));
       authWindow.on('closed', () => {
         if (!handled) resolve({ success: false, canceled: true });
       });

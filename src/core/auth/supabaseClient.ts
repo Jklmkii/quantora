@@ -117,26 +117,48 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
 
     if (data?.url) {
       const electronAPI = typeof window !== 'undefined'
-        ? (window as unknown as { electronAPI?: { openOAuth?: (url: string) => Promise<{ success: boolean; url?: string }> } }).electronAPI
+        ? (window as unknown as { electronAPI?: { openOAuth?: (url: string) => Promise<{ success: boolean; url?: string; canceled?: boolean }> } }).electronAPI
         : undefined;
 
       if (electronAPI?.openOAuth) {
         const result = await electronAPI.openOAuth(data.url);
         if (result?.success && result.url) {
-          const hashOrSearch = result.url.includes('#') ? result.url.split('#')[1] : result.url.split('?')[1];
-          if (hashOrSearch) {
-            const params = new URLSearchParams(hashOrSearch);
-            const accessToken = params.get('access_token');
-            const refreshToken = params.get('refresh_token');
+          try {
+            const parsed = new URL(result.url);
+            const rawHash = parsed.hash.startsWith('#') ? parsed.hash.substring(1) : parsed.hash;
+            const hashParams = new URLSearchParams(rawHash);
+            const searchParams = parsed.searchParams;
+
+            const errorDesc = hashParams.get('error_description') || searchParams.get('error_description') ||
+                              hashParams.get('error') || searchParams.get('error');
+            if (errorDesc) {
+              return { error: new Error(decodeURIComponent(errorDesc.replace(/\+/g, ' '))) };
+            }
+
+            const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
 
             if (accessToken && refreshToken) {
-              await client.auth.setSession({
+              const { error: sessionErr } = await client.auth.setSession({
                 access_token: accessToken,
                 refresh_token: refreshToken,
               });
+              if (sessionErr) return { error: new Error(sessionErr.message) };
               return { error: null, url: data.url };
             }
+
+            const code = hashParams.get('code') || searchParams.get('code');
+            if (code) {
+              const { error: codeErr } = await client.auth.exchangeCodeForSession(code);
+              if (codeErr) return { error: new Error(codeErr.message) };
+              return { error: null, url: data.url };
+            }
+          } catch (urlErr) {
+            console.warn('[Quantora Auth] Falha ao processar URL de retorno:', urlErr);
           }
+        }
+        if (result?.canceled) {
+          return { error: new Error('Login com Google cancelado.') };
         }
       } else if (typeof window !== 'undefined') {
         window.open(data.url, '_blank');
