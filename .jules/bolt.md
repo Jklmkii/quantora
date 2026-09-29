@@ -11,3 +11,6 @@
 ## 2024-05-23 - Prevent Global State Bleed in React components
 **Learning:** In React components, using an undeclared `history.length` accidentally falls back to the browser's global `window.history.length` instead of crashing. This causes confusing bugs where lists appear to have items (because of browser navigation history) when the app state is empty. Furthermore, extracting the whole `history` array via Zustand when only the length is needed causes unnecessary re-renders every time an item is added.
 **Action:** Always explicitly define variables locally or extract exactly the needed primitive (e.g., `historyLength: s.history.length`) from the store via `useShallow` to ensure correct bindings and minimize re-renders.
+## 2025-03-01 - Modals Conditionally Rendering
+**Learning:** Component early returns like `if (!isOpen) return null;` placed *after* Zustand hooks still cause the component to evaluate and re-render every time the subscribed store values change, wasting CPU resources.
+**Action:** Always conditionally render modal components from the parent (e.g., `{isOpen && <Modal />}`) to entirely prevent hidden background subscriptions and re-renders when the modal is closed.

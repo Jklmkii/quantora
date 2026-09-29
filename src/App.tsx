@@ -172,14 +172,24 @@ export function App() {
       )}
 
       {/* Modals */}
-      <ProfileModal
-        isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
-      />
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
+      {/*
+        * ⚡ Bolt Performance Optimization
+        * 💡 What: Conditionally mount ProfileModal and SettingsModal only when open.
+        * 🎯 Why: Both modals use useAppStore hooks that subscribe to frequently changing state (historyLength, profile stats). When hidden via early returns, their hooks still ran on every update, causing invisible re-renders.
+        * 📊 Impact: Eliminates unnecessary React subscription evaluations and render cycles when adding history items or gaining XP while modals are closed.
+      */}
+      {isProfileOpen && (
+        <ProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+        />
+      )}
+      {isSettingsOpen && (
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
       <OnboardingModal />
     </div>
   );
