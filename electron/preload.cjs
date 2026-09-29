@@ -38,5 +38,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   openOAuth: (url) =>
     ipcRenderer.invoke('auth:openOAuth', { url }),
+
+  cancelOAuth: () =>
+    ipcRenderer.invoke('auth:cancelOAuth'),
 });
 

@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog, session, Tray, Menu, nativeImage, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, session, Tray, Menu, nativeImage, screen, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 const { autoUpdater } = require('electron-updater');
 
 // Configuração do autoUpdater
@@ -17,6 +18,8 @@ let mainWindow = null;
 let quickPracticeWindow = null;
 let tray = null;
 let isQuitting = false;
+let activeOAuthServer = null;
+let activeOAuthTimeout = null;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -293,67 +296,206 @@ app.whenReady().then(() => {
   });
 
 
-  // Native OAuth Window Handler for Google Login in Desktop
+  // RFC 8252 Loopback HTTP Server Handler for Google OAuth via System Browser
   ipcMain.handle('auth:openOAuth', async (event, { url }) => {
+    // Fecha qualquer servidor OAuth remanescente anterior
+    if (activeOAuthServer) {
+      try { activeOAuthServer.close(); } catch {}
+      activeOAuthServer = null;
+    }
+    if (activeOAuthTimeout) {
+      clearTimeout(activeOAuthTimeout);
+      activeOAuthTimeout = null;
+    }
+
     return new Promise((resolve) => {
-      const authWindow = new BrowserWindow({
-        width: 480,
-        height: 650,
-        parent: mainWindow || undefined,
-        modal: true,
-        show: true,
-        autoHideMenuBar: true,
-        title: 'Quantora — Login com Google',
-        icon: path.join(__dirname, '../build/icon.ico'),
-        backgroundColor: '#131314',
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true,
-        },
-      });
+      let resolved = false;
 
-      // Prevent external page title from overwriting the branded window title
-      authWindow.on('page-title-updated', (e) => {
-        e.preventDefault();
-      });
-
-      authWindow.webContents._isOAuth = true;
-
-      // Emulate standard Chrome User Agent to bypass Google's disallowed_useragent
-      authWindow.webContents.setUserAgent(
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
-      );
-
-      authWindow.loadURL(url);
-
-      let handled = false;
-      const checkUrl = (targetUrl) => {
-        if (!targetUrl || handled) return;
-        // Do not intercept the callback request heading to Supabase server
-        if (targetUrl.includes('/auth/v1/callback')) return;
-
-        if (
-          targetUrl.includes('access_token=') ||
-          targetUrl.includes('refresh_token=') ||
-          targetUrl.includes('code=') ||
-          targetUrl.includes('error=')
-        ) {
-          handled = true;
-          setTimeout(() => {
-            if (!authWindow.isDestroyed()) authWindow.destroy();
-          }, 150);
-          resolve({ success: true, url: targetUrl });
+      function finish(result) {
+        if (resolved) return;
+        resolved = true;
+        if (activeOAuthTimeout) {
+          clearTimeout(activeOAuthTimeout);
+          activeOAuthTimeout = null;
         }
-      };
+        if (activeOAuthServer) {
+          try { activeOAuthServer.close(); } catch {}
+          activeOAuthServer = null;
+        }
+        resolve(result);
+      }
 
-      authWindow.webContents.on('will-redirect', (e, targetUrl) => checkUrl(targetUrl));
-      authWindow.webContents.on('will-navigate', (e, targetUrl) => checkUrl(targetUrl));
-      authWindow.webContents.on('did-navigate', (e, targetUrl) => checkUrl(targetUrl));
-      authWindow.on('closed', () => {
-        if (!handled) resolve({ success: false, canceled: true });
+      const server = http.createServer((req, res) => {
+        // Preflight CORS
+        if (req.method === 'OPTIONS') {
+          res.writeHead(204, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          });
+          res.end();
+          return;
+        }
+
+        // Endpoint que recebe a URL completa e tokens extraídos da página de callback
+        if (req.method === 'POST' && req.url === '/auth-callback-data') {
+          let body = '';
+          req.on('data', (chunk) => { body += chunk; });
+          req.on('end', () => {
+            try {
+              const data = JSON.parse(body);
+              res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+              });
+              res.end(JSON.stringify({ ok: true }));
+
+              // Retorna o foco para a janela principal do Quantora
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                if (mainWindow.isMinimized()) mainWindow.restore();
+                mainWindow.show();
+                mainWindow.focus();
+              }
+
+              finish({ success: true, url: data.url });
+            } catch {
+              res.writeHead(400);
+              res.end('Bad Request');
+            }
+          });
+          return;
+        }
+
+        // Para qualquer requisição GET, serve a página visual de confirmação
+        const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantora — Login Concluído</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0b0f17;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: #161e2e;
+      border: 1px solid #283548;
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+    .icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid #10b981;
+      color: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .highlight {
+      color: #f8fafc;
+      font-weight: 600;
+    }
+    .subtext {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✓</div>
+    <h1>Login Concluído!</h1>
+    <p>Sua autenticação com o Google foi autorizada com sucesso. Você já pode fechar esta aba e retornar ao <span class="highlight">Quantora</span>.</p>
+    <p class="subtext">Esta janela pode ser fechada com segurança.</p>
+  </div>
+  <script>
+    try {
+      const fullUrl = window.location.href;
+      fetch('/auth-callback-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: fullUrl })
+      }).then(() => {
+        setTimeout(() => {
+          try { window.close(); } catch(e) {}
+        }, 1500);
+      }).catch(err => {
+        console.error('Falha ao comunicar com o Quantora:', err);
       });
+    } catch(err) {
+      console.error(err);
+    }
+  </script>
+</body>
+</html>`;
+
+        res.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(html);
+      });
+
+      server.on('error', (err) => {
+        console.error('[Quantora OAuth Server Error]', err);
+        finish({ success: false, error: 'Falha ao iniciar servidor de autenticação local: ' + err.message });
+      });
+
+      // Escuta na porta 3000 em localhost (Site URL padrão registrado no Supabase)
+      server.listen(3000, '127.0.0.1', () => {
+        activeOAuthServer = server;
+        // Abre a URL de autenticação no navegador padrão do sistema operacional
+        shell.openExternal(url);
+      });
+
+      // Timeout de segurança de 3 minutos
+      activeOAuthTimeout = setTimeout(() => {
+        finish({ success: false, canceled: true, error: 'Tempo limite esgotado para login.' });
+      }, 180000);
     });
   });
+
+  // Cancelar OAuth
+  ipcMain.handle('auth:cancelOAuth', async () => {
+    if (activeOAuthServer) {
+      try { activeOAuthServer.close(); } catch {}
+      activeOAuthServer = null;
+    }
+    if (activeOAuthTimeout) {
+      clearTimeout(activeOAuthTimeout);
+      activeOAuthTimeout = null;
+    }
+    return { success: true };
+  });
+
 
   // Save File Dialog
   ipcMain.handle('dialog:saveFile', async (event, { defaultName, content, filters }) => {

@@ -265,6 +265,8 @@ declare global {
       closeTrayWidget?: () => void;
       openMainWindow?: () => void;
       onTrayNewQuestion?: (callback: () => void) => () => void;
+      openOAuth?: (url: string) => Promise<{ success: boolean; url?: string; canceled?: boolean; error?: string }>;
+      cancelOAuth?: () => Promise<{ success: boolean }>;
     };
   }
 }

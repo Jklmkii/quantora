@@ -92,9 +92,12 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
   }
 
   try {
-    const redirectUrl = typeof window !== 'undefined' && window.location.origin.startsWith('http')
-      ? window.location.origin
-      : undefined;
+    const isElectron = typeof window !== 'undefined' && Boolean((window as unknown as { electronAPI?: { isElectron?: boolean } }).electronAPI?.isElectron);
+    const redirectUrl = isElectron
+      ? 'http://localhost:3000'
+      : (typeof window !== 'undefined' && window.location.origin.startsWith('http')
+        ? window.location.origin
+        : undefined);
 
     const { data, error } = await client.auth.signInWithOAuth({
       provider: 'google',
@@ -117,7 +120,7 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
 
     if (data?.url) {
       const electronAPI = typeof window !== 'undefined'
-        ? (window as unknown as { electronAPI?: { openOAuth?: (url: string) => Promise<{ success: boolean; url?: string; canceled?: boolean }> } }).electronAPI
+        ? (window as unknown as { electronAPI?: { openOAuth?: (url: string) => Promise<{ success: boolean; url?: string; canceled?: boolean; error?: string }> } }).electronAPI
         : undefined;
 
       if (electronAPI?.openOAuth) {
@@ -159,6 +162,9 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
         }
         if (result?.canceled) {
           return { error: new Error('Login com Google cancelado.') };
+        }
+        if (result?.error) {
+          return { error: new Error(result.error) };
         }
       } else if (typeof window !== 'undefined') {
         window.open(data.url, '_blank');
