@@ -1,0 +1,22 @@
+{
+  "plugins": ["react", "typescript", "unicorn", "jsx-a11y"],
+  "rules": {
+    "eqeqeq": "error",
+    "no-unused-vars": "warn",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "react/jsx-key": "error",
+    "react/no-unknown-property": "error",
+    "typescript/no-explicit-any": "error",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/aria-props": "error",
+    "jsx-a11y/aria-role": "error",
+    "jsx-a11y/role-has-required-aria-props": "error"
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "node_modules/**",
+    "build/**",
+    "android/**",
+    ".antigravity/**"
+  ]
+}
