@@ -132,7 +132,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 lg:px-3 lg:py-1.5 xl:px-3.5 xl:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all touch-target shrink-0 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 lg:px-3 lg:py-1.5 xl:px-3.5 xl:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all touch-target shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
                     isActive
                       ? 'bg-white dark:bg-slate-800/90 text-cyan-600 dark:text-cyan-300 shadow-sm border border-slate-200/80 dark:border-cyan-500/40 dark:shadow-[0_0_15px_rgba(6,182,212,0.25)]'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -160,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={() => setActiveTab('quiz')}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all touch-target cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all touch-target cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 ${
                   isDailyCompleted
                     ? 'border-emerald-300/80 bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20 dark:border-emerald-500/40 dark:bg-emerald-950/40 dark:text-emerald-300 dark:shadow-[0_0_12px_rgba(16,185,129,0.2)]'
                     : 'border-amber-300/80 bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-400 dark:shadow-[0_0_12px_rgba(245,158,11,0.2)]'
@@ -194,7 +194,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(true)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-300/80 bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-400 dark:shadow-[0_0_12px_rgba(245,158,11,0.15)] font-bold text-xs transition-all touch-target cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-amber-300/80 bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-400 dark:shadow-[0_0_12px_rgba(245,158,11,0.15)] font-bold text-xs transition-all touch-target cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
                 title={`${levelInfo.title} • ${profile?.totalXp || 0} XP (${t.profile_title})`}
                 aria-label={t.profile_title}
               >
@@ -217,7 +217,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={toggleScratchpad}
-                className={`relative p-2 sm:p-2.5 rounded-xl border transition-all touch-target flex items-center justify-center cursor-pointer shrink-0 ${
+                className={`relative p-2 sm:p-2.5 rounded-xl border transition-all touch-target flex items-center justify-center cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 ${
                   isScratchpadOpen
                     ? 'border-amber-400 bg-amber-500/20 text-amber-600 dark:text-amber-300 dark:shadow-[0_0_12px_rgba(245,158,11,0.3)]'
                     : 'border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300'
@@ -235,7 +235,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={cycleTheme}
-                className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300 transition-all touch-target flex items-center justify-center cursor-pointer shrink-0"
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300 transition-all touch-target flex items-center justify-center cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
                 title={`${t.theme_prefix}: ${settings.theme} (${t.theme_cycle_tooltip})`}
                 aria-label={t.theme}
               >
@@ -248,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 type="button"
                 onClick={onOpenSettings}
-                className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300 transition-all touch-target flex items-center justify-center cursor-pointer shrink-0"
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300 transition-all touch-target flex items-center justify-center cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
                 title={t.settings_title}
                 aria-label={t.settings_title}
               >
@@ -277,7 +277,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center justify-center transition-all duration-200 touch-target cursor-pointer ${
+                className={`relative flex items-center justify-center transition-all duration-200 touch-target cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
                   isActive
                     ? 'px-3.5 py-2 rounded-full bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-400/50 dark:shadow-[0_0_12px_rgba(6,182,212,0.3)]'
                     : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-95'
@@ -309,7 +309,7 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
         <button
           type="button"
           onClick={toggleScratchpad}
-          className={`pointer-events-auto relative w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl shadow-2xl transition-all duration-200 touch-target shrink-0 cursor-pointer ${
+          className={`pointer-events-auto relative w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-xl shadow-2xl transition-all duration-200 touch-target shrink-0 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
             isScratchpadOpen
               ? 'bg-amber-500 text-slate-950 border border-amber-300 shadow-amber-500/30 scale-105'
               : 'cosmic-glass border border-slate-200/80 dark:border-amber-400/40 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95'
