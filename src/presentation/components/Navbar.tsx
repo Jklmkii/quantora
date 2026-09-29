@@ -15,6 +15,7 @@ import {
   Pencil,
   Triangle,
   LayoutGrid,
+  Cloud,
 } from 'lucide-react';
 import { useAppStore, type ActiveTab } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -26,9 +27,10 @@ import logoImg from '../../assets/logo.webp';
 
 interface NavbarProps {
   onOpenSettings: () => void;
+  onOpenAuth?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => {
+export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings, onOpenAuth }) => {
   const {
     activeTab,
     setActiveTab,
@@ -243,6 +245,19 @@ export const Navbar: React.FC<NavbarProps> = React.memo(({ onOpenSettings }) => 
                 {settings.theme === 'dark' && <Moon size={17} />}
                 {settings.theme === 'system' && <Laptop size={17} />}
               </button>
+
+              {/* Cloud Sync Button */}
+              {onOpenAuth && (
+                <button
+                  type="button"
+                  onClick={onOpenAuth}
+                  className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-cyan-500/20 bg-slate-100/70 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-cyan-500/10 hover:text-slate-900 dark:hover:text-cyan-300 transition-all touch-target flex items-center justify-center cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+                  title={t.auth_title}
+                  aria-label={t.auth_title}
+                >
+                  <Cloud size={17} />
+                </button>
+              )}
 
               {/* Settings Modal Button */}
               <button

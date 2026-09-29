@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { ModuleTopBar } from './presentation/components/ModuleTopBar';
 import { SettingsModal } from './presentation/components/SettingsModal';
 import { ProfileModal } from './presentation/components/ProfileModal';
+import { AuthModal } from './presentation/components/AuthModal';
 import { OnboardingModal } from './presentation/components/OnboardingModal';
 import { UpdateBanner } from './presentation/components/UpdateBanner';
 import { AchievementToast } from './presentation/components/AchievementToast';
@@ -12,6 +13,8 @@ import { Scratchpad } from './presentation/components/Scratchpad';
 import { CosmicHub } from './presentation/components/CosmicHub';
 import { CosmicBackgroundCanvas } from './presentation/components/CosmicBackgroundCanvas';
 import { LayoutGrid } from 'lucide-react';
+import { isSupabaseConfigured } from './core/auth/supabaseClient';
+import { syncWithCloud, initAutoSyncListener } from './core/auth/cloudSync';
 
 // Code-splitting: Lazy load content modules on demand
 const BhaskaraModule = lazy(() =>
@@ -55,7 +58,17 @@ export function App() {
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set([activeTab]));
+
+  // Auto-sync listener & initial background sync if configured
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      syncWithCloud().catch(() => {});
+    }
+    const unsubscribe = initAutoSyncListener();
+    return () => unsubscribe();
+  }, []);
 
   // Track visited tabs synchronously during render
   if (!visitedTabs.has(activeTab)) {
@@ -122,6 +135,7 @@ export function App() {
         <CosmicHub
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenProfile={() => setIsProfileOpen(true)}
+          onOpenAuth={() => setIsAuthOpen(true)}
         />
       ) : (
         <>
@@ -129,6 +143,7 @@ export function App() {
           <ModuleTopBar
             onOpenSettings={() => setIsSettingsOpen(true)}
             onOpenProfile={() => setIsProfileOpen(true)}
+            onOpenAuth={() => setIsAuthOpen(true)}
           />
 
           {/* Main Content Area */}
@@ -182,12 +197,20 @@ export function App() {
         <ProfileModal
           isOpen={isProfileOpen}
           onClose={() => setIsProfileOpen(false)}
+          onOpenAuth={() => setIsAuthOpen(true)}
         />
       )}
       {isSettingsOpen && (
         <SettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
+          onOpenAuth={() => setIsAuthOpen(true)}
+        />
+      )}
+      {isAuthOpen && (
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
         />
       )}
       <OnboardingModal />

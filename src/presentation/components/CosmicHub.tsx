@@ -6,6 +6,7 @@ import {
   Trophy,
   Bell,
   Lock,
+  Cloud,
 } from 'lucide-react';
 import { useAppStore, type ActiveTab } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -47,9 +48,10 @@ interface HubCard {
 interface CosmicHubProps {
   onOpenSettings: () => void;
   onOpenProfile: () => void;
+  onOpenAuth?: () => void;
 }
 
-export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProfile }) => {
+export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProfile, onOpenAuth }) => {
   const {
     setActiveTab,
     profile,
@@ -376,8 +378,21 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
           </div>
         </div>
 
-        {/* Quick Actions (Cápsulas de Vidro: Sino + Perfil) */}
+        {/* Quick Actions (Cápsulas de Vidro: Nuvem + Sino + Perfil) */}
         <div className="flex items-center gap-3">
+          {/* Sincronização em Nuvem */}
+          {onOpenAuth && (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="w-10 h-10 rounded-2xl cosmic-glass flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400/50 transition-all cursor-pointer shadow-md relative"
+              title={t.auth_title || 'Sincronização em Nuvem'}
+              aria-label={t.auth_title || 'Sincronização em Nuvem'}
+            >
+              <Cloud size={18} />
+            </button>
+          )}
+
           {/* Sino de Notificação / Desafio Diário */}
           <button
             type="button"

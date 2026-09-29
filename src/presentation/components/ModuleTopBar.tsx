@@ -14,6 +14,7 @@ import {
   Brain,
   History,
   LayoutGrid,
+  Cloud,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -24,9 +25,10 @@ import logoImg from '../../assets/logo.webp';
 interface ModuleTopBarProps {
   onOpenSettings: () => void;
   onOpenProfile: () => void;
+  onOpenAuth?: () => void;
 }
 
-export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSettings, onOpenProfile }) => {
+export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSettings, onOpenProfile, onOpenAuth }) => {
   const {
     activeTab,
     setActiveTab,
@@ -189,6 +191,19 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             {settings.theme === 'dark' && <Moon size={17} />}
             {settings.theme === 'system' && <Laptop size={17} />}
           </button>
+
+          {/* Sincronização em Nuvem */}
+          {onOpenAuth && (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="p-2 rounded-xl border border-slate-300 dark:border-cyan-500/20 bg-slate-100/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 hover:text-cyan-400 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+              title={t.auth_title || 'Sincronização em Nuvem'}
+              aria-label={t.auth_title || 'Sincronização em Nuvem'}
+            >
+              <Cloud size={17} />
+            </button>
+          )}
 
           {/* Configurações */}
           <button

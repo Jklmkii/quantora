@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Award, Flame, Zap, Shield, CheckCircle2, Trophy, Lock, Crown } from 'lucide-react';
+import { X, Award, Flame, Zap, Shield, CheckCircle2, Trophy, Lock, Crown, Cloud } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { calculateLevelInfo, ACHIEVEMENTS } from '../../core/gamification/leveling';
@@ -9,6 +9,7 @@ import type { AchievementCategory } from '../../types';
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenAuth?: () => void;
 }
 
 type FilterCategory = 'todas' | AchievementCategory;
@@ -21,7 +22,7 @@ const FILTER_TABS: Array<{ key: FilterCategory; labelPt: string; labelEn: string
   { key: 'desafios', labelPt: 'Desafios', labelEn: 'Challenges' },
 ];
 
-export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
+export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onOpenAuth }) => {
   const { profile, highestBossLevelCleared, language } = useAppStore(
     useShallow((s) => ({
       profile: s.profile,
@@ -320,7 +321,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end items-center">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex justify-between items-center">
+          {onOpenAuth ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenAuth();
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+            >
+              <Cloud size={14} />
+              <span>{t.auth_title || 'Nuvem Supabase'}</span>
+            </button>
+          ) : <div />}
           <button
             type="button"
             onClick={onClose}

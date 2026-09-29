@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { X, Moon, Sun, Laptop, Trash2, Download, Upload, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, Globe, Volume2, VolumeX, Unlock } from 'lucide-react';
+import { X, Moon, Sun, Laptop, Trash2, Download, Upload, ShieldCheck, CheckCircle2, RefreshCw, Sparkles, Globe, Volume2, VolumeX, Unlock, Cloud } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import type { DecimalPlaces, DecimalSeparator, ThemeMode, UpdaterStatus, AppLanguage, HistoryItem } from '../../types';
@@ -11,6 +11,7 @@ import { playTestSound } from '../../core/platform/audio';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenAuth?: () => void;
 }
 
 // Move regex outside to avoid recompilation on every cell
@@ -23,7 +24,7 @@ const escapeCSVField = (val: unknown): string => {
   return `"${str.replace(QUOTE_REGEX, '""')}"`;
 };
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onOpenAuth }) => {
   const { settings, updateSettings, clearHistory, importHistory, historyLength } = useAppStore(
     useShallow((s) => ({
       settings: s.settings,
@@ -512,6 +513,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             >
               <Sparkles size={16} className="text-indigo-500" /> {t.export_profile_backup}
             </button>
+
+            {onOpenAuth && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenAuth();
+                }}
+                className="w-full mb-2 flex items-center justify-center gap-2 p-3 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+              >
+                <Cloud size={16} className="text-cyan-500" /> {t.auth_title || 'Sincronização em Nuvem (Supabase)'}
+              </button>
+            )}
 
             <div className="flex flex-col gap-2">
               <input
