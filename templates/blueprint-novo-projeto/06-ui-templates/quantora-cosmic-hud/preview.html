@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantora Cosmic HUD — Template Interativo</title>
+  <style>
+    /* Reset & Variáveis Cósmicas */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #09090b 60%, #030712 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --stage-border: rgba(255, 255, 255, 0.08);
+      --specular: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 40%);
+    }
+
+    html.light {
+      --bg-gradient: radial-gradient(circle at 50% 10%, #e0e7ff 0%, #f1f5f9 50%, #f8fafc 100%);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.12);
+      --stage-border: rgba(0, 0, 0, 0.08);
+      --specular: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, transparent 40%);
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Nebula Glows */
+    .nebula-glow {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .nebula-left {
+      top: 10%;
+      left: 5%;
+      background: #3b82f6;
+    }
+    .nebula-right {
+      top: 30%;
+      right: 5%;
+      background: #8b5cf6;
+    }
+
+    /* Header & Controls */
+    header {
+      width: 100%;
+      max-width: 1100px;
+      padding: 24px 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .brand-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 8px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #818cf8;
+      font-weight: 700;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-action {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(12px);
+    }
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+    .btn-action:active {
+      transform: translateY(0);
+    }
+
+    /* HUD Stage & Container */
+    .hud-stage {
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 10px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 5;
+    }
+
+    .stage-header {
+      width: 100%;
+      padding: 0 24px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .stage-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .stage-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Arrow Nav Buttons */
+    .nav-arrow-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+    .nav-arrow-btn:hover {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: rgba(99, 102, 241, 0.6);
+      transform: scale(1.08);
+    }
+
+    /* Horizontal Carousel Track & Masks */
+    .carousel-mask {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+    }
+
+    .carousel-container {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 24px calc(50vw - 160px) 36px;
+      cursor: grab;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .carousel-container::-webkit-scrollbar {
+      display: none;
+    }
+    .carousel-container.is-dragging {
+      cursor: grabbing;
+      scroll-snap-type: none; /* Desativa snap durante o arrasto manual livre */
+    }
+
+    /* Cards */
+    .cosmic-card {
+      flex: 0 0 320px;
+      height: 430px;
+      scroll-snap-align: center;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 20px;
+      transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+      cursor: pointer;
+    }
+
+    /* Top Specular Glaze */
+    .cosmic-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 45%;
+      background: var(--specular);
+      border-radius: 24px 24px 0 0;
+      pointer-events: none;
+    }
+
+    .cosmic-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      border-color: rgba(255, 255, 255, 0.28);
+      box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 24px -4px var(--card-glow);
+    }
+
+    .cosmic-card.is-active {
+      border-color: var(--card-glow);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 32px 0px var(--card-glow);
+      transform: translateY(-8px) scale(1.03);
+    }
+
+    /* Card Interior Elements */
+    .card-top-flank {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+    }
+    .badge-xp {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(234, 179, 8, 0.15);
+      border: 1px solid rgba(234, 179, 8, 0.4);
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-tier {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+    }
+
+    .card-icon-container {
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 120px;
+      width: 120px;
+      position: relative;
+      transition: transform 0.4s ease;
+    }
+    .cosmic-card:hover .card-icon-container {
+      transform: scale(1.1) translateY(-4px);
+    }
+
+    .card-info {
+      width: 100%;
+      text-align: center;
+      z-index: 2;
+    }
+    .card-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+      padding: 0 8px;
+    }
+
+    .card-footer {
+      width: 100%;
+      margin-top: 14px;
+      z-index: 2;
+    }
+    .card-btn {
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 14px;
+      background: var(--btn-color, #4f46e5);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4);
+    }
+    .card-btn:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px -2px var(--btn-color);
+    }
+
+    /* Terminal Monitor / Feedback Bar */
+    .hud-console {
+      width: 100%;
+      max-width: 800px;
+      margin: 16px auto 36px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px 20px;
+      backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      z-index: 10;
+    }
+    .console-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: monospace;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    /* Float Animation for 3D Icon */
+    @keyframes cosmicFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(1deg); }
+    }
+    .animate-float {
+      animation: cosmicFloat 4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Nebulas -->
+  <div class="nebula-glow nebula-left"></div>
+  <div class="nebula-glow nebula-right"></div>
+
+  <!-- Top App Header -->
+  <header>
+    <div class="brand-title">
+      <span>QUANTORA</span>
+      <span class="brand-badge">HUD Template 3D</span>
+    </div>
+
+    <div class="top-actions">
+      <button id="toggleTheme" class="btn-action" title="Alternar tema claro/escuro">
+        <span id="themeIcon">☀️</span> Tema
+      </button>
+      <button id="toggleAudio" class="btn-action" title="Ativar/desativar sintetizador Web Audio">
+        <span id="audioIcon">🔊</span> Som
+      </button>
+    </div>
+  </header>
+
+  <!-- Cosmic HUD Stage -->
+  <main class="hud-stage">
+    <div class="stage-header">
+      <div>
+        <h2 class="stage-title">Módulos & Missões Cósmicas</h2>
+        <p class="stage-subtitle">Arraste para os lados com o mouse, deslize no celular ou use as setas do teclado</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="btnPrev" class="nav-arrow-btn" aria-label="Anterior">‹</button>
+        <button id="btnNext" class="nav-arrow-btn" aria-label="Próximo">›</button>
+      </div>
+    </div>
+
+    <!-- Carousel with Fading Edge Masks -->
+    <div class="carousel-mask">
+      <div id="carouselContainer" class="carousel-container" tabindex="0" role="region" aria-label="Carrossel Cósmico de Módulos">
+        
+        <!-- Card 1: Sobrevivência (Survival) -->
+        <article class="cosmic-card is-active" data-index="0" data-name="Sobrevivência" data-color="#06b6d4" style="--card-glow: rgba(6,182,212,0.45); --btn-color: #0891b2;">
+          <div class="card-top-flank">
+            <span class="badge-xp">⚡ +50 XP</span>
+            <span class="badge-tier">Hardcore</span>
+          </div>
+          <div class="card-icon-container animate-float">
+            <!-- 3D Skull Crystal SVG -->
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+              <polygon points="50,15 82,32 74,75 50,92 26,75 18,32" fill="url(#g-skull-base)" stroke="#67e8f9" stroke-width="1.5" />
+              <polygon points="50,15 50,92 82,32" fill="url(#g-skull-facet)" opacity="0.4" />
+              <polygon points="50,15 50,92 26,75" fill="#a5f3fc" opacity="0.25" />
+              <circle cx="36" cy="48" r="8" fill="#0f172a" stroke="#22d3ee" stroke-width="2" />
+              <circle cx="64" cy="48" r="8" fill="#0f172a" stroke="#22d3ee" stroke-width="2" />
+              <circle cx="36" cy="48" r="3" fill="#67e8f9" />
+              <circle cx="64" cy="48" r="3" fill="#67e8f9" />
+              <path d="M42,74 L58,74 M45,70 L45,78 M50,70 L50,78 M55,70 L55,78" stroke="#a5f3fc" stroke-width="2" stroke-linecap="round" />
+              <defs>
+                <linearGradient id="g-skull-base" x1="0" y1="0" x2="100" y2="100">
+                  <stop offset="0%" stop-color="#0891b2" />
+                  <stop offset="100%" stop-color="#0f172a" />
+                </linearGradient>
+                <linearGradient id="g-skull-facet" x1="50" y1="15" x2="82" y2="92">
+                  <stop offset="0%" stop-color="#22d3ee" />
+                  <stop offset="100%" stop-color="#0369a1" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3 class="card-name">Sobrevivência</h3>
+            <p class="card-subtitle">Desafio extremo com 3 vidas e equações dinâmicas ilimitadas.</p>
+          </div>
+          <div class="card-footer">
+            <button class="card-btn">Iniciar Batalha</button>
+          </div>
+        </article>
+
+        <!-- Card 2: Blitz 60s -->
+        <article class="cosmic-card" data-index="1" data-name="Blitz 60s" data-color="#f59e0b" style="--card-glow: rgba(245,158,11,0.45); --btn-color: #d97706;">
+          <div class="card-top-flank">
+            <span class="badge-xp">⚡ +40 XP</span>
+            <span class="badge-tier">Velocidade</span>
+          </div>
+          <div class="card-icon-container animate-float" style="animation-delay: 0.4s;">
+            <!-- 3D Hourglass Chrono SVG -->
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+              <path d="M25,20 L75,20 L60,50 L75,80 L25,80 L40,50 Z" fill="url(#g-blitz-base)" stroke="#fbbf24" stroke-width="2" />
+              <ellipse cx="50" cy="20" rx="25" ry="6" fill="#fde68a" />
+              <ellipse cx="50" cy="80" rx="25" ry="6" fill="#b45309" />
+              <polygon points="50,50 35,74 65,74" fill="#fbbf24" opacity="0.8" />
+              <path d="M52,38 L44,52 L54,52 L46,66" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <defs>
+                <linearGradient id="g-blitz-base" x1="25" y1="20" x2="75" y2="80">
+                  <stop offset="0%" stop-color="#d97706" />
+                  <stop offset="50%" stop-color="#78350f" />
+                  <stop offset="100%" stop-color="#b45309" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3 class="card-name">Blitz 60s</h3>
+            <p class="card-subtitle">Combos rápidos, +2s por acerto e -3s por erro no cronômetro.</p>
+          </div>
+          <div class="card-footer">
+            <button class="card-btn">Iniciar Corrida</button>
+          </div>
+        </article>
+
+        <!-- Card 3: Boss Battle -->
+        <article class="cosmic-card" data-index="2" data-name="Boss Battle" data-color="#ef4444" style="--card-glow: rgba(239,68,68,0.45); --btn-color: #dc2626;">
+          <div class="card-top-flank">
+            <span class="badge-xp">⚡ +100 XP</span>
+            <span class="badge-tier">Épico</span>
+          </div>
+          <div class="card-icon-container animate-float" style="animation-delay: 0.8s;">
+            <!-- 3D Dragon/Boss Helm SVG -->
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+              <path d="M50,12 L84,38 L76,82 L50,94 L24,82 L16,38 Z" fill="url(#g-boss-helm)" stroke="#f87171" stroke-width="2" />
+              <polygon points="50,12 50,94 84,38" fill="#b91c1c" opacity="0.5" />
+              <polygon points="50,12 50,94 24,82" fill="#fca5a5" opacity="0.2" />
+              <polygon points="32,46 44,52 34,56" fill="#fef08a" />
+              <polygon points="68,46 56,52 66,56" fill="#fef08a" />
+              <circle cx="37" cy="51" r="2" fill="#ef4444" />
+              <circle cx="63" cy="51" r="2" fill="#ef4444" />
+              <defs>
+                <linearGradient id="g-boss-helm" x1="0" y1="0" x2="100" y2="100">
+                  <stop offset="0%" stop-color="#b91c1c" />
+                  <stop offset="100%" stop-color="#450a0a" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3 class="card-name">Boss Battle</h3>
+            <p class="card-subtitle">Enfrente o Titã da Aritmética: 100 HP, escudos e acertos críticos.</p>
+          </div>
+          <div class="card-footer">
+            <button class="card-btn">Desafiar Chefe</button>
+          </div>
+        </article>
+
+        <!-- Card 4: Bhaskara Cósmica -->
+        <article class="cosmic-card" data-index="3" data-name="Bhaskara" data-color="#8b5cf6" style="--card-glow: rgba(139,92,246,0.45); --btn-color: #7c3aed;">
+          <div class="card-top-flank">
+            <span class="badge-xp">⚡ +30 XP</span>
+            <span class="badge-tier">Álgebra</span>
+          </div>
+          <div class="card-icon-container animate-float" style="animation-delay: 1.2s;">
+            <!-- 3D Parabola Crystal SVG -->
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+              <path d="M20,25 Q50,90 80,25" stroke="#c084fc" stroke-width="5" fill="none" stroke-linecap="round" />
+              <polygon points="50,75 58,62 42,62" fill="#a855f7" />
+              <circle cx="50" cy="74" r="5" fill="#f3e8ff" stroke="#9333ea" stroke-width="2" />
+              <line x1="20" y1="50" x2="80" y2="50" stroke="rgba(255,255,255,0.2)" stroke-dasharray="3,3" />
+              <line x1="50" y1="20" x2="50" y2="85" stroke="rgba(255,255,255,0.2)" stroke-dasharray="3,3" />
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3 class="card-name">Bhaskara</h3>
+            <p class="card-subtitle">Passo a passo didático com discriminante delta e raízes complexas.</p>
+          </div>
+          <div class="card-footer">
+            <button class="card-btn">Resolver Equação</button>
+          </div>
+        </article>
+
+        <!-- Card 5: Pitágoras 3D -->
+        <article class="cosmic-card" data-index="4" data-name="Pitágoras" data-color="#10b981" style="--card-glow: rgba(16,185,129,0.45); --btn-color: #059669;">
+          <div class="card-top-flank">
+            <span class="badge-xp">⚡ +30 XP</span>
+            <span class="badge-tier">Geometria</span>
+          </div>
+          <div class="card-icon-container animate-float" style="animation-delay: 1.6s;">
+            <!-- 3D Right Triangle SVG -->
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+              <polygon points="25,75 80,75 25,20" fill="url(#g-pitagoras)" stroke="#34d399" stroke-width="2" />
+              <rect x="25" y="65" width="10" height="10" fill="none" stroke="#6ee7b7" stroke-width="1.5" />
+              <circle cx="28" cy="68" r="1.5" fill="#6ee7b7" />
+              <text x="54" y="44" fill="#a7f3d0" font-size="12" font-weight="bold">c²</text>
+              <defs>
+                <linearGradient id="g-pitagoras" x1="25" y1="20" x2="80" y2="75">
+                  <stop offset="0%" stop-color="#059669" />
+                  <stop offset="100%" stop-color="#064e3b" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3 class="card-name">Pitágoras</h3>
+            <p class="card-subtitle">Teorema de Pitágoras, ternos pitagóricos e relações métricas.</p>
+          </div>
+          <div class="card-footer">
+            <button class="card-btn">Calcular Triângulo</button>
+          </div>
+        </article>
+
+        <!-- Card 6: Mecânica Clássica (Física) -->
+        <article class="cosmic-card" data-index="5" data-name="Física Clássica" data-color="#3b82f6" style="--card-glow: rgba(59,130,246,0.45); --btn-color: #2563eb;">
+          <div class="card-top-flank">
+            <span class="badge-xp">⚡ +45 XP</span>
+            <span class="badge-tier">Física</span>
+          </div>
+          <div class="card-icon-container animate-float" style="animation-delay: 2.0s;">
+            <!-- 3D Orbit / Pendulum SVG -->
+            <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+              <ellipse cx="50" cy="50" rx="38" ry="16" transform="rotate(-30 50 50)" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4,3" />
+              <circle cx="50" cy="50" r="12" fill="#1d4ed8" stroke="#93c5fd" stroke-width="2" />
+              <circle cx="76" cy="35" r="7" fill="#38bdf8" stroke="#bae6fd" stroke-width="1.5" />
+            </svg>
+          </div>
+          <div class="card-info">
+            <h3 class="card-name">Física Clássica</h3>
+            <p class="card-subtitle">10 módulos analíticos: MRU, Queda Livre, Lançamentos e Trabalho.</p>
+          </div>
+          <div class="card-footer">
+            <button class="card-btn">Explorar Física</button>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- HUD Status Console -->
+    <div class="hud-console">
+      <div class="console-indicator">
+        <span class="status-dot"></span>
+        <span id="activeModuleName">Módulo Selecionado: Sobrevivência (1/6)</span>
+      </div>
+      <div>
+        <span id="dragTelemetry">Status: Pronto • Snap Físico Ativo</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* =========================================================================
+       1. WEB AUDIO API SYNTHESIZER (Procedural Sound, Zero External Files)
+       ========================================================================= */
+    let audioCtx = null;
+    let isSoundMuted = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) {
+          audioCtx = new AudioClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playHubSwipe() {
+      if (isSoundMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        const now = audioCtx.currentTime;
+
+        // Glissando suave de 380Hz a 540Hz
+        osc.frequency.setValueAtTime(380, now);
+        osc.frequency.exponentialRampToValueAtTime(540, now + 0.08);
+
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } catch (e) {
+        // Fallback silencioso para navegadores que bloqueiem autoplay
+      }
+    }
+
+    function playClickBeep() {
+      if (isSoundMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        const now = audioCtx.currentTime;
+
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(780, now + 0.05);
+
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.07);
+      } catch (e) {}
+    }
+
+    /* =========================================================================
+       2. CAROUSEL DRAG-TO-SCROLL, TOUCH SWIPE & MOMENTUM PHYSICS
+       ========================================================================= */
+    const container = document.getElementById('carouselContainer');
+    const cards = Array.from(document.querySelectorAll('.cosmic-card'));
+    const activeLabel = document.getElementById('activeModuleName');
+    const telemetry = document.getElementById('dragTelemetry');
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+    let isDragging = false;
+    let lastActiveIndex = 0;
+
+    // Mouse Drag Listeners
+    container.addEventListener('mousedown', (e) => {
+      isDown = true;
+      isDragging = false;
+      container.classList.add('is-dragging');
+      startX = e.pageX - container.offsetLeft;
+      scrollLeft = container.scrollLeft;
+      telemetry.textContent = 'Arrastando...';
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDown) return;
+      isDown = false;
+      container.classList.remove('is-dragging');
+      telemetry.textContent = 'Status: Pronto • Snap Físico Ativo';
+      snapToClosestCard();
+      setTimeout(() => {
+        isDragging = false;
+      }, 50);
+    });
+
+    container.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - container.offsetLeft;
+      const walk = (x - startX) * 1.35; // Multiplicador de inércia física
+      
+      if (Math.abs(walk) > 6) {
+        isDragging = true;
+      }
+
+      container.scrollLeft = scrollLeft - walk;
+    });
+
+    // Touch Swipe Snap Listener
+    container.addEventListener('touchend', () => {
+      setTimeout(snapToClosestCard, 100);
+    });
+
+    // Snap to nearest card calculation
+    function snapToClosestCard() {
+      const containerCenter = container.scrollLeft + container.offsetWidth / 2;
+      let closestCard = cards[0];
+      let minDistance = Infinity;
+      let closestIndex = 0;
+
+      cards.forEach((card, index) => {
+        const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+        const distance = Math.abs(containerCenter - cardCenter);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestCard = card;
+          closestIndex = index;
+        }
+      });
+
+      if (closestCard) {
+        const targetScroll = closestCard.offsetLeft - (container.offsetWidth - closestCard.offsetWidth) / 2;
+        container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+        setActiveCard(closestIndex);
+      }
+    }
+
+    function setActiveCard(index) {
+      if (index < 0 || index >= cards.length) return;
+      
+      cards.forEach((c, i) => {
+        c.classList.toggle('is-active', i === index);
+      });
+
+      const card = cards[index];
+      const name = card.getAttribute('data-name');
+      activeLabel.textContent = `Módulo Selecionado: ${name} (${index + 1}/${cards.length})`;
+
+      if (index !== lastActiveIndex) {
+        playHubSwipe();
+        lastActiveIndex = index;
+      }
+    }
+
+    // Scroll Observer to dynamically update active state
+    let scrollTimeout;
+    container.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (!isDown) {
+          const containerCenter = container.scrollLeft + container.offsetWidth / 2;
+          let closestIndex = 0;
+          let minDistance = Infinity;
+
+          cards.forEach((card, index) => {
+            const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+            const distance = Math.abs(containerCenter - cardCenter);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestIndex = index;
+            }
+          });
+
+          setActiveCard(closestIndex);
+        }
+      }, 60);
+    });
+
+    // Click on Card
+    cards.forEach((card, index) => {
+      card.addEventListener('click', (e) => {
+        if (isDragging) {
+          e.preventDefault();
+          return;
+        }
+        playClickBeep();
+        const targetScroll = card.offsetLeft - (container.offsetWidth - card.offsetWidth) / 2;
+        container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+        setActiveCard(index);
+      });
+    });
+
+    // Arrow Nav Controls
+    document.getElementById('btnPrev').addEventListener('click', () => {
+      const newIndex = Math.max(0, lastActiveIndex - 1);
+      const card = cards[newIndex];
+      const targetScroll = card.offsetLeft - (container.offsetWidth - card.offsetWidth) / 2;
+      container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      setActiveCard(newIndex);
+    });
+
+    document.getElementById('btnNext').addEventListener('click', () => {
+      const newIndex = Math.min(cards.length - 1, lastActiveIndex + 1);
+      const card = cards[newIndex];
+      const targetScroll = card.offsetLeft - (container.offsetWidth - card.offsetWidth) / 2;
+      container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      setActiveCard(newIndex);
+    });
+
+    // Keyboard Shortcuts (ArrowLeft, ArrowRight, Enter)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        document.getElementById('btnPrev').click();
+      } else if (e.key === 'ArrowRight') {
+        document.getElementById('btnNext').click();
+      } else if (e.key === 'Enter') {
+        playClickBeep();
+        const activeCard = cards[lastActiveIndex];
+        telemetry.textContent = `Acessando: ${activeCard.getAttribute('data-name')}...`;
+      }
+    });
+
+    /* =========================================================================
+       3. THEME & AUDIO TOGGLES
+       ========================================================================= */
+    const toggleThemeBtn = document.getElementById('toggleTheme');
+    const themeIcon = document.getElementById('themeIcon');
+    toggleThemeBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      document.documentElement.classList.toggle('light', !isDark);
+      themeIcon.textContent = isDark ? '☀️' : '🌙';
+      playClickBeep();
+    });
+
+    const toggleAudioBtn = document.getElementById('toggleAudio');
+    const audioIcon = document.getElementById('audioIcon');
+    toggleAudioBtn.addEventListener('click', () => {
+      isSoundMuted = !isSoundMuted;
+      audioIcon.textContent = isSoundMuted ? '🔇' : '🔊';
+      if (!isSoundMuted) {
+        initAudio();
+        playClickBeep();
+      }
+    });
+  </script>
+</body>
+</html>
