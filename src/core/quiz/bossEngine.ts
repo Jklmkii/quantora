@@ -1,5 +1,6 @@
 import { shuffleArray } from '../../utils/array';
 import { parseBig } from '../math/precision';
+import { generateSecureId } from '../../utils/id';
 
 export const BOSS_INITIAL_HP = 100;
 export const BOSS_HP_GROWTH_PER_LEVEL = 0.35;
@@ -466,7 +467,7 @@ function generateBossQuestionInner(
   safeLevel: number,
   timeLimitSeconds: number
 ): BossQuestion {
-  const id = `boss_q_${Date.now()}_${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2, 7)}`;
+  const id = `boss_q_${Date.now()}_${generateSecureId()}`;
   const allowedCategories = getAllowedTracksForLevel(safeLevel);
   const category = pickRandom(allowedCategories);
 
