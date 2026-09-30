@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { useShallow } from 'zustand/react/shallow';
 import type {
   PhysicsChartData,
   PhysicsMode,
@@ -24,18 +23,8 @@ export const PhysicsChart: React.FC<PhysicsChartProps> = React.memo(({
   chartData,
   className = '',
 }) => {
-  /**
-   * ⚡ Bolt Performance Optimization
-   * 💡 What: Combined separate useAppStore calls into a single object selector with useShallow.
-   * 🎯 Why: Extracting `decimalPlaces` and `separator` separately caused multiple store subscriptions.
-   * 📊 Impact: Minimizes store subscriptions and prevents unnecessary re-renders of the chart.
-   */
-  const { decimalPlaces, separator } = useAppStore(
-    useShallow((state) => ({
-      decimalPlaces: state.settings.decimalPlaces ?? 2,
-      separator: state.settings.decimalSeparator ?? ',',
-    }))
-  );
+  const decimalPlaces = useAppStore((state) => state.settings.decimalPlaces) ?? 2;
+  const separator = useAppStore((state) => state.settings.decimalSeparator) ?? ',';
 
   // Helper didático para formatação numérica limpa e aproximada
   const fmt = (val: number | undefined, dec = decimalPlaces): string => {

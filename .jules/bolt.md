@@ -14,7 +14,3 @@
 ## 2025-03-01 - Modals Conditionally Rendering
 **Learning:** Component early returns like `if (!isOpen) return null;` placed *after* Zustand hooks still cause the component to evaluate and re-render every time the subscribed store values change, wasting CPU resources.
 **Action:** Always conditionally render modal components from the parent (e.g., `{isOpen && <Modal />}`) to entirely prevent hidden background subscriptions and re-renders when the modal is closed.
-
-## 2024-05-18 - [Minimize Store Subscriptions]
-**Learning:** Extracting primitive values sequentially from Zustand's `useAppStore` within a single component (like `decimalPlaces` and `separator` in `PhysicsChart.tsx`) causes multiple distinct store subscriptions and re-renders.
-**Action:** Always combine them into a single object selector wrapped with `useShallow` (from `zustand/react/shallow`) to minimize store subscriptions and prevent unnecessary component re-renders.

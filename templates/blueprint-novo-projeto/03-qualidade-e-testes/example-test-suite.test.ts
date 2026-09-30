@@ -42,11 +42,8 @@ describe('Exemplo de Suíte de Testes Unitários (Padrão Quantora)', () => {
       expect(checkStreakMaintenance(today, 5)).toBe(5);
     });
 
-        it('deve incrementar o streak ao concluir atividade', () => {
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const res = calculateStreakUpdate(getDeviceLocalDateString(yesterday), 3);
+    it('deve incrementar o streak ao concluir atividade', () => {
+      const res = calculateStreakUpdate('2026-09-28', 3);
       expect(res.newStreak).toBe(4);
       expect(res.newDate).toBe(getDeviceLocalDateString());
     });
