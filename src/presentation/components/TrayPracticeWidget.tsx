@@ -129,7 +129,7 @@ export const TrayPracticeWidget: React.FC = () => {
             onClick={handleOpenMain}
             title="Abrir aplicativo principal"
             aria-label="Abrir aplicativo principal"
-            className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
@@ -138,7 +138,7 @@ export const TrayPracticeWidget: React.FC = () => {
             onClick={handleClose}
             title="Fechar widget"
             aria-label="Fechar widget"
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition-colors"
+            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -186,7 +186,7 @@ export const TrayPracticeWidget: React.FC = () => {
               <button
                 type="submit"
                 aria-label="Confirmar resposta"
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-sm rounded-lg transition-all shadow-md active:scale-95"
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-sm rounded-lg transition-all shadow-md active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
               >
                 OK
               </button>
@@ -224,7 +224,7 @@ export const TrayPracticeWidget: React.FC = () => {
                 onClick={nextQuestion}
                 aria-label="Gerar nova conta"
                 autoFocus
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 border border-slate-700 text-slate-100 font-semibold text-xs rounded-lg transition-all"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 border border-slate-700 text-slate-100 font-semibold text-xs rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               >
                 <RotateCw className="w-3.5 h-3.5" />
                 <span>Mais uma conta (Enter)</span>
@@ -240,7 +240,7 @@ export const TrayPracticeWidget: React.FC = () => {
         <button
           type="button"
           onClick={handleOpenMain}
-          className="text-amber-400/90 hover:text-amber-300 font-medium transition-colors"
+          className="text-amber-400/90 hover:text-amber-300 font-medium transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
         >
           Abrir App Completo
         </button>
