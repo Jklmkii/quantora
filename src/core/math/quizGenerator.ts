@@ -2,6 +2,7 @@ import Big from 'big.js';
 import type { QuizQuestion, QuizTrack, QuizTrackSelector, SpacedCard } from '../../types';
 import { calculateRegraDeTresSimples } from './regraDeTresSimples';
 import { formatNumberSmart } from './precision';
+import { generateSecureId } from '../../utils/id';
 
 function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -124,7 +125,7 @@ export function generateQuizQuestion(
     track = trackSelector;
   }
 
-  const id = `q_${Date.now()}_${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2, 7)}`;
+  const id = `q_${Date.now()}_${generateSecureId()}`;
   const totalGoal = 200;
 
   switch (track) {
