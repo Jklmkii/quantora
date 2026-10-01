@@ -222,6 +222,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             onClick={onOpenProfile}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-cyan-500/30 bg-slate-100/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-cyan-400 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
             title="Perfil & Conquistas"
+            aria-label="Perfil & Conquistas"
           >
             <Trophy size={14} className="text-amber-400 shrink-0" />
             <span className="font-mono">Nv. {levelInfo.level}</span>
