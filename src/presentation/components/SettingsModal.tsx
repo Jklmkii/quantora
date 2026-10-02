@@ -248,7 +248,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center"
             aria-label={t.close}
           >
             <X size={20} />
@@ -274,7 +274,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   key={item.mode}
                   type="button"
                   onClick={() => updateSettings({ theme: item.mode as ThemeMode })}
-                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border font-semibold transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
+                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border font-semibold transition-all touch-target ${
                     settings.theme === item.mode
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -301,7 +301,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   key={item.lang}
                   type="button"
                   onClick={() => updateSettings({ language: item.lang as AppLanguage })}
-                  className={`p-3 rounded-2xl border font-bold text-center transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
+                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-bold text-center transition-all touch-target ${
                     (settings.language || 'pt') === item.lang
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shadow-xs'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -370,8 +370,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                     <button
                       type="button"
                       onClick={() => playTestSound(settings.soundVolume ?? 0.5)}
-                      className="px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[10px] font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
-                      title={t.sound_test}
+                      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[10px] font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                      title={t.sound_test} aria-label={t.sound_test}
                     >
                       {t.sound_test}
                     </button>
@@ -441,7 +441,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   key={places}
                   type="button"
                   onClick={() => updateSettings({ decimalPlaces: places })}
-                  className={`p-3 rounded-2xl border font-semibold text-center transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
+                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-semibold text-center transition-all touch-target ${
                     settings.decimalPlaces === places
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -472,7 +472,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   key={item.sep}
                   type="button"
                   onClick={() => updateSettings({ decimalSeparator: item.sep as DecimalSeparator })}
-                  className={`p-3 rounded-2xl border font-semibold text-center transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 ${
+                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-semibold text-center transition-all touch-target ${
                     settings.decimalSeparator === item.sep
                       ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -495,7 +495,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 type="button"
                 onClick={handleExportJSON}
                 disabled={historyLength === 0}
-                className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
               >
                 <Download size={16} /> {t.export_json}
               </button>
@@ -503,7 +503,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 type="button"
                 onClick={handleExportCSV}
                 disabled={historyLength === 0}
-                className="flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 flex items-center justify-center gap-2 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
               >
                 <Download size={16} /> {t.export_csv}
               </button>
@@ -512,7 +512,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             <button
               type="button"
               onClick={handleExportFullBackup}
-              className="w-full mb-2 flex items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 w-full mb-2 flex items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors font-semibold text-xs touch-target"
             >
               <Sparkles size={16} className="text-indigo-500" /> {t.export_profile_backup}
             </button>
@@ -524,7 +524,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   onClose();
                   onOpenAuth();
                 }}
-                className="w-full mb-2 flex items-center justify-center gap-2 p-3 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 w-full mb-2 flex items-center justify-center gap-2 p-3 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition-colors font-semibold text-xs touch-target"
               >
                 <Cloud size={16} className="text-cyan-500" /> {t.auth_title || 'Sincronização em Nuvem (Supabase)'}
               </button>
@@ -541,7 +541,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
               <button
                 type="button"
                 onClick={handleImport}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-semibold text-xs touch-target"
               >
                 <Upload size={16} /> {t.import_json}
               </button>
@@ -563,14 +563,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                       clearHistory();
                       setConfirmClear(false);
                     }}
-                    className="flex-1 p-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 flex-1 p-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs touch-target"
                   >
                     {t.confirm_clear}
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmClear(false)}
-                    className="p-3 rounded-2xl border border-slate-200 dark:border-slate-800 font-semibold text-xs touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 font-semibold text-xs touch-target"
                   >
                     {t.cancel}
                   </button>
@@ -580,7 +580,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   type="button"
                   onClick={() => setConfirmClear(true)}
                   disabled={historyLength === 0}
-                  className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors font-semibold text-xs touch-target disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 w-full flex items-center justify-center gap-2 p-3 rounded-2xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors font-semibold text-xs touch-target disabled:opacity-40"
                 >
                   <Trash2 size={16} /> {t.clear_history}
                 </button>
@@ -605,7 +605,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <button
                   type="button"
                   onClick={() => window.electronAPI?.installUpdate?.()}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition-all"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-sm transition-all"
                 >
                   <Sparkles size={14} /> {t.update_now}
                 </button>
@@ -614,7 +614,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   type="button"
                   disabled={isCheckingUpdate || updateStatus?.status === 'downloading'}
                   onClick={handleCheckUpdate}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-semibold text-xs hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-semibold text-xs hover:bg-indigo-100 transition-colors disabled:opacity-50"
                 >
                   {isCheckingUpdate ? t.checking_updates : t.check_updates}
                 </button>
@@ -656,7 +656,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold touch-target"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold touch-target"
           >
             {t.done}
           </button>
