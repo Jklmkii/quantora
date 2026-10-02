@@ -226,6 +226,36 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
 ## 18. Link Mandatório de Acompanhamento de Commits no GitHub
 - **Regra Obrigatória:** Sempre que realizar um `git push` ou concluir uma tarefa que resulte em novo commit na branch `main` ou Pull Request, o agente DEVE expressamente fornecer o link clicável direto para o commit no GitHub (`https://github.com/Jklmkii/quantora/commit/<hash>`), permitindo ao desenvolvedor auditar e acompanhar o diff e os workflows de CI/CD em tempo real diretamente no navegador.
 
+## 19. Regra do Guardião do Vault (Subagente `vault_guardian` & Ronda Contínua)
+- **Princípio Central:** Assim, sempre que o usuário disser *"Guardião, faça a ronda no cofre"* (ou termos afins: "faça a ronda", "audite o vault", "organize o cofre") ou quando outro agente (como a Jules AI ou agentes generalistas) terminar de escrever ou alterar documentação no cofre Obsidian, o subagente especializado `vault_guardian` assume e deixa tudo impecável.
+- **Gatilhos de Disparo:**
+  1. *Comando do Usuário:* Invocar imediatamente `vault_guardian` via `invoke_subagent`.
+  2. *Pós-Documentação:* Disparar automaticamente o `vault_guardian` após adições de novos projetos, novos MOCs ou refatorações de notas para assegurar a blindagem do cofre.
+- **Ronda Obrigatória do Guardião:**
+  - Garantir a paleta oficial de cores no Graph View (7 grupos com cores canônicas) e a física aberta anti-amontoamento (`centerStrength: 0.08`, `repelStrength: 24`, `linkDistance: 90`).
+  - Remover estilos `classDef` com cores fixas e escuras de diagramas Mermaid em novas notas para não quebrar temas.
+  - Converter citações cruas em callouts oficiais do Obsidian (`> [!NOTE]`, `> [!SUCCESS]`, etc.).
+  - Executar `.antigravity/automation/find_unresolved.cjs` (0 links quebrados).
+  - Executar `.antigravity/automation/generate_vault_catalog.cjs` para sincronizar `llms.txt`, `vault_catalog.json` e `Mapa Semantico do Cofre.md`.
+  - Preservar integralmente documentos em `30 - Recursos & IA/raw/`.
+
+## 20. Princípio da Desambiguação Imediata (*Early Disambiguation Gate*) e Proteção contra Buscas Cegas
+
+### 20.1. Ancoragem Prévia em Prompts Lacônicos ou Ambíguos
+- **Cenário:** O usuário envia comandos ultracurtos (ex: `"faca"`, `"sim"`, `"prossiga"`) ou perguntas abertas com múltiplas interpretações (ex: `"o que acha de integrar X com Y?"`).
+- **Comportamento Proibido:** O agente NUNCA deve iniciar alterações em massa no código assumindo premissas arbitrárias (*Premise Hallucination*), sob risco de *Context Poisoning* caso a dedução esteja equivocada.
+- **Comportamento Mandatório:** Antes de tocar em arquivos de código, o agente DEVE declarar sua interpretação e o escopo exato em uma frase curta de confirmação imediata (*Early Disambiguation Gate*), ex: *"Entendido: aplicando a Opção 1 (unificação de regras em GEMINI.md sem alterar código-fonte). Prosseguindo com a alteração..."*.
+
+### 20.2. Blindagem contra Uso Indevido do `/browser` em Código Privado Local
+- **Problema:** Comandos como `/browser pesquise possíveis bugs no nosso código` acionam buscas na web pública, consumindo tokens e tempo sem acesso ao repositório local privado.
+- **Comportamento Mandatório:** Sempre que o usuário solicitar `/browser` para diagnosticar bugs de implementação no próprio projeto, o agente DEVE:
+  1. Informar com cordialidade que o código e os logs são locais e privados.
+  2. Redirecionar imediatamente o esforço para as ferramentas locais de diagnóstico (leitura de arquivos, terminal, logs e testes unitários com Vitest).
+  3. Reservar o `/browser` exclusivamente para consultas a APIs públicas, documentações de terceiros (ex: Capacitor, Electron, React 19) ou CVEs externas.
+
+### 20.3. Contrato de Definição de Pronto (*Definition of Done*)
+- Nenhuma tarefa que envolva alteração no código-fonte pode ser declarada concluída sem que o agente execute e reporte expressamente o resultado dos comandos de validação (`npx vitest run`, `npm run lint` e/ou `npm run build`), acompanhados da orientação prática para o teste visual do usuário.
+
 ## Registro no Obsidian
 Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`20 - Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe

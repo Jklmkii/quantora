@@ -6,10 +6,10 @@ const tokenFile = path.resolve(__dirname, '../.antigravity/jules-token.txt');
 const token = fs.readFileSync(tokenFile, 'utf8').trim();
 
 const targetSessions = [
-  { id: 'sessions/3528833431443713608', label: 'TASK-A (Test Coverage)' },
-  { id: 'sessions/5919805441718166244', label: 'Palette (Micro-UX & A11y)' },
-  { id: 'sessions/14943539312967169193', label: 'Sentinel (Security)' }
+  { id: 'sessions/18319289364345951367', label: 'Sessão Pendente Awaiting Feedback' },
+  { id: 'sessions/4685980610447231931', label: 'Sessão In Progress' }
 ];
+
 
 function fetchJson(url) {
   return new Promise((resolve, reject) => {

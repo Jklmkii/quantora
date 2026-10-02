@@ -2,6 +2,69 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.56] — Rotinas Noturnas Jules AI: Entropia Criptográfica, Acessibilidade no Tray & useShallow (2026-09-30)
+
+### 🛡️ Segurança & Entropia (Sentinel PR #75)
+- **Geração Criptográfica de IDs (`src/utils/id.ts`):** Substituição de fallback `Math.random` pela função `generateSecureId()`, utilizando `crypto.randomUUID()` e `crypto.getRandomValues(new Uint32Array(4))` para garantir entropia criptográfica e blindar contra colisões nos motores de quiz e chefes.
+
+### 🎨 Acessibilidade & WCAG AAA (Palette PR #73, PR #76 e PR #77)
+- **Anéis de Foco Visível (`TrayPracticeWidget.tsx`):** Adição de classes `focus-visible:ring-2` nos 5 botões de prática rápida ancorados no tray do Windows Electron, garantindo conformidade com as diretrizes WCAG AAA para navegação por teclado (PR #73).
+- **Rótulo Acessível no Botão de Perfil (`ModuleTopBar.tsx`):** Inclusão do atributo `aria-label="Perfil & Conquistas"` no botão de perfil da barra superior, garantindo locução semântica precisa para tecnologias assistivas e leitores de tela (PR #76).
+- **Anéis de Foco e Rótulo de Áudio (`SettingsModal.tsx`):** Padronização de `focus-visible:ring-2 focus-visible:ring-cyan-500/50` nos botões interativos de configuração e inclusão do atributo `aria-label` explícito no botão de teste de som (PR #77).
+
+### 🤖 Governança Agêntica & Framework HD-Prompt (/learn)
+- **Seção 20 no `GEMINI.md` (Early Disambiguation Gate):** Diretriz de desambiguação imediata em prompts lacônicos e blindagem contra uso indevido de busca web (`/browser`) em repositório local privado.
+- **Skill `high-density-prompting` (`.agents/skills/high-density-prompting/`):** Framework operacional de especificação técnica com barreiras de âncora, non-goals e Definition of Done executável.
+
+
+### ⚡ Performance & Reatividade (Bolt PR #74)
+- **Subscrição Otimizada no Gráfico de Física (`PhysicsChart.tsx`):** Unificação de seletores de precisão decimal e separador numérico sob `useShallow`, eliminando renders espúrios durante animações dos gráficos SVG.
+
+---
+
+## [1.2.55] — Template Oficial da HUD do Quantora: Drag-to-Scroll, Ícones 3D & Web Audio (2026-09-29)
+
+### 🚀 Interface & Experiência Gamificada
+- **Quantora Cosmic HUD (`templates/06-ui-templates/quantora-cosmic-hud/`):**
+  - Navegação espacial horizontal com drag-to-scroll de alta performance (mouse e touch) com amortecimento inercial em RequestAnimationFrame a 60 FPS.
+  - Conjunto de 10 ícones tridimensionais modelados em SVG nativo (`CosmicIcons3D.tsx`).
+  - Sintetizador procedural em Web Audio API (`audio-feedback.ts`) com respostas sonoras dinâmicas sem arquivos de áudio externos.
+
+---
+
+## [1.2.54] — Template Visual Cyber Glass Carousel (2026-09-29)
+
+### 💎 UI Templates & Design System
+- **Cyber Glass Carousel (`templates/06-ui-templates/cyber-glass-carousel/`):**
+  - Carrossel tridimensional em React com filtros SVG de distorção cromática, reflexos luminescentes e tokens cósmicos.
+
+---
+
+## [1.2.52] — Blueprint Starter Kit para Novos Projetos (2026-09-29)
+
+### 🏛️ Governança & Arquitetura Reutilizável
+- **Blueprint Starter Kit (`templates/blueprint-novo-projeto/` e `code/blueprint-starter-kit/`):**
+  - Starter kit universal contendo governança agêntica Antigravity/Jules, arquitetura modular, suíte de qualidade de referência com Vitest (8 testes) e pipelines de CI/CD.
+
+---
+
+## [1.2.51] — Google OAuth RFC 8252 no Electron Desktop via Navegador do Sistema (2026-09-29)
+
+### 🔐 Autenticação & Electron Desktop
+- **Loopback HTTP Server RFC 8252 (`electron/main.cjs`):**
+  - Superação definitiva do erro `disallowed_useragent` do Google no Electron, abrindo o navegador padrão do sistema e capturando a sessão Supabase através de servidor HTTP temporário em `127.0.0.1:3000`.
+
+---
+
+## [1.2.50] — Formatação Didática de Aproximação & Rótulos SI no Módulo de Física (2026-09-29)
+
+### ⚛️ Física & Visualização Gráfica
+- **Símbolo de Aproximação Didática (`≈`) & Labels Humanos SI:**
+  - Higienização de saídas de dízimas e ponto flutuante com símbolo `≈` e rótulos explícitos com unidades físicas do SI (rad/s, Hz, s, m/s).
+  - Seletor rápido de precisão decimal com 1 clique (`Casas: [2 (Aprox)] [4] [6]`) diretamente nos parâmetros de entrada do módulo de física.
+
+---
+
 ## [1.2.29] — Auto-Bump de Release & Atualização de Dependências (2026-09-26)
 
 ### 🤖 CI/CD, Dependências & Performance
@@ -432,6 +495,6 @@ Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 ## 🔗 Navegação na Documentação (Obsidian)
 * [[Quantora - Visao Geral]]
 * [[Dashboard]]
-* [[Changelog & Historico de Bugs]]
+* [[Historico de Bugs]]
 * [[README]]
 * [[Deploy & Releases]]

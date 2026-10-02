@@ -221,6 +221,24 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 ### J. Link Mandatório de Acompanhamento de Commits (Regra Obrigatória)
 * **Princípio Mandatório:** Sempre que realizar um `git push` ou concluir uma tarefa que resulte em novo commit na branch `main` ou Pull Request, o agente DEVE expressamente fornecer o link clicável direto para o commit no GitHub (`https://github.com/Jklmkii/quantora/commit/<hash>`), permitindo ao desenvolvedor auditar e acompanhar o diff e os workflows de CI/CD em tempo real diretamente no navegador.
 
+### K. Guardião do Vault (Subagente `vault_guardian` & Ronda Contínua)
+* **Princípio Central:** Assim, sempre que o usuário disser *"Guardião, faça a ronda no cofre"* (ou termos afins: "faça a ronda", "audite o vault", "organize o cofre") ou quando outro agente (como a Jules AI ou agentes generalistas) terminar de escrever ou alterar documentação no cofre Obsidian, o subagente especializado `vault_guardian` assume e deixa tudo impecável.
+* **Gatilhos de Disparo:**
+  1. *Comando Explícito do Usuário:* Disparo imediato do `vault_guardian` via `invoke_subagent`.
+  2. *Gatilho Pós-Documentação:* Disparo autônomo ao concluir criação de novos projetos, novos MOCs ou refatoração profunda de notas.
+* **Ronda Obrigatória do Guardião:**
+  - Garantir a paleta oficial de 7 grupos cromáticos no Graph View e a física aberta anti-amontoamento (`centerStrength: 0.08`, `repelStrength: 24`, `linkDistance: 90`).
+  - Remover estilos `classDef` com cores fixas e escuras de diagramas Mermaid em novas notas para não quebrar temas.
+  - Converter citações cruas em callouts oficiais do Obsidian (`> [!NOTE]`, `> [!SUCCESS]`, etc.).
+  - Executar `.antigravity/automation/find_unresolved.cjs` (0 links quebrados).
+  - Executar `.antigravity/automation/generate_vault_catalog.cjs` para sincronizar `llms.txt`, `vault_catalog.json` e `Mapa Semantico do Cofre.md`.
+  - Preservar integralmente documentos em `30 - Recursos & IA/raw/`.
+
+### L. Princípio da Desambiguação Imediata (*Early Disambiguation Gate*)
+* **Prompts Lacônicos ou Ambíguos:** Diante de instruções ultracurtas (`"faca"`, `"sim"`, `"prossiga"`) ou ambíguas, o agente DEVE declarar sua interpretação e o escopo exato em 1 frase curta antes de tocar nos arquivos, prevenindo *Context Poisoning* e retrabalho.
+* **Proteção contra Buscas Cegas:** Comandos do usuário com `/browser` para debugar erros no código privado local devem ser gentilmente redirecionados para as ferramentas locais de diagnóstico (leitura de arquivos, terminal, logs e testes unitários com Vitest).
+* **Contrato de Definição de Pronto (DoD):** Toda alteração de código deve ser comprovada com execução e reporte do resultado real de `npx vitest run`, `npm run lint` e/ou `npm run build`.
+
 ---
 
 ## 🤖 6. Carta de Funções & Atribuições da Jules AI no Quantora
