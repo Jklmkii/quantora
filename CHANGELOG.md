@@ -2,6 +2,16 @@
 
 Todas as alterações notáveis deste projeto são documentadas neste arquivo.
 
+## [1.2.57] — Rotina Noturna Jules AI: Blindagem CSRF no Servidor OAuth Electron (2026-10-02)
+
+### 🛡️ Segurança & Hardening de Loopback (Sentinel PR #78)
+- **Blindagem contra CSRF no Loopback OAuth (`electron/main.cjs`):**
+  - Remoção completa de cabeçalhos CORS permissivos (`Access-Control-Allow-Origin: *`) no servidor loopback HTTP local do Electron.
+  - Implementação de validação estrita do cabeçalho `Origin` no endpoint `/auth-callback-data`, restringindo acessos exclusivamente a `http://127.0.0.1:3000` e `http://localhost:3000`.
+  - Rejeição imediata com HTTP 403 Forbidden para requisições cross-origin forjadas por sites maliciosos em execução no navegador do usuário, eliminando o vetor de sequestro de sessão durante o fluxo RFC 8252 do Google OAuth.
+
+---
+
 ## [1.2.56] — Rotinas Noturnas Jules AI: Entropia Criptográfica, Acessibilidade no Tray & useShallow (2026-09-30)
 
 ### 🛡️ Segurança & Entropia (Sentinel PR #75)
