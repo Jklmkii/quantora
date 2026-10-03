@@ -326,19 +326,16 @@ app.whenReady().then(() => {
       }
 
       const server = http.createServer((req, res) => {
-        // Preflight CORS
-        if (req.method === 'OPTIONS') {
-          res.writeHead(204, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          });
-          res.end();
-          return;
-        }
-
         // Endpoint que recebe a URL completa e tokens extraídos da página de callback
         if (req.method === 'POST' && req.url === '/auth-callback-data') {
+          // Security: Strict Origin validation to prevent CSRF from malicious external sites
+          const origin = req.headers.origin;
+          if (origin && origin !== 'http://127.0.0.1:3000' && origin !== 'http://localhost:3000') {
+            res.writeHead(403);
+            res.end('Forbidden: Invalid Origin');
+            return;
+          }
+
           let body = '';
           req.on('data', (chunk) => { body += chunk; });
           req.on('end', () => {
@@ -346,7 +343,6 @@ app.whenReady().then(() => {
               const data = JSON.parse(body);
               res.writeHead(200, {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
               });
               res.end(JSON.stringify({ ok: true }));
 
@@ -459,7 +455,6 @@ app.whenReady().then(() => {
 
         res.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
-          'Access-Control-Allow-Origin': '*',
         });
         res.end(html);
       });
