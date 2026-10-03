@@ -398,6 +398,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                 <button
                   type="button"
                   onClick={handleShareResult}
+                  aria-label={t.daily_share_challenge}
                   className="mt-2 py-2.5 px-4 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
                 >
                   <Share2 size={14} />

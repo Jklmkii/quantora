@@ -499,6 +499,7 @@ export const RegraDeTresModule: React.FC = () => {
                           onClick={() => removeCompostaColumn(col.id)}
                           className="p-1 text-red-500 hover:text-red-700"
                           title="Remover grandeza"
+                          aria-label="Remover grandeza"
                         >
                           <Trash2 size={14} />
                         </button>
