@@ -298,6 +298,15 @@ app.whenReady().then(() => {
 
   // RFC 8252 Loopback HTTP Server Handler for Google OAuth via System Browser
   ipcMain.handle('auth:openOAuth', async (event, { url }) => {
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        return { success: false, error: 'Invalid URL protocol for OAuth' };
+      }
+    } catch {
+      return { success: false, error: 'Malformed URL' };
+    }
+
     // Fecha qualquer servidor OAuth remanescente anterior
     if (activeOAuthServer) {
       try { activeOAuthServer.close(); } catch {}
