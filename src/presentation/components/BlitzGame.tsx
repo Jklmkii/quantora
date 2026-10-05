@@ -271,7 +271,7 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
           <button
             type="button"
             onClick={handleExit}
-            className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 py-1.5 px-3 rounded-xl hover:bg-slate-900 transition-colors"
+            className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 py-1.5 px-3 rounded-xl hover:bg-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
           >
             <ChevronLeft size={16} /> Voltar ao Treino
           </button>
@@ -326,7 +326,7 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
           <button
             type="button"
             onClick={startGame}
-            className="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-lg tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-[0.98] flex items-center justify-center gap-2.5 touch-target"
+            className="w-full max-w-md py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-lg tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(251,191,36,0.4)] active:scale-[0.98] flex items-center justify-center gap-2.5 touch-target focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/50"
           >
             <Zap size={22} className="fill-slate-950" />
             <span>Iniciar Blitz (60s)</span>
@@ -425,7 +425,7 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
             <button
               type="button"
               onClick={startGame}
-              className="flex-1 w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-sm tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(251,191,36,0.3)] flex items-center justify-center gap-2 touch-target active:scale-[0.98]"
+              className="flex-1 w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-sm tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(251,191,36,0.3)] flex items-center justify-center gap-2 touch-target active:scale-[0.98] focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/50"
             >
               <RotateCcw size={18} />
               <span>Jogar Novamente</span>
@@ -433,7 +433,7 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
             <button
               type="button"
               onClick={handleExit}
-              className="flex-1 w-full py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-sm transition-all border border-slate-800 flex items-center justify-center gap-2 touch-target"
+              className="flex-1 w-full py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-sm transition-all border border-slate-800 flex items-center justify-center gap-2 touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/50"
             >
               <ChevronLeft size={18} />
               <span>Voltar ao Menu</span>
@@ -456,7 +456,7 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
         <button
           type="button"
           onClick={handleExit}
-          className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 py-1 px-2.5 rounded-xl hover:bg-slate-900 transition-colors"
+          className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1 py-1 px-2.5 rounded-xl hover:bg-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
         >
           <ChevronLeft size={16} /> sair
         </button>
@@ -613,7 +613,7 @@ export const BlitzGame: React.FC<BlitzGameProps> = ({ onExit, onReturnToLobby })
                 type="button"
                 disabled={selectedOption !== null}
                 onClick={() => handleAnswer(option)}
-                className={`relative min-h-[72px] sm:min-h-[80px] p-4 rounded-2xl border-2 font-mono text-2xl sm:text-3xl font-black transition-all flex items-center justify-center active:scale-95 touch-target disabled:cursor-not-allowed ${buttonStyles}`}
+                className={`relative min-h-[72px] sm:min-h-[80px] p-4 rounded-2xl border-2 font-mono text-2xl sm:text-3xl font-black transition-all flex items-center justify-center active:scale-95 touch-target disabled:cursor-not-allowed focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/50 ${buttonStyles}`}
               >
                 <span className="absolute top-2 left-2.5 text-[10px] font-sans font-bold text-slate-500">
                   [{idx + 1}]

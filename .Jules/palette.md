@@ -10,3 +10,6 @@
 ## 2025-03-01 - Daily Challenge Keyboard Accessibility
 **Learning:** Adding visible focus states (`focus-visible:ring-*`) to multiple interactive elements (such as accordions, options, and submission buttons) within complex gamification cards drastically improves keyboard navigability, as complex custom UI components often accidentally suppress or obscure default focus styles.
 **Action:** When creating or evaluating custom gamification UI elements in the future, always explicitly verify tab-order styling with `focus-visible` classes to ensure screen-reader/keyboard users have clear contextual awareness of their location within the card.
+## 2024-10-05 - Missing Focus Styles in Mini-Games
+**Learning:** High-intensity interactive components like mini-games (e.g., BlitzGame) often overlook standard accessibility patterns like keyboard focus rings because they are primarily designed for fast-paced touch/mouse interaction.
+**Action:** Always ensure fast-paced game UI buttons retain explicit `focus-visible` styles so keyboard users can navigate and interact smoothly.
