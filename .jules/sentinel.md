@@ -38,3 +38,8 @@
 **Vulnerability:** The local loopback HTTP server in `electron/main.cjs` used for the Google OAuth callback had permissive CORS (`Access-Control-Allow-Origin: *`) on both `OPTIONS` and `POST` requests, and failed to validate the `Origin` header. This allowed malicious external websites running in the user's browser to send cross-origin requests to `http://127.0.0.1:3000/auth-callback-data` and hijack or interfere with the local application's OAuth flow via CSRF.
 **Learning:** Local loopback servers spun up by desktop applications are frequently targeted by malicious websites (Cross-Origin Resource Sharing attacks) if they do not enforce strict origin validations. Developers often add wildcard CORS to loopback servers during testing and forget to remove them.
 **Prevention:** Never use wildcard CORS on local loopback servers. Explicitly validate the `Origin` header against the expected local origin (e.g., `http://127.0.0.1:3000`) and deny requests from unauthorized external sites to prevent CSRF attacks.
+
+## 2025-05-24 - [Arbitrary URI Invocation via shell.openExternal]
+**Vulnerability:** The `auth:openOAuth` IPC handler passed an unvalidated user-controlled URL directly to `shell.openExternal(url)`, allowing potential execution of arbitrary URI schemes (like `file://` or `calculator://`).
+**Learning:** IPC handlers taking URLs from the renderer must strictly validate the protocol before passing them to OS-level functions like `shell.openExternal`, which can behave dangerously depending on OS handlers.
+**Prevention:** Always parse URLs using the `URL` constructor and enforce an allowlist of safe protocols (`http:`, `https:`) before calling `shell.openExternal`.
