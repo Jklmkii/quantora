@@ -43,3 +43,8 @@
 **Vulnerability:** The `auth:openOAuth` IPC handler passed an unvalidated user-controlled URL directly to `shell.openExternal(url)`, allowing potential execution of arbitrary URI schemes (like `file://` or `calculator://`).
 **Learning:** IPC handlers taking URLs from the renderer must strictly validate the protocol before passing them to OS-level functions like `shell.openExternal`, which can behave dangerously depending on OS handlers.
 **Prevention:** Always parse URLs using the `URL` constructor and enforce an allowlist of safe protocols (`http:`, `https:`) before calling `shell.openExternal`.
+
+## 2025-05-24 - [Domain Prefix Spoofing in Navigation Security]
+**Vulnerability:** The Electron `will-navigate` listener used `parsedUrl.hostname.endsWith('supabase.co')` to whitelist domains. This allowed an attacker to spoof the domain by registering something like `attacker-supabase.co`, completely bypassing the navigation restrictions because the string technically ends with the expected value.
+**Learning:** Checking `endsWith` on hostnames is dangerous and insufficient for validating domains, as it matches any domain suffix. This is a common flaw in URL validation logic.
+**Prevention:** Always check for an exact hostname match (`hostname === 'domain.com'`) or ensure the suffix check includes the dot separator (`hostname.endsWith('.domain.com')`) to prevent prefix injection attacks.
