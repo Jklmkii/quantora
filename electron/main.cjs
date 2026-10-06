@@ -226,12 +226,13 @@ app.on('web-contents-created', (event, contents) => {
 
     try {
       const parsedUrl = new URL(url);
+      const hostname = parsedUrl.hostname;
       if (
-        parsedUrl.hostname.endsWith('supabase.co') ||
-        parsedUrl.hostname.endsWith('google.com') ||
-        parsedUrl.hostname.endsWith('google.com.br') ||
-        parsedUrl.hostname.endsWith('gstatic.com') ||
-        parsedUrl.hostname.endsWith('accounts.google.com')
+        hostname === 'supabase.co' || hostname.endsWith('.supabase.co') ||
+        hostname === 'google.com' || hostname.endsWith('.google.com') ||
+        hostname === 'google.com.br' || hostname.endsWith('.google.com.br') ||
+        hostname === 'gstatic.com' || hostname.endsWith('.gstatic.com') ||
+        hostname === 'accounts.google.com' || hostname.endsWith('.accounts.google.com')
       ) {
         return;
       }
