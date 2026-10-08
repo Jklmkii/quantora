@@ -861,10 +861,21 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
           {/* Action Buttons */}
           <div className="w-full flex flex-col sm:flex-row gap-3 z-10 pt-2">
+            {battleState.level < 15 && (
+              <button
+                type="button"
+                onClick={() => startBattle(battleState.level + 1)}
+                className="flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              >
+                <Swords size={18} />
+                Próximo Chefe (Nível {battleState.level + 1}) →
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setScreen('level_select')}
-              className="flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className={`${battleState.level < 15 ? '' : 'flex-1'} py-3 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer`}
             >
               <Trophy size={18} />
               {t.boss_back_to_levels || 'Voltar aos Níveis'}
@@ -991,7 +1002,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   // --------------------------------------------------------------------------
   return (
     <div
-      className={`flex flex-col gap-4 max-w-xl mx-auto pb-24 md:pb-12 select-none transition-transform duration-100 ${
+      className={`flex flex-col gap-3 max-w-xl mx-auto pb-12 md:pb-6 select-none transition-transform duration-100 ${
         isShaking ? 'translate-x-1 -translate-y-1 scale-[1.01]' : ''
       }`}
     >
@@ -1020,7 +1031,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
       {/* Main Arena Combat Card */}
       <div
-        className={`relative p-6 sm:p-7 rounded-3xl bg-slate-950 text-white border-2 transition-all duration-300 shadow-2xl flex flex-col items-center gap-5 overflow-hidden ${
+        className={`relative p-5 sm:p-6 rounded-3xl bg-slate-950 text-white border-2 transition-all duration-300 shadow-2xl flex flex-col items-center gap-4 overflow-hidden ${
           isRageMode
             ? 'border-red-600/90 shadow-red-600/30 ring-2 ring-red-500/20'
             : flashColor === 'gold'
@@ -1055,9 +1066,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         ) : null}
 
         {/* BOSS SECTION */}
-        <div className="w-full flex flex-col items-center gap-3 z-10 pt-4 sm:pt-6">
+        <div className="w-full flex flex-col items-center gap-2.5 z-10 pt-2 sm:pt-3">
           {/* Boss Identity & Avatar */}
-          <div className="relative flex flex-col items-center mt-6 sm:mt-8">
+          <div className="relative flex flex-col items-center mt-3 sm:mt-4">
             {/* Floating Damage Text */}
             <div className="absolute -top-12 sm:-top-14 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
               {floatingTexts.map((ft) => (
@@ -1066,31 +1077,31 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   className={`animate-bounce font-black font-mono tracking-tight text-xl sm:text-2xl px-3.5 py-1 rounded-full drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] ${
                     ft.type === 'critical'
                       ? 'bg-gradient-to-r from-amber-500 to-red-500 text-white border border-yellow-300 ring-2 ring-yellow-400/50 scale-110'
-                      : ft.type === 'shield_loss'
-                      ? 'bg-red-600 text-white border border-red-300'
-                      : ft.type === 'correction'
-                      ? 'bg-emerald-500 text-slate-950 border-2 border-emerald-300 font-black shadow-lg shadow-emerald-500/50'
-                      : 'bg-emerald-500 text-slate-950 font-extrabold'
-                  }`}
-                >
-                  {ft.text}
-                </div>
-              ))}
-            </div>
+                    : ft.type === 'shield_loss'
+                    ? 'bg-red-600 text-white border border-red-300'
+                    : ft.type === 'correction'
+                    ? 'bg-emerald-500 text-slate-950 border-2 border-emerald-300 font-black shadow-lg shadow-emerald-500/50'
+                    : 'bg-emerald-500 text-slate-950 font-extrabold'
+                }`}
+              >
+                {ft.text}
+              </div>
+            ))}
+          </div>
 
-            {/* Avatar Circle */}
-            <div
-              className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl p-1 flex items-center justify-center shadow-2xl transition-all duration-300 ${
-                isBossRecoiling ? 'scale-90 rotate-6 bg-red-500' : 'scale-100'
-              } ${
-                isPhase3
-                  ? 'bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 shadow-red-600/70 animate-pulse ring-4 ring-red-500/40'
-                  : isPhase2
-                  ? 'bg-gradient-to-tr from-amber-600 via-yellow-500 to-orange-500 shadow-amber-600/50 animate-pulse'
-                  : 'bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-600 shadow-purple-900/50'
-              }`}
-            >
-              <div className="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center overflow-hidden relative">
+          {/* Avatar Circle */}
+          <div
+            className={`relative w-18 h-18 sm:w-20 sm:h-20 rounded-3xl p-1 flex items-center justify-center shadow-2xl transition-all duration-300 ${
+              isBossRecoiling ? 'scale-90 rotate-6 bg-red-500' : 'scale-100'
+            } ${
+              isPhase3
+                ? 'bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 shadow-red-600/70 animate-pulse ring-4 ring-red-500/40'
+                : isPhase2
+                ? 'bg-gradient-to-tr from-amber-600 via-yellow-500 to-orange-500 shadow-amber-600/50 animate-pulse'
+                : 'bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-600 shadow-purple-900/50'
+            }`}
+          >
+            <div className="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center overflow-hidden relative">
                 {battleState.bossIdentity.avatarIcon === 'flame' ? (
                   <Flame size={42} className={isPhase3 ? 'text-red-400 fill-red-400/50' : 'text-amber-400'} />
                 ) : battleState.bossIdentity.avatarIcon === 'crown' ? (
@@ -1424,7 +1435,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
         {/* PLAYER HUD */}
         <div
-          className={`w-full p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-4 z-10 transition-transform duration-150 ${
+          className={`w-full p-3 sm:p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-4 z-10 transition-transform duration-150 ${
             isPlayerRecoiling ? 'bg-red-950/40 border-red-500/50 scale-95' : ''
           }`}
         >

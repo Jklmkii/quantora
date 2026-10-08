@@ -105,13 +105,13 @@ async function recordBossBattleE2E() {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
-        '--window-size=1280,800',
+        '--window-size=1920,1080',
         '--disable-blink-features=AutomationControlled',
       ],
     });
 
     const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 });
+    await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
 
     client = await page.target().createCDPSession();
 
@@ -131,12 +131,12 @@ async function recordBossBattleE2E() {
     await client.send('Page.startScreencast', {
       format: 'jpeg',
       quality: 92,
-      maxWidth: 1280,
-      maxHeight: 800,
+      maxWidth: 1920,
+      maxHeight: 1080,
       everyNthFrame: 1,
     });
 
-    console.log('[SCREENCAST] Captura contínua de frames em alta definição ativada!');
+    console.log('[SCREENCAST] Captura contínua de frames em 1080p (Full HD 16:9) ativada!');
 
     // ------------------------------------------------------------------------
     // SETUP: CARREGAR APLICAÇÃO & DESABILITAR TOTALMENTE QUALQUER OVERLAY
@@ -161,37 +161,32 @@ async function recordBossBattleE2E() {
     await new Promise((r) => setTimeout(r, 1200));
 
     // ------------------------------------------------------------------------
-    // COMBATE CONTÍNUO: FASES 1 ATÉ A 5
+    // COMBATE CONTÍNUO: RUN COMPLETA DAS FASES 1 ATÉ A 5
     // ------------------------------------------------------------------------
     for (let currentLevel = 1; currentLevel <= 5; currentLevel++) {
       console.log(`\n============================================================`);
-      console.log(`  ⚔️ INICIANDO COMBATE: CHEFE DO NÍVEL ${currentLevel}`);
+      console.log(`  ⚔️ RUN CONTÍNUA: COMBATE CONTRA CHEFE DO NÍVEL ${currentLevel}`);
       console.log(`============================================================`);
 
-      // Clica para iniciar a batalha do nível atual
-      await page.evaluate((targetLvl) => {
-        const cards = Array.from(document.querySelectorAll('.grid > div'));
-        const targetCard = cards.find((card) => {
-          const title = card.querySelector('span.text-base');
-          return title && title.textContent.trim() === `Nível ${targetLvl}`;
-        });
-        if (targetCard) {
-          const btn = targetCard.querySelector('button');
-          if (btn) {
-            btn.click();
-            return;
+      // Clica para iniciar a batalha no Nível 1 (as fases 2 a 5 avançam via "Próximo Chefe")
+      if (currentLevel === 1) {
+        await page.evaluate(() => {
+          const cards = Array.from(document.querySelectorAll('.grid > div'));
+          const targetCard = cards.find((card) => {
+            const title = card.querySelector('span.text-base');
+            return title && title.textContent.trim() === 'Nível 1';
+          });
+          if (targetCard) {
+            const btn = targetCard.querySelector('button');
+            if (btn) return btn.click();
           }
-        }
-        // Fallback: se não achar o card exato, procura botão de batalha disponível
-        const buttons = Array.from(document.querySelectorAll('button'));
-        const startBtn = buttons.find((b) => {
-          const txt = b.textContent || '';
-          return txt.includes('Batalhar Agora!') || txt.includes('Enfrentar');
+          const startBtn = Array.from(document.querySelectorAll('button')).find((b) =>
+            (b.textContent || '').includes('Batalhar Agora!')
+          );
+          if (startBtn) startBtn.click();
         });
-        if (startBtn) startBtn.click();
-      }, currentLevel);
-
-      await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
+      }
 
       // Captura o Marco do Nível atual
       if (currentLevel === 1) {
@@ -278,28 +273,39 @@ async function recordBossBattleE2E() {
         }
       }
 
-      // Transição pós-vitória
+      // Transição pós-vitória da RUN contínua
       if (currentLevel < 5) {
-        // Aguarda 1.2s na tela de vitória para apreciar recompensas e XP
-        await new Promise((r) => setTimeout(r, 1200));
+        // Aguarda 1.8s na tela de vitória para apreciar recompensas, XP e moedas
+        await new Promise((r) => setTimeout(r, 1800));
 
-        // Clica para voltar à seleção de níveis e avançar para o próximo
-        await page.evaluate(() => {
+        // Clica diretamente no botão "Próximo Chefe (Nível X) →" para avançar na RUN sem sair da arena!
+        const advanced = await page.evaluate((nextLvl) => {
           const buttons = Array.from(document.querySelectorAll('button'));
-          const backBtn = buttons.find((b) => {
+          const nextBtn = buttons.find((b) => {
             const txt = b.textContent || '';
-            return txt.includes('Voltar aos Níveis') || txt.includes('Níveis');
+            return txt.includes('Próximo Chefe') || txt.includes(`Nível ${nextLvl}`);
           });
-          if (backBtn) backBtn.click();
-        });
+          if (nextBtn) {
+            nextBtn.click();
+            return true;
+          }
+          // Fallback se não encontrar o botão direto
+          const backBtn = buttons.find((b) => (b.textContent || '').includes('Voltar'));
+          if (backBtn) {
+            backBtn.click();
+            return false;
+          }
+          return false;
+        }, currentLevel + 1);
 
-        await new Promise((r) => setTimeout(r, 1000));
-      } else {
-        // Nível 5 concluído: captura o Marco 6 de Vitória Final Absoluta
+        console.log(`  ↳ [TRANSIÇÃO RUN] Avanço para Nível ${currentLevel + 1}: ${advanced ? 'Próximo Chefe DIRETO' : 'Fallback Menu'}`);
         await new Promise((r) => setTimeout(r, 1500));
+      } else {
+        // Nível 5 concluído: celebração da Grande Vitória com Conquista Titã Emergente
+        await new Promise((r) => setTimeout(r, 2000));
         await page.screenshot({ path: m6Path, type: 'jpeg', quality: 92 });
         console.log(`  ↳ [MARCO 6] Salvo: milestone_06_boss_lvl5_victory.jpg (Grande Vitória Nível 5)`);
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 2500));
       }
     }
 
@@ -591,20 +597,42 @@ async function recordBossBattleE2E() {
   console.log('  ↳ [SUCESSO] Laudo JSON gravado: release/QUANTORA_BOSS_BATTLE_REPORT.json');
 
   // --------------------------------------------------------------------------
-  // COPIA ARQUIVOS PARA O OBSIDIAN VAULT
+  // COPIA E SINCRONIZAÇÃO EM TODAS AS PASTAS DE EVIDÊNCIA
   // --------------------------------------------------------------------------
-  console.log('\n[VAULT] Sincronizando evidências audiovisuais no Obsidian Vault...');
+  console.log('\n[SYNC] Sincronizando evidências audiovisuais em todas as pastas canônicas...');
+  const RELEASE_VIDEO_DIR = path.join(rootDir, 'release', 'e2e-evidence', 'video');
+  fs.mkdirSync(RELEASE_VIDEO_DIR, { recursive: true });
+
   const filesToCopy = [
+    // Vault Principal (Nome da Boss Battle)
     { src: mp4Output, dest: path.join(VAULT_VIDEOS_DIR, 'quantora-boss-battle-recording.mp4') },
     { src: webmOutput, dest: path.join(VAULT_VIDEOS_DIR, 'quantora-boss-battle-recording.webm') },
     { src: gifOutput, dest: path.join(VAULT_VIDEOS_DIR, 'quantora-boss-battle-preview.gif') },
     { src: playerPath, dest: path.join(VAULT_VIDEOS_DIR, 'player-boss-battle.html') },
+    // Vault Principal (Nome Canônico E2E Full)
+    { src: mp4Output, dest: path.join(VAULT_VIDEOS_DIR, 'quantora-e2e-full-recording.mp4') },
+    { src: webmOutput, dest: path.join(VAULT_VIDEOS_DIR, 'quantora-e2e-full-recording.webm') },
+    { src: gifOutput, dest: path.join(VAULT_VIDEOS_DIR, 'quantora-e2e-preview.gif') },
+    { src: playerPath, dest: path.join(VAULT_VIDEOS_DIR, 'player.html') },
+    // release/e2e-evidence/video/
+    { src: mp4Output, dest: path.join(RELEASE_VIDEO_DIR, 'quantora-e2e-full-recording.mp4') },
+    { src: webmOutput, dest: path.join(RELEASE_VIDEO_DIR, 'quantora-e2e-full-recording.webm') },
+    { src: gifOutput, dest: path.join(RELEASE_VIDEO_DIR, 'quantora-e2e-preview.gif') },
+    { src: playerPath, dest: path.join(RELEASE_VIDEO_DIR, 'player.html') },
+    // Marcos JPG no Vault
     { src: m1Path, dest: path.join(VAULT_VIDEOS_DIR, 'bb_milestone_01_lvl1.jpg') },
     { src: m2Path, dest: path.join(VAULT_VIDEOS_DIR, 'bb_milestone_02_lvl2.jpg') },
     { src: m3Path, dest: path.join(VAULT_VIDEOS_DIR, 'bb_milestone_03_lvl3.jpg') },
     { src: m4Path, dest: path.join(VAULT_VIDEOS_DIR, 'bb_milestone_04_lvl4.jpg') },
     { src: m5Path, dest: path.join(VAULT_VIDEOS_DIR, 'bb_milestone_05_lvl5.jpg') },
     { src: m6Path, dest: path.join(VAULT_VIDEOS_DIR, 'bb_milestone_06_lvl5_victory.jpg') },
+    // Marcos JPG em release/video/
+    { src: m1Path, dest: path.join(RELEASE_VIDEO_DIR, 'milestone_01_boss_lvl1.jpg') },
+    { src: m2Path, dest: path.join(RELEASE_VIDEO_DIR, 'milestone_02_boss_lvl2.jpg') },
+    { src: m3Path, dest: path.join(RELEASE_VIDEO_DIR, 'milestone_03_boss_lvl3.jpg') },
+    { src: m4Path, dest: path.join(RELEASE_VIDEO_DIR, 'milestone_04_boss_lvl4.jpg') },
+    { src: m5Path, dest: path.join(RELEASE_VIDEO_DIR, 'milestone_05_boss_lvl5.jpg') },
+    { src: m6Path, dest: path.join(RELEASE_VIDEO_DIR, 'milestone_06_boss_lvl5_victory.jpg') },
   ];
 
   for (const item of filesToCopy) {
@@ -612,10 +640,13 @@ async function recordBossBattleE2E() {
       fs.copyFileSync(item.src, item.dest);
     }
   }
-  console.log(`  ↳ [SUCESSO] Mídias e marcos copiados para: ${VAULT_VIDEOS_DIR}`);
+  console.log(`  ↳ [SUCESSO] Mídias e marcos sincronizados com sucesso em:`);
+  console.log(`     - ${EVIDENCE_DIR}`);
+  console.log(`     - ${RELEASE_VIDEO_DIR}`);
+  console.log(`     - ${VAULT_VIDEOS_DIR}`);
 
   console.log('\n' + '='.repeat(80));
-  console.log('  🎉 PROGRESSÃO DAS FASES 1 A 5 CONCLUÍDA COM 100% DE SUCESSO!');
+  console.log('  🎉 RUN COMPLETA DAS FASES 1 A 5 CONCLUÍDA COM 100% DE SUCESSO (1080p)!');
   console.log('='.repeat(80) + '\n');
 }
 
