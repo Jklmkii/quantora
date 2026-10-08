@@ -195,6 +195,8 @@ export interface UserProfileStats {
   criticalHits?: number;
   highestBossLevelCleared?: number;
   bossCoins?: number;
+  bossTokens?: number;
+  bossClearedLevels?: number[];
   damageUpgradeLevel?: number;
   bossOracleCharges?: number;
   bossTimeFreezeCharges?: number;
@@ -225,6 +227,8 @@ export interface BossRushStats {
   flawlessVictories: number;
   highestBossLevelCleared?: number;
   bossCoins?: number;
+  bossTokens?: number;
+  bossClearedLevels?: number[];
   damageUpgradeLevel?: number;
   bossOracleCharges?: number;
   bossTimeFreezeCharges?: number;

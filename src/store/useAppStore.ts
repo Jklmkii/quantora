@@ -73,6 +73,8 @@ interface AppState {
   recordBlitzResult: (score: number, maxCombo: number, correctCount: number, xpEarned: number) => void;
   highestBossLevelCleared: number;
   bossCoins: number;
+  bossTokens: number;
+  bossClearedLevels: number[];
   damageUpgradeLevel: number;
   bossOracleCharges: number;
   bossTimeFreezeCharges: number;
@@ -82,9 +84,11 @@ interface AppState {
     arg3?: number,
     arg4?: number,
     arg5?: number
-  ) => void;
+  ) => { isFirstClear: boolean; tokensAwarded: number };
   purchaseDamageUpgrade: () => boolean;
+  purchaseDamageUpgradeWithToken: () => boolean;
   buyBossConsumable: (type: 'oracle' | 'timeFreeze') => boolean;
+  buyBossConsumableWithToken: (type: 'oracle' | 'timeFreeze') => boolean;
   consumeBossConsumableCharge: (type: 'oracle' | 'timeFreeze') => boolean;
   resetBossProgress: () => void;
 
@@ -161,6 +165,8 @@ const DEFAULT_PROFILE: UserProfile = {
     criticalHits: 0,
     highestBossLevelCleared: 0,
     bossCoins: 0,
+    bossTokens: 0,
+    bossClearedLevels: [],
     damageUpgradeLevel: 0,
     bossOracleCharges: 0,
     bossTimeFreezeCharges: 0,
@@ -413,11 +419,15 @@ export const useAppStore = create<AppState>()(
 
       highestBossLevelCleared: 0,
       bossCoins: 0,
+      bossTokens: 0,
+      bossClearedLevels: [],
       damageUpgradeLevel: 0,
       bossOracleCharges: 0,
       bossTimeFreezeCharges: 0,
 
       recordBossVictory: (arg1, arg2, arg3, arg4, arg5) => {
+        let isFirstClear = false;
+        let tokensAwarded = 0;
         set((state) => {
           const prevProf = state.profile || DEFAULT_PROFILE;
           const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
@@ -454,6 +464,14 @@ export const useAppStore = create<AppState>()(
           const actualCoins = coinsEarned !== undefined ? coinsEarned : coinsForLevel(level);
           const isFlawless = shieldsRemaining >= 3;
 
+          const prevCleared = Array.isArray(state.bossClearedLevels)
+            ? state.bossClearedLevels
+            : (Array.isArray(prevStats.bossClearedLevels) ? prevStats.bossClearedLevels : []);
+          isFirstClear = !prevCleared.includes(level);
+          tokensAwarded = isFirstClear ? 1 : 0;
+          const nextCleared = isFirstClear ? [...prevCleared, level].sort((a, b) => a - b) : prevCleared;
+          const nextTokens = (state.bossTokens || 0) + tokensAwarded;
+
           const newHighestLevel = Math.max(
             state.highestBossLevelCleared || 0,
             prevStats.highestBossLevelCleared || 0,
@@ -467,6 +485,8 @@ export const useAppStore = create<AppState>()(
             flawlessBossVictories: (prevStats.flawlessBossVictories || 0) + (isFlawless ? 1 : 0),
             highestBossLevelCleared: newHighestLevel,
             bossCoins: newBossCoins,
+            bossTokens: nextTokens,
+            bossClearedLevels: nextCleared,
           };
 
           const newTotalXp = (prevProf.totalXp || 0) + Math.max(0, xpEarned);
@@ -488,6 +508,8 @@ export const useAppStore = create<AppState>()(
           return {
             highestBossLevelCleared: newHighestLevel,
             bossCoins: newBossCoins,
+            bossTokens: nextTokens,
+            bossClearedLevels: nextCleared,
             profile: {
               ...candidate,
               totalXp: newTotalXp + bonusXp,
@@ -496,6 +518,7 @@ export const useAppStore = create<AppState>()(
             toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
           };
         });
+        return { isFirstClear, tokensAwarded };
       },
 
       purchaseDamageUpgrade: () => {
@@ -548,6 +571,54 @@ export const useAppStore = create<AppState>()(
         return purchased;
       },
 
+      purchaseDamageUpgradeWithToken: () => {
+        let purchased = false;
+        set((state) => {
+          const currentTokens = state.bossTokens || 0;
+          if (currentTokens < 1) {
+            return {};
+          }
+
+          purchased = true;
+          const currentUpgradeLevel = state.damageUpgradeLevel || 0;
+          const nextUpgradeLevel = currentUpgradeLevel + 1;
+          const nextTokens = currentTokens - 1;
+
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+
+          const candidateProfile: UserProfile = {
+            ...prevProf,
+            stats: {
+              ...prevStats,
+              bossTokens: nextTokens,
+              damageUpgradeLevel: nextUpgradeLevel,
+            },
+          };
+
+          const newlyUnlockedIds = checkNewAchievements(candidateProfile);
+          const newlyUnlockedDefs = newlyUnlockedIds
+            .map((id) => ACHIEVEMENTS.find((a) => a.id === id))
+            .filter((a): a is AchievementDef => Boolean(a));
+          let bonusXp = 0;
+          for (const def of newlyUnlockedDefs) {
+            bonusXp += def.xpReward || 0;
+          }
+
+          return {
+            bossTokens: nextTokens,
+            damageUpgradeLevel: nextUpgradeLevel,
+            profile: {
+              ...candidateProfile,
+              totalXp: (candidateProfile.totalXp || 0) + bonusXp,
+              unlockedAchievements: [...new Set([...(prevProf.unlockedAchievements || []), ...newlyUnlockedIds])],
+            },
+            toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
+          };
+        });
+        return purchased;
+      },
+
       buyBossConsumable: (type) => {
         let purchased = false;
         set((state) => {
@@ -577,6 +648,42 @@ export const useAppStore = create<AppState>()(
               stats: {
                 ...prevStats,
                 bossCoins: nextCoins,
+                bossOracleCharges: nextOracle,
+                bossTimeFreezeCharges: nextTimeFreeze,
+              },
+            },
+          };
+        });
+        return purchased;
+      },
+
+      buyBossConsumableWithToken: (type) => {
+        let purchased = false;
+        set((state) => {
+          const currentTokens = state.bossTokens || 0;
+          if (currentTokens < 1) {
+            return {};
+          }
+
+          purchased = true;
+          const nextTokens = currentTokens - 1;
+          const currentOracle = state.bossOracleCharges || 0;
+          const currentTimeFreeze = state.bossTimeFreezeCharges || 0;
+          const nextOracle = type === 'oracle' ? currentOracle + 1 : currentOracle;
+          const nextTimeFreeze = type === 'timeFreeze' ? currentTimeFreeze + 1 : currentTimeFreeze;
+
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+
+          return {
+            bossTokens: nextTokens,
+            bossOracleCharges: nextOracle,
+            bossTimeFreezeCharges: nextTimeFreeze,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                bossTokens: nextTokens,
                 bossOracleCharges: nextOracle,
                 bossTimeFreezeCharges: nextTimeFreeze,
               },
@@ -626,6 +733,8 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           highestBossLevelCleared: 0,
           bossCoins: 0,
+          bossTokens: 0,
+          bossClearedLevels: [],
           damageUpgradeLevel: 0,
           bossOracleCharges: 0,
           bossTimeFreezeCharges: 0,
@@ -635,6 +744,8 @@ export const useAppStore = create<AppState>()(
               ...state.profile?.stats,
               highestBossLevelCleared: 0,
               bossCoins: 0,
+              bossTokens: 0,
+              bossClearedLevels: [],
               damageUpgradeLevel: 0,
               bossOracleCharges: 0,
               bossTimeFreezeCharges: 0,
@@ -1071,6 +1182,10 @@ export const useAppStore = create<AppState>()(
                 ? stateData.highestBossLevelCleared
                 : current.highestBossLevelCleared,
             bossCoins: typeof stateData.bossCoins === 'number' ? stateData.bossCoins : current.bossCoins,
+            bossTokens: typeof stateData.bossTokens === 'number' ? stateData.bossTokens : current.bossTokens,
+            bossClearedLevels: Array.isArray(stateData.bossClearedLevels)
+              ? (stateData.bossClearedLevels as number[])
+              : current.bossClearedLevels,
             damageUpgradeLevel:
               typeof stateData.damageUpgradeLevel === 'number'
                 ? stateData.damageUpgradeLevel
@@ -1100,7 +1215,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'quantora-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 8,
+      version: 9,
       migrate: (persistedState: any, version: number) => {
         const state = persistedState as any;
         if (!version || version < 2) {
@@ -1176,6 +1291,20 @@ export const useAppStore = create<AppState>()(
         if (!version || version < 8) {
           state.activeTab = 'hub';
           if (state.quizSubmode === undefined) state.quizSubmode = 'survival';
+        }
+        if (!version || version < 9) {
+          if (state.bossTokens === undefined) state.bossTokens = 0;
+          if (!Array.isArray(state.bossClearedLevels)) {
+            const highest = typeof state.highestBossLevelCleared === 'number' ? state.highestBossLevelCleared : 0;
+            state.bossClearedLevels = Array.from({ length: highest }, (_, i) => i + 1);
+          }
+          if (state?.profile?.stats) {
+            if (state.profile.stats.bossTokens === undefined) state.profile.stats.bossTokens = 0;
+            if (!Array.isArray(state.profile.stats.bossClearedLevels)) {
+              const highest = typeof state.profile.stats.highestBossLevelCleared === 'number' ? state.profile.stats.highestBossLevelCleared : 0;
+              state.profile.stats.bossClearedLevels = Array.from({ length: highest }, (_, i) => i + 1);
+            }
+          }
         }
         return state;
       },

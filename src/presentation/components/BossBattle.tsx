@@ -18,6 +18,7 @@ import {
   ChevronDown,
   ChevronUp,
   Coins,
+  Ticket,
   Lock,
   CheckCircle2,
   XCircle,
@@ -79,12 +80,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     totalXp,
     highestBossLevelCleared,
     bossCoins,
+    bossTokens,
+    bossClearedLevels,
     damageUpgradeLevel,
     bossOracleCharges,
     bossTimeFreezeCharges,
     recordBossVictory,
     purchaseDamageUpgrade,
+    purchaseDamageUpgradeWithToken,
     buyBossConsumable,
+    buyBossConsumableWithToken,
     consumeBossConsumableCharge,
     addXp,
     unlockAchievement,
@@ -94,12 +99,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       totalXp: s.profile?.totalXp || 0,
       highestBossLevelCleared: s.highestBossLevelCleared ?? s.profile?.stats?.highestBossLevelCleared ?? 0,
       bossCoins: s.bossCoins ?? s.profile?.stats?.bossCoins ?? 0,
+      bossTokens: s.bossTokens ?? s.profile?.stats?.bossTokens ?? 0,
+      bossClearedLevels: s.bossClearedLevels ?? s.profile?.stats?.bossClearedLevels ?? [],
       damageUpgradeLevel: s.damageUpgradeLevel ?? s.profile?.stats?.damageUpgradeLevel ?? 0,
       bossOracleCharges: s.bossOracleCharges ?? s.profile?.stats?.bossOracleCharges ?? 0,
       bossTimeFreezeCharges: s.bossTimeFreezeCharges ?? s.profile?.stats?.bossTimeFreezeCharges ?? 0,
       recordBossVictory: s.recordBossVictory,
       purchaseDamageUpgrade: s.purchaseDamageUpgrade,
+      purchaseDamageUpgradeWithToken: s.purchaseDamageUpgradeWithToken,
       buyBossConsumable: s.buyBossConsumable,
+      buyBossConsumableWithToken: s.buyBossConsumableWithToken,
       consumeBossConsumableCharge: s.consumeBossConsumableCharge,
       addXp: s.addXp,
       unlockAchievement: s.unlockAchievement,
@@ -130,6 +139,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const [manualInput, setManualInput] = useState<string>('');
   const [isManualInputMode, setIsManualInputMode] = useState<boolean>(false);
   const [dispelledQuestionId, setDispelledQuestionId] = useState<string | null>(null);
+  const [isFirstClearReward, setIsFirstClearReward] = useState<boolean>(false);
 
   const isFogDispelled = Boolean(
     battleState.currentQuestion?.id && dispelledQuestionId === battleState.currentQuestion.id
@@ -187,6 +197,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         timerRef.current = null;
       }
       victoryRecordedRef.current = false;
+      setIsFirstClearReward(false);
       setSelectedLevel(level);
       setBattleState(
         createInitialBossBattleState(
@@ -340,6 +351,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       // Dynamic cinematic delay: fast (800ms) on hit to maintain rhythm, extended (1500ms) on error to absorb correct answer
       const nextDelay = roundResult.isCorrect ? 800 : 1500;
       setTimeout(() => {
+        if (nextState.status === 'victory') {
+          const wasCleared =
+            (bossClearedLevels || []).includes(nextState.level) ||
+            nextState.level <= (highestBossLevelCleared || 0);
+          setIsFirstClearReward(!wasCleared);
+        }
         setBattleState(nextState);
         setSelectedOption(null);
         setManualInput('');
@@ -347,7 +364,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         setIsResolving(false);
       }, nextDelay);
     },
-    [isResolving, battleState, damageUpgradeLevel, addFloatingText, currentRoundTimeLimit]
+    [
+      isResolving,
+      battleState,
+      damageUpgradeLevel,
+      addFloatingText,
+      currentRoundTimeLimit,
+      bossClearedLevels,
+      highestBossLevelCleared,
+    ]
   );
 
   // Handle timeout when round time elapses
@@ -500,12 +525,26 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <div />
           )}
 
-          {/* Coins Balance */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-100 border border-amber-300 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-400 font-black text-sm shadow-xs">
-            <Coins size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>
-              {bossCoins} {t.boss_coins || 'Moedas'}
-            </span>
+          {/* Tokens & Coins Balance */}
+          <div className="flex items-center gap-2">
+            {/* Tokens Balance */}
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-amber-500/15 border border-amber-400/50 text-amber-900 dark:bg-amber-400/10 dark:border-amber-400/30 dark:text-amber-300 font-black text-xs sm:text-sm shadow-xs"
+              title="Fichas de Conquista: Ganhas na primeira vitória de cada fase. Permitem resgatar upgrades ou power-ups gratuitamente!"
+            >
+              <Ticket size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>
+                {bossTokens} {bossTokens === 1 ? 'Ficha' : 'Fichas'}
+              </span>
+            </div>
+
+            {/* Coins Balance */}
+            <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-amber-100 border border-amber-300 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-400 font-black text-xs sm:text-sm shadow-xs">
+              <Coins size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>
+                {bossCoins} {t.boss_coins || 'Moedas'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -582,27 +621,46 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
               <span>Próximo nível (+3 de dano): </span>
               <strong className="text-amber-700 dark:text-amber-300 font-mono font-bold">{nextCost} Moedas</strong>
+              {bossTokens > 0 && (
+                <span className="block text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-0.5">
+                  🎟️ Você possui {bossTokens} {bossTokens === 1 ? 'ficha disponível' : 'fichas disponíveis'} para resgate gratuito!
+                </span>
+              )}
             </div>
 
-            <button
-              type="button"
-              disabled={!canAfford}
-              onClick={() => {
-                if (canAfford) {
-                  purchaseDamageUpgrade();
-                }
-              }}
-              className={`w-full sm:w-auto py-2.5 px-5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                canAfford
-                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98]'
-                  : 'bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50 cursor-not-allowed font-bold'
-              }`}
-            >
-              <Sparkles size={16} />
-              {canAfford
-                ? `${t.boss_upgrade_btn || 'Melhorar Dano (+3)'} • ${nextCost} 🪙`
-                : `Moedas Insuficientes (${bossCoins}/${nextCost})`}
-            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+              {bossTokens > 0 && (
+                <button
+                  type="button"
+                  onClick={() => purchaseDamageUpgradeWithToken()}
+                  className="w-full sm:w-auto py-2.5 px-4 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 shadow-md shadow-amber-400/25 hover:scale-[1.02] active:scale-[0.98]"
+                  title="Gastar 1 Ficha de Conquista para melhorar o dano gratuitamente sem moedas"
+                >
+                  <Ticket size={15} />
+                  <span>Usar 1 Ficha (Grátis)</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                disabled={!canAfford}
+                onClick={() => {
+                  if (canAfford) {
+                    purchaseDamageUpgrade();
+                  }
+                }}
+                className={`w-full sm:w-auto py-2.5 px-5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  canAfford
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98]'
+                    : 'bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50 cursor-not-allowed font-bold'
+                }`}
+              >
+                <Sparkles size={16} />
+                {canAfford
+                  ? `${t.boss_upgrade_btn || 'Melhorar Dano (+3)'} • ${nextCost} 🪙`
+                  : `Moedas Insuficientes (${bossCoins}/${nextCost})`}
+              </button>
+            </div>
           </div>
 
           {/* Consumable Shop Section */}
@@ -630,18 +688,35 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={!canAffordOracle}
-                  onClick={() => buyBossConsumable('oracle')}
-                  className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                    canAffordOracle
-                      ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/20 cursor-pointer active:scale-95'
-                      : 'bg-slate-200 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                  }`}
-                >
-                  <Coins size={13} /> Comprar Carga ({ORACLE_COST} 🪙)
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    disabled={!canAffordOracle}
+                    onClick={() => buyBossConsumable('oracle')}
+                    className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      canAffordOracle
+                        ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/20 cursor-pointer active:scale-95'
+                        : 'bg-slate-200 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <Coins size={13} /> {ORACLE_COST} 🪙
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={bossTokens < 1}
+                    onClick={() => buyBossConsumableWithToken('oracle')}
+                    className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      bossTokens >= 1
+                        ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 cursor-pointer active:scale-95'
+                        : 'bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-800/50 cursor-not-allowed'
+                    }`}
+                    title="Resgatar carga de Oráculo usando 1 Ficha de Conquista"
+                  >
+                    <Ticket size={13} className="text-amber-600 dark:text-amber-400" />
+                    <span>1 Ficha</span>
+                  </button>
+                </div>
               </div>
 
               {/* Time Freeze */}
@@ -661,18 +736,35 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={!canAffordFreeze}
-                  onClick={() => buyBossConsumable('timeFreeze')}
-                  className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
-                    canAffordFreeze
-                      ? 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/20 cursor-pointer active:scale-95'
-                      : 'bg-slate-200 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                  }`}
-                >
-                  <Coins size={13} /> Comprar Carga ({TIME_FREEZE_COST} 🪙)
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    disabled={!canAffordFreeze}
+                    onClick={() => buyBossConsumable('timeFreeze')}
+                    className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      canAffordFreeze
+                        ? 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/20 cursor-pointer active:scale-95'
+                        : 'bg-slate-200 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <Coins size={13} /> {TIME_FREEZE_COST} 🪙
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={bossTokens < 1}
+                    onClick={() => buyBossConsumableWithToken('timeFreeze')}
+                    className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      bossTokens >= 1
+                        ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 border border-amber-500/40 cursor-pointer active:scale-95'
+                        : 'bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-800/50 cursor-not-allowed'
+                    }`}
+                    title="Resgatar carga de Dilatação Temporal usando 1 Ficha de Conquista"
+                  >
+                    <Ticket size={13} className="text-amber-600 dark:text-amber-400" />
+                    <span>1 Ficha</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -692,7 +784,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {levelsArray.map((lvl) => {
-              const isCleared = lvl <= highestBossLevelCleared;
+              const isCleared = (bossClearedLevels && bossClearedLevels.includes(lvl)) || lvl <= highestBossLevelCleared;
               const isCurrent = lvl === highestBossLevelCleared + 1;
               const isLocked = lvl > highestBossLevelCleared + 1;
               const hp = getBossHpForLevel(lvl);
@@ -741,8 +833,18 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 px-2 py-1 rounded-xl border border-amber-300 dark:border-amber-500/20 shrink-0">
-                      <Coins size={13} className="text-amber-600 dark:text-amber-400" /> +{coinsReward}
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <div className="flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 px-2 py-1 rounded-xl border border-amber-300 dark:border-amber-500/20">
+                        <Coins size={13} className="text-amber-600 dark:text-amber-400" /> +{coinsReward}
+                      </div>
+                      {!isCleared && (
+                        <div
+                          className="flex items-center gap-1 text-[10px] font-extrabold text-amber-900 dark:text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-lg border border-amber-500/40"
+                          title="Conclua pela primeira vez para ganhar 1 Ficha de Conquista"
+                        >
+                          <Ticket size={11} className="text-amber-600 dark:text-amber-400" /> +1 Ficha
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -827,6 +929,23 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </span>
             </div>
           </div>
+
+          {/* First Clear Token Reward Banner */}
+          {isFirstClearReward && (
+            <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-amber-500/25 via-yellow-500/20 to-amber-500/25 border-2 border-amber-400 text-amber-200 flex items-center justify-center gap-3.5 shadow-xl shadow-amber-500/20 z-10 animate-in fade-in zoom-in-95">
+              <div className="w-11 h-11 rounded-2xl bg-amber-500/30 text-amber-300 border border-amber-400/50 flex items-center justify-center shrink-0 shadow-md">
+                <Ticket size={24} className="text-amber-300" />
+              </div>
+              <div className="text-left">
+                <span className="text-[11px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
+                  <Sparkles size={13} /> BÔNUS DE PRIMEIRA VITÓRIA (FIRST-CLEAR)!
+                </span>
+                <p className="text-xs sm:text-sm font-extrabold text-white mt-0.5">
+                  +1 Ficha de Conquista recebida! Use para resgate gratuito na Forja de Dano ou Consumíveis.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Achievements Unlocked Showcase */}
           <div className="w-full flex flex-col gap-2 z-10 text-left">

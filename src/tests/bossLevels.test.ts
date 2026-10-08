@@ -482,4 +482,136 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       }
     });
   });
+
+  describe('Mecânica de Fichas de Conquista por Primeira Vitória (First-Clear Token System)', () => {
+    beforeEach(() => {
+      useAppStore.getState().resetBossProgress();
+    });
+
+    it('concede exatamente 1 ficha na 1ª vitória de uma fase e 0 fichas em repetições da mesma fase', () => {
+      useAppStore.setState({
+        bossTokens: 0,
+        bossClearedLevels: [],
+        highestBossLevelCleared: 0,
+      });
+
+      // 1ª Vitória no Nível 1
+      const victory1 = useAppStore.getState().recordBossVictory(1, 10, 3, 100, 15);
+      expect(victory1.isFirstClear).toBe(true);
+      expect(victory1.tokensAwarded).toBe(1);
+
+      const state1 = useAppStore.getState();
+      expect(state1.bossTokens).toBe(1);
+      expect(state1.bossClearedLevels).toEqual([1]);
+      expect(state1.highestBossLevelCleared).toBe(1);
+
+      // Repetição da vitória no Nível 1 (não concede nova ficha)
+      const victory1Repeat = useAppStore.getState().recordBossVictory(1, 8, 3, 100, 15);
+      expect(victory1Repeat.isFirstClear).toBe(false);
+      expect(victory1Repeat.tokensAwarded).toBe(0);
+
+      const state1Repeat = useAppStore.getState();
+      expect(state1Repeat.bossTokens).toBe(1); // Continua 1
+      expect(state1Repeat.bossClearedLevels).toEqual([1]);
+    });
+
+    it('concede fichas de forma idempotente para fases distintas e mantém a lista ordenada', () => {
+      useAppStore.setState({
+        bossTokens: 0,
+        bossClearedLevels: [],
+      });
+
+      // Vitória no Nível 3 primeiro
+      const vic3 = useAppStore.getState().recordBossVictory(3, 15, 3, 150, 25);
+      expect(vic3.isFirstClear).toBe(true);
+      expect(vic3.tokensAwarded).toBe(1);
+      expect(useAppStore.getState().bossTokens).toBe(1);
+      expect(useAppStore.getState().bossClearedLevels).toEqual([3]);
+
+      // Vitória no Nível 2
+      const vic2 = useAppStore.getState().recordBossVictory(2, 12, 3, 120, 20);
+      expect(vic2.isFirstClear).toBe(true);
+      expect(vic2.tokensAwarded).toBe(1);
+      expect(useAppStore.getState().bossTokens).toBe(2);
+      expect(useAppStore.getState().bossClearedLevels).toEqual([2, 3]);
+
+      // Repetição no Nível 3
+      const vic3Again = useAppStore.getState().recordBossVictory(3, 10, 2, 150, 25);
+      expect(vic3Again.isFirstClear).toBe(false);
+      expect(vic3Again.tokensAwarded).toBe(0);
+      expect(useAppStore.getState().bossTokens).toBe(2);
+      expect(useAppStore.getState().bossClearedLevels).toEqual([2, 3]);
+    });
+
+    it('permite adquirir upgrade de dano gratuitamente com 1 ficha mesmo sem ter moedas suficientes', () => {
+      useAppStore.setState({
+        bossTokens: 1,
+        bossCoins: 0, // Zero moedas (custo normal seria 30 moedas)
+        damageUpgradeLevel: 0,
+      });
+
+      // Tentativa de compra normal com moedas falha por saldo insuficiente
+      const normalBuy = useAppStore.getState().purchaseDamageUpgrade();
+      expect(normalBuy).toBe(false);
+      expect(useAppStore.getState().damageUpgradeLevel).toBe(0);
+
+      // Compra com Ficha de Conquista obtém sucesso
+      const tokenBuy = useAppStore.getState().purchaseDamageUpgradeWithToken();
+      expect(tokenBuy).toBe(true);
+
+      const state = useAppStore.getState();
+      expect(state.damageUpgradeLevel).toBe(1);
+      expect(state.bossTokens).toBe(0); // Consumiu 1 ficha
+      expect(state.bossCoins).toBe(0); // Não consumiu moedas
+
+      // Tentativa de nova compra com token sem saldo de fichas falha
+      const secondTokenBuy = useAppStore.getState().purchaseDamageUpgradeWithToken();
+      expect(secondTokenBuy).toBe(false);
+      expect(useAppStore.getState().damageUpgradeLevel).toBe(1);
+    });
+
+    it('permite adquirir consumíveis (oráculo e congelamento temporal) com 1 ficha cada', () => {
+      useAppStore.setState({
+        bossTokens: 2,
+        bossCoins: 0,
+        bossOracleCharges: 0,
+        bossTimeFreezeCharges: 0,
+      });
+
+      // Resgata Oráculo com 1 ficha
+      const oracleBuy = useAppStore.getState().buyBossConsumableWithToken('oracle');
+      expect(oracleBuy).toBe(true);
+      expect(useAppStore.getState().bossOracleCharges).toBe(1);
+      expect(useAppStore.getState().bossTokens).toBe(1);
+      expect(useAppStore.getState().bossCoins).toBe(0);
+
+      // Resgata Dilatação Temporal com 1 ficha
+      const freezeBuy = useAppStore.getState().buyBossConsumableWithToken('timeFreeze');
+      expect(freezeBuy).toBe(true);
+      expect(useAppStore.getState().bossTimeFreezeCharges).toBe(1);
+      expect(useAppStore.getState().bossTokens).toBe(0);
+      expect(useAppStore.getState().bossCoins).toBe(0);
+
+      // Sem fichas, falha
+      const failedBuy = useAppStore.getState().buyBossConsumableWithToken('oracle');
+      expect(failedBuy).toBe(false);
+      expect(useAppStore.getState().bossOracleCharges).toBe(1);
+    });
+
+    it('zera as fichas e os níveis concluídos ao chamar resetBossProgress', () => {
+      useAppStore.setState({
+        bossTokens: 5,
+        bossClearedLevels: [1, 2, 3, 4, 5],
+        damageUpgradeLevel: 2,
+      });
+
+      useAppStore.getState().resetBossProgress();
+
+      const state = useAppStore.getState();
+      expect(state.bossTokens).toBe(0);
+      expect(state.bossClearedLevels).toEqual([]);
+      expect(state.highestBossLevelCleared).toBe(0);
+      expect(state.damageUpgradeLevel).toBe(0);
+    });
+  });
 });
