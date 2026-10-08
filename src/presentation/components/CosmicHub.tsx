@@ -14,6 +14,8 @@ import { calculateLevelInfo } from '../../core/gamification/leveling';
 import { getTodayDateString } from '../../core/daily/dailyEngine';
 import { useTranslation } from '../../core/i18n/translations';
 import { playHubSwipe } from '../../core/platform/audio';
+import { getDueCards } from '../../core/quiz/spacedRepetition';
+import { NotificationPopover } from './NotificationPopover';
 import logoImg from '../../assets/logo.webp';
 
 import {
@@ -86,6 +88,17 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
 
   const levelInfo = calculateLevelInfo(profile?.totalXp || 0);
   const isDailyCompleted = dailyChallenge?.lastCompletedDate === getTodayDateString();
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [mountTime] = useState(() => Date.now());
+  const dueCards = useMemo(() => {
+    return getDueCards(
+      spacedRepetition?.cards || {},
+      spacedRepetition?.globalQuestionsAnswered || 0,
+      mountTime
+    );
+  }, [spacedRepetition, mountTime]);
+  const hasDueCards = dueCards.length > 0;
+
   const sobrevRecorde = quizProgress.survival?.recordCount || 0;
   const isBlitzUnlocked = unlockAllFeatures || levelInfo.level >= 3 || unlockedFeatures.includes('blitz');
   const isBossUnlocked = unlockAllFeatures || levelInfo.level >= 5 || unlockedFeatures.includes('boss_rush');
@@ -393,18 +406,35 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
             </button>
           )}
 
-          {/* Sino de Notificação / Desafio Diário */}
-          <button
-            type="button"
-            onClick={() => openQuizWithSubmode('daily')}
-            className="w-10 h-10 rounded-2xl cosmic-glass flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400/50 transition-all cursor-pointer shadow-md relative"
-            title="Desafio Diário"
-          >
-            <Bell size={18} />
-            {!isDailyCompleted && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-fuchsia-500 animate-ping" />
-            )}
-          </button>
+          {/* Sino de Notificação / Central Cósmica */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsNotificationOpen((prev) => !prev)}
+              className={`w-10 h-10 rounded-2xl cosmic-glass flex items-center justify-center transition-all cursor-pointer shadow-md relative focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
+                isNotificationOpen
+                  ? 'border-cyan-400 bg-cyan-500/20 text-cyan-400 shadow-cyan-500/20'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400/50'
+              }`}
+              title={t.notifications_title}
+              aria-label={t.notifications_title}
+              aria-expanded={isNotificationOpen}
+              aria-haspopup="dialog"
+            >
+              <Bell size={18} />
+              {(!isDailyCompleted || hasDueCards) && (
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-fuchsia-500 animate-ping" />
+              )}
+            </button>
+
+            <NotificationPopover
+              isOpen={isNotificationOpen}
+              onClose={() => setIsNotificationOpen(false)}
+              onNavigateToDaily={() => openQuizWithSubmode('daily')}
+              onNavigateToMistakes={() => openQuizWithSubmode('spaced')}
+              onOpenProfile={onOpenProfile}
+            />
+          </div>
 
           {/* Cápsula de Perfil e Nível (Quartora / Lucas) */}
           <button

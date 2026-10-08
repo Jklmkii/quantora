@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ChevronLeft,
   Sun,
@@ -15,11 +15,14 @@ import {
   History,
   LayoutGrid,
   Cloud,
+  Bell,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
-import { calculateLevelInfo } from '../../core/gamification/leveling';
+import { calculateLevelInfo, getDeviceLocalDateString } from '../../core/gamification/leveling';
+import { getDueCards } from '../../core/quiz/spacedRepetition';
+import { NotificationPopover } from './NotificationPopover';
 import logoImg from '../../assets/logo.webp';
 
 interface ModuleTopBarProps {
@@ -38,6 +41,9 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
     isScratchpadOpen,
     toggleScratchpad,
     hasScratchpadStrokes,
+    openQuizWithSubmode,
+    spacedRepetition,
+    dailyChallenge,
   } = useAppStore(
     useShallow((s) => ({
       activeTab: s.activeTab,
@@ -48,6 +54,9 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
       isScratchpadOpen: s.isScratchpadOpen,
       toggleScratchpad: s.toggleScratchpad,
       hasScratchpadStrokes: s.hasScratchpadStrokes,
+      openQuizWithSubmode: s.openQuizWithSubmode,
+      spacedRepetition: s.spacedRepetition,
+      dailyChallenge: s.dailyChallenge,
     }))
   );
 
@@ -56,6 +65,23 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
     () => calculateLevelInfo(profile?.totalXp || 0, settings.language || 'pt'),
     [profile?.totalXp, settings.language]
   );
+
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const today = useMemo(() => getDeviceLocalDateString(), []);
+  const [mountTime] = useState(() => Date.now());
+  const isDailyCompleted = useMemo(() => {
+    return dailyChallenge?.lastCompletedDate === today;
+  }, [dailyChallenge?.lastCompletedDate, today]);
+
+  const dueCards = useMemo(() => {
+    return getDueCards(
+      spacedRepetition?.cards || {},
+      spacedRepetition?.globalQuestionsAnswered || 0,
+      mountTime
+    );
+  }, [spacedRepetition, mountTime]);
+
+  const hasDueCards = dueCards.length > 0;
 
   // Mapeamento dinâmico de títulos e ícones do módulo ativo
   const moduleMeta = useMemo(() => {
@@ -204,6 +230,36 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
               <Cloud size={17} />
             </button>
           )}
+
+          {/* Central de Notificações Cósmica */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsNotificationOpen((prev) => !prev)}
+              className={`relative p-2 rounded-xl border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
+                isNotificationOpen
+                  ? 'border-cyan-400 bg-cyan-500/20 text-cyan-400 shadow-cyan-500/20'
+                  : 'border-slate-300 dark:border-cyan-500/20 bg-slate-100/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 hover:text-cyan-400'
+              }`}
+              title={t.notifications_title}
+              aria-label={t.notifications_title}
+              aria-expanded={isNotificationOpen}
+              aria-haspopup="dialog"
+            >
+              <Bell size={17} />
+              {(!isDailyCompleted || hasDueCards) && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-fuchsia-500 animate-ping" />
+              )}
+            </button>
+
+            <NotificationPopover
+              isOpen={isNotificationOpen}
+              onClose={() => setIsNotificationOpen(false)}
+              onNavigateToDaily={() => openQuizWithSubmode('daily')}
+              onNavigateToMistakes={() => openQuizWithSubmode('spaced')}
+              onOpenProfile={onOpenProfile}
+            />
+          </div>
 
           {/* Configurações */}
           <button
