@@ -539,7 +539,7 @@ async function recordBossBattleE2E() {
     status: 'PASSED',
     durationSeconds: parseFloat(durationSec),
     framesCaptured: frameIndex,
-    resolution: { width: 1280, height: 800 },
+    resolution: { width: 1920, height: 1080 },
     scenarios: [
       {
         id: 'SCN-01',

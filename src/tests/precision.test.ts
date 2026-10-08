@@ -26,6 +26,19 @@ describe('Motor Matemático: Precision', () => {
       expect(parseBig('-5.5').toNumber()).toBe(-5.5);
       expect(parseBig('3,14').toNumber()).toBe(3.14);
       expect(parseBig('  42  ').toNumber()).toBe(42);
+      expect(parseBig('+15,5').toNumber()).toBe(15.5);
+      expect(parseBig('1 500,25').toNumber()).toBe(1500.25);
+    });
+
+    it('deve parsear frações simples com segurança', () => {
+      expect(parseBig('3/4').toNumber()).toBe(0.75);
+      expect(parseBig('-1/2').toNumber()).toBe(-0.5);
+      expect(parseBig('7/2').toNumber()).toBe(3.5);
+      expect(parseBig(' 1 / 4 ').toNumber()).toBe(0.25);
+    });
+
+    it('deve lançar erro para frações com denominador zero', () => {
+      expect(() => parseBig('5/0')).toThrow('Divisão por zero em fração');
     });
 
     it('deve lançar erro para strings inválidas', () => {
