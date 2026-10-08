@@ -29,6 +29,16 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(url && anonKey && url.startsWith('http'));
 }
 
+export function formatAuthError(err: unknown): Error {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+    return new Error(
+      'Falha de conexão com os servidores do Supabase. Verifique sua conexão com a internet ou se o serviço está acessível.'
+    );
+  }
+  return err instanceof Error ? err : new Error(msg);
+}
+
 let supabaseInstance: SupabaseClient | null = null;
 let currentConfigKey = '';
 
@@ -198,7 +208,7 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
 
     return { error: null, url: data?.url };
   } catch (err) {
-    return { error: err instanceof Error ? err : new Error(String(err)) };
+    return { error: formatAuthError(err) };
   }
 }
 
@@ -216,10 +226,10 @@ export async function signInWithEmailPassword(
       email: email.trim(),
       password: pass,
     });
-    if (error) return { user: null, error: new Error(error.message) };
+    if (error) return { user: null, error: formatAuthError(error) };
     return { user: data.user, error: null };
   } catch (err) {
-    return { user: null, error: err instanceof Error ? err : new Error(String(err)) };
+    return { user: null, error: formatAuthError(err) };
   }
 }
 
@@ -237,10 +247,10 @@ export async function signUpWithEmailPassword(
       email: email.trim(),
       password: pass,
     });
-    if (error) return { user: null, error: new Error(error.message) };
+    if (error) return { user: null, error: formatAuthError(error) };
     return { user: data.user, error: null };
   } catch (err) {
-    return { user: null, error: err instanceof Error ? err : new Error(String(err)) };
+    return { user: null, error: formatAuthError(err) };
   }
 }
 
@@ -258,9 +268,9 @@ export async function signInWithMagicLink(email: string): Promise<{ error: Error
         emailRedirectTo: redirectUrl,
       },
     });
-    return { error: error ? new Error(error.message) : null };
+    return { error: error ? formatAuthError(error) : null };
   } catch (err) {
-    return { error: err instanceof Error ? err : new Error(String(err)) };
+    return { error: formatAuthError(err) };
   }
 }
 
@@ -270,8 +280,8 @@ export async function signOutCloud(): Promise<{ error: Error | null }> {
 
   try {
     const { error } = await client.auth.signOut();
-    return { error: error ? new Error(error.message) : null };
+    return { error: error ? formatAuthError(error) : null };
   } catch (err) {
-    return { error: err instanceof Error ? err : new Error(String(err)) };
+    return { error: formatAuthError(err) };
   }
 }

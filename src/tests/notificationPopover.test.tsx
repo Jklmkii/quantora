@@ -17,18 +17,18 @@ describe('NotificationPopover (Central de Notificações Cósmica)', () => {
       settings: {
         language: 'pt',
         theme: 'dark',
-        precision: 2,
-        decimalSeparator: 'comma',
+        decimalPlaces: 2,
+        decimalSeparator: ',',
+        historyLimit: 50,
+        hasCompletedOnboarding: true,
         soundEnabled: false,
         soundVolume: 0.5,
-        hapticsEnabled: false,
       },
       profile: {
         totalXp: 150,
         streakDays: 5,
         lastActiveDate: getDeviceLocalDateString(),
         unlockedAchievements: [],
-        dailyChallengeHistory: {},
         stats: {
           totalCalculations: 5,
           totalBhaskara: 0,
@@ -46,6 +46,7 @@ describe('NotificationPopover (Central de Notificações Cósmica)', () => {
       },
       dailyChallenge: {
         lastCompletedDate: null,
+        history: [],
       },
       spacedRepetition: {
         cards: {
@@ -54,11 +55,14 @@ describe('NotificationPopover (Central de Notificações Cósmica)', () => {
             track: 'soma',
             operands: [3, 4],
             box: 1,
-            nextReviewQuestions: 0,
-            nextReviewTimestamp: Date.now() - 1000,
             consecutiveCorrect: 0,
+            lastReviewedAt: Date.now() - 2000,
+            lastQuestionCounter: 0,
+            nextReviewTimestamp: Date.now() - 1000,
+            nextReviewQuestions: 0,
+            hasGraduated: false,
+            totalMistakes: 1,
             totalReviews: 1,
-            graduatedAt: null,
           },
         },
         globalQuestionsAnswered: 10,
@@ -137,6 +141,7 @@ describe('NotificationPopover (Central de Notificações Cósmica)', () => {
     useAppStore.setState({
       dailyChallenge: {
         lastCompletedDate: getDeviceLocalDateString(),
+        history: [],
       },
       spacedRepetition: {
         cards: {},
