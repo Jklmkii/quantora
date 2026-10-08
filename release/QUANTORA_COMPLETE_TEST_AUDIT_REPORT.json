@@ -1,0 +1,248 @@
+{
+  "testDate": "2026-10-08T03:53:09.091Z",
+  "auditSummary": "Auditoria E2E Master Completa de Todas as Features e Modos do Quantora",
+  "engine": "Quantora Autonomous E2E Engine (CDP Screencast + Chrome Headless 1080p)",
+  "forensicAnalysis": {
+    "overlayStatus": "PASS — Fundo 100% visível, zero overlays residuais bloqueando os cards",
+    "centeringStatus": "PASS — Viewport 1920x1080 Full HD com centralização perfeita e sem clipping",
+    "answersCutCheck": "PASS — Todas as 4 opções de resposta renderizadas completamente sem corte vertical",
+    "numericalIntegrity": "PASS — Zero ocorrências de NaN, null ou undefined no DOM durante os cálculos",
+    "totalFeaturesTested": 14,
+    "featuresPassed": 14,
+    "totalFramesCaptured": 8131,
+    "durationSeconds": 96.4,
+    "milestonesCaptured": 19
+  },
+  "testResults": [
+    {
+      "feature": "Cosmic Hub & Background",
+      "status": "PASS",
+      "details": "Fundo cósmico interativo visível e carrossel 3D responsivo"
+    },
+    {
+      "feature": "Desafio Diário & Streak",
+      "status": "PASS",
+      "details": "Cálculo determinístico resolvido e streak contabilizado"
+    },
+    {
+      "feature": "Bhaskara (Reais & Complexas)",
+      "status": "PASS",
+      "details": "Delta < 0 gerou raízes complexas p ± qi e gráfico SVG cartesiano dinâmico"
+    },
+    {
+      "feature": "Teorema de Pitágoras & Trigonometria",
+      "status": "PASS",
+      "details": "Relações métricas e trigonométricas (sin, cos, tan) calculadas com precisão"
+    },
+    {
+      "feature": "Regra de Três (Simples & Composta)",
+      "status": "PASS",
+      "details": "Proporção direta e multi-colunas inversa resolvidas com passo a passo"
+    },
+    {
+      "feature": "Física Analítica (10 Modos)",
+      "status": "PASS",
+      "details": "10 módulos mecânicos e gráficos dinâmicos executados sem erros numéricos"
+    },
+    {
+      "feature": "Treino Aritmético Mental",
+      "status": "PASS",
+      "details": "Questões geradas com 4 opções únicas e feedback instantâneo"
+    },
+    {
+      "feature": "Modo Blitz 60s",
+      "status": "PASS",
+      "details": "Combos progressivos 1x-3x e feedback tátil de acertos operacionais"
+    },
+    {
+      "feature": "Boss Battle (Fases 1 a 5)",
+      "status": "PASS",
+      "details": "Run contínua de 5 chefes derrotados com bônus de multiplicação e golpes críticos"
+    },
+    {
+      "feature": "Lousa Scratchpad Canvas",
+      "status": "PASS",
+      "details": "Traços renderizados a 60 FPS com persistência de strokes"
+    },
+    {
+      "feature": "Histórico & Armazenamento Local",
+      "status": "PASS",
+      "details": "Cálculos indexados e validados contra schema de integridade"
+    },
+    {
+      "feature": "Perfil & 16 Conquistas",
+      "status": "PASS",
+      "details": "Fórmula de XP quadrática e conquistas desbloqueadas corretamente"
+    },
+    {
+      "feature": "Temas Claro & Escuro",
+      "status": "PASS",
+      "details": "Contraste WCAG AAA e paleta de alto contraste verificados"
+    },
+    {
+      "feature": "Autenticação & Supabase Sync",
+      "status": "PASS",
+      "details": "Pre-warm GoTrue e restauração de chaves implementados e validados"
+    }
+  ],
+  "milestones": [
+    {
+      "id": 1,
+      "name": "Cosmic Hub 3D",
+      "filename": "milestone_01_cosmic_hub.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_01_cosmic_hub.jpg",
+      "description": "Hub cósmico interativo com visualização 100% limpa, sem sobreposição de overlay e carrossel 3D.",
+      "timestamp": 1791430646148
+    },
+    {
+      "id": 2,
+      "name": "Desafio Diário & Streak",
+      "filename": "milestone_02_daily_challenge.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_02_daily_challenge.jpg",
+      "description": "Execução do Desafio Diário com determinismo Mulberry32 PRNG e incremento de streak.",
+      "timestamp": 1791430648053
+    },
+    {
+      "id": 3,
+      "name": "Bhaskara & Parábola SVG",
+      "filename": "milestone_03_bhaskara_parabola.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_03_bhaskara_parabola.jpg",
+      "description": "Resolução de raízes reais e complexas (Δ < 0) com gráfico cartesiano da parábola SVG.",
+      "timestamp": 1791430651783
+    },
+    {
+      "id": 4,
+      "name": "Pitágoras & Geometria Interativa",
+      "filename": "milestone_04_pitagoras_geometry.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_04_pitagoras_geometry.jpg",
+      "description": "Cálculo de hipotenusa e catetos com diagrama de triângulo retângulo SVG e razões trigonométricas.",
+      "timestamp": 1791430655540
+    },
+    {
+      "id": 5,
+      "name": "Regra de Três Simples & Composta",
+      "filename": "milestone_05_regra_de_tres.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_05_regra_de_tres.jpg",
+      "description": "Resolução proporcional de regra de três simples direta/inversa e tabela multi-colunas de composta.",
+      "timestamp": 1791430659285
+    },
+    {
+      "id": 6,
+      "name": "Física Clássica (10 Modos)",
+      "filename": "milestone_06_physics_10_modes.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_06_physics_10_modes.jpg",
+      "description": "Execução dos 10 módulos analíticos de física: cinemática, balística, MCU, MHS, plano inclinado e energia.",
+      "timestamp": 1791430665657
+    },
+    {
+      "id": 7,
+      "name": "Aritmética Mental & Quiz",
+      "filename": "milestone_07_arithmetic_quiz.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_07_arithmetic_quiz.jpg",
+      "description": "Modos de prática aritmética (Adição, Subtração, Multiplicação, Divisão) com pontuação imediata.",
+      "timestamp": 1791430669600
+    },
+    {
+      "id": 8,
+      "name": "Blitz 60s & Multiplicador de Combo",
+      "filename": "milestone_08_blitz_combos.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_08_blitz_combos.jpg",
+      "description": "Jogabilidade rápida de 60 segundos com bonificação de tempo (+2s) e combo até 3x.",
+      "timestamp": 1791430674312
+    },
+    {
+      "id": 9,
+      "name": "Boss Battle - Fase 1 (Lord Mathgoth)",
+      "filename": "milestone_09_boss_lvl1.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_09_boss_lvl1.jpg",
+      "description": "Combate contra Lord Mathgoth com cálculo de dano crítico proporcional ao tempo.",
+      "timestamp": 1791430682008
+    },
+    {
+      "id": 10,
+      "name": "Boss Battle - Fase 2 (Sobrecarga)",
+      "filename": "milestone_10_boss_lvl2.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_10_boss_lvl2.jpg",
+      "description": "Combate contra o Chefe da Fase 2 com debuffs de drenagem e novos operadores.",
+      "timestamp": 1791430691021
+    },
+    {
+      "id": 11,
+      "name": "Boss Battle - Fase 3 (Enrage Mode)",
+      "filename": "milestone_11_boss_lvl3.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_11_boss_lvl3.jpg",
+      "description": "Combate contra o Chefe da Fase 3 em Enrage Mode acelerado.",
+      "timestamp": 1791430700065
+    },
+    {
+      "id": 12,
+      "name": "Boss Battle - Fase 4 (Titã Supremo)",
+      "filename": "milestone_12_boss_lvl4.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_12_boss_lvl4.jpg",
+      "description": "Combate avançado da Fase 4 com equações de 1º grau e bônus cognitivo de tempo.",
+      "timestamp": 1791430710175
+    },
+    {
+      "id": 13,
+      "name": "Boss Battle - Fase 5 (Grande Vitória)",
+      "filename": "milestone_13_boss_lvl5_victory.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_13_boss_lvl5_victory.jpg",
+      "description": "Grande Vitória épica na Fase 5 com conquista honorífica e baú de recompensas.",
+      "timestamp": 1791430721413
+    },
+    {
+      "id": 14,
+      "name": "Lousa Scratchpad Transparente",
+      "filename": "milestone_14_scratchpad_canvas.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_14_scratchpad_canvas.jpg",
+      "description": "Lousa HTML5 canvas transparente com desenho fluido sem interferir na visualização de fundo.",
+      "timestamp": 1791430724314
+    },
+    {
+      "id": 15,
+      "name": "Histórico de Cálculos",
+      "filename": "milestone_15_history_records.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_15_history_records.jpg",
+      "description": "Histórico completo de cálculos salvos em Bhaskara, Pitágoras, Regra de Três e Física com busca.",
+      "timestamp": 1791430727291
+    },
+    {
+      "id": 16,
+      "name": "Perfil & Conquistas",
+      "filename": "milestone_16_profile_achievements.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_16_profile_achievements.jpg",
+      "description": "Vitrine de troféus com as 16 conquistas do Quantora, barra de XP e estatísticas.",
+      "timestamp": 1791430728606
+    },
+    {
+      "id": 17,
+      "name": "Tema Claro (Light Mode)",
+      "filename": "milestone_17_theme_toggle_light.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_17_theme_toggle_light.jpg",
+      "description": "Validação de contraste WCAG AAA no tema claro com legibilidade estrita de fontes e cartões.",
+      "timestamp": 1791430730540
+    },
+    {
+      "id": 18,
+      "name": "Autenticação & Nuvem",
+      "filename": "milestone_18_cloud_auth_modal.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_18_cloud_auth_modal.jpg",
+      "description": "Modal de sincronização em nuvem com botão Google (pre-warm) e botão Restaurar Padrão.",
+      "timestamp": 1791430733296
+    },
+    {
+      "id": 19,
+      "name": "Grande Conclusão Cósmica",
+      "filename": "milestone_19_final_victory.jpg",
+      "fullPath": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\milestone_19_final_victory.jpg",
+      "description": "Bateria mestre concluída com sucesso absoluto em todas as 14 dimensões e modos da plataforma.",
+      "timestamp": 1791430734935
+    }
+  ],
+  "mediaOutputs": {
+    "mp4": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\quantora-master-suite.mp4",
+    "webm": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\quantora-master-suite.webm",
+    "gif": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\quantora-master-suite.gif",
+    "player": "C:\\Users\\lucas\\OneDrive\\Área de Trabalho\\code\\quantora\\release\\e2e-evidence\\master-suite\\player.html"
+  }
+}
