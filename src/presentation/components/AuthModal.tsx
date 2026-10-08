@@ -26,6 +26,7 @@ import {
 import { syncWithCloud, type SyncResult } from '../../core/auth/cloudSync';
 import { useAppStore } from '../../store/useAppStore';
 import { useTranslation } from '../../core/i18n/translations';
+import { Capacitor } from '@capacitor/core';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthModalProps {
@@ -66,8 +67,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setCurrentUser(session?.user ?? null);
     });
 
+    const handleAuthChanged = () => {
+      getCurrentUser().then((user) => {
+        if (user) {
+          setCurrentUser(user);
+          setStatusMessage({ text: 'Login realizado com sucesso!' });
+          syncWithCloud().catch(() => {});
+        }
+      });
+    };
+    window.addEventListener('quantora:auth_changed', handleAuthChanged);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('quantora:auth_changed', handleAuthChanged);
     };
   }, [isOpen]);
 
@@ -364,6 +377,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           ) : (
             /* Login & Sign Up Options */
             <div className="space-y-4">
+              {/* Mobile helper banner */}
+              {Capacitor.isNativePlatform() && (
+                <div className="p-3 rounded-2xl bg-cyan-50/60 dark:bg-cyan-950/30 border border-cyan-200/60 dark:border-cyan-800/40 text-[11px] text-cyan-900 dark:text-cyan-300 flex items-start gap-2.5">
+                  <Zap size={15} className="text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    <span className="font-bold">Dica no celular:</span> O login direto por <strong>E-mail e Senha</strong> ou <strong>Link Mágico</strong> abaixo funciona instantaneamente dentro do app sem precisar de navegador externo. Ao entrar com o Google, o app abre o navegador do sistema e retorna via Deep Link.
+                  </div>
+                </div>
+              )}
+
               {/* Google Button */}
               <div className="flex gap-2">
                 <button

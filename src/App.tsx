@@ -13,7 +13,7 @@ import { Scratchpad } from './presentation/components/Scratchpad';
 import { CosmicHub } from './presentation/components/CosmicHub';
 import { CosmicBackgroundCanvas } from './presentation/components/CosmicBackgroundCanvas';
 import { LayoutGrid } from 'lucide-react';
-import { isSupabaseConfigured } from './core/auth/supabaseClient';
+import { isSupabaseConfigured, initCapacitorAuthListener } from './core/auth/supabaseClient';
 import { syncWithCloud, initAutoSyncListener } from './core/auth/cloudSync';
 
 // Code-splitting: Lazy load content modules on demand
@@ -61,13 +61,19 @@ export function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(new Set([activeTab]));
 
-  // Auto-sync listener & initial background sync if configured
+  // Auto-sync listener, Capacitor deep link auth & initial background sync if configured
   useEffect(() => {
     if (isSupabaseConfigured()) {
       syncWithCloud().catch(() => {});
     }
-    const unsubscribe = initAutoSyncListener();
-    return () => unsubscribe();
+    const unsubscribeAutoSync = initAutoSyncListener();
+    const cleanupCapacitor = initCapacitorAuthListener(() => {
+      syncWithCloud().catch(() => {});
+    });
+    return () => {
+      unsubscribeAutoSync();
+      cleanupCapacitor();
+    };
   }, []);
 
   // Track visited tabs synchronously during render

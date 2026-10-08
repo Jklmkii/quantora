@@ -240,8 +240,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in"
+      style={{
+        paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 'max(0.75rem, env(safe-area-inset-left, 0px))',
+        paddingRight: 'max(0.75rem, env(safe-area-inset-right, 0px))',
+      }}
+    >
+      <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden max-h-[86vh] sm:max-h-[90vh] flex flex-col my-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800/80">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t.settings_title}</h2>
@@ -315,20 +323,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
 
           {/* Efeitos Sonoros (SFX) */}
           <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className={`p-2 rounded-xl transition-colors ${
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className={`p-2 rounded-xl transition-colors shrink-0 ${
                   settings.soundEnabled ?? true
                     ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400'
                     : 'bg-slate-200 dark:bg-slate-800 text-slate-400'
                 }`}>
                   {(settings.soundEnabled ?? true) ? <Volume2 size={18} /> : <VolumeX size={18} />}
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm truncate">
                     {t.sound_effects}
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-400 line-clamp-2">
                     {t.sound_effects_desc}
                   </p>
                 </div>
@@ -345,7 +353,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   updateSettings({ soundEnabled: next });
                   if (next) playTestSound(settings.soundVolume ?? 0.5);
                 }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50 cursor-pointer ${
+                className={`shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-cyan-500/50 cursor-pointer ${
                   (settings.soundEnabled ?? true) ? 'bg-cyan-500' : 'bg-slate-300 dark:bg-slate-700'
                 }`}
               >
@@ -396,16 +404,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
 
           {/* Progressive Onboarding Override Toggle */}
           <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 space-y-1">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
                   <Unlock size={18} />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                     {t.settings_unlock_all || 'Desbloquear Todos os Recursos'}
                   </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">
                     {t.settings_unlock_all_desc || 'Pula a progressão e libera todos os modos de jogo imediatamente.'}
                   </p>
                 </div>
@@ -417,7 +425,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 aria-label={t.settings_unlock_all || 'Desbloquear Todos os Recursos'}
                 aria-checked={Boolean(settings.unlockAllFeatures)}
                 onClick={() => updateSettings({ unlockAllFeatures: !settings.unlockAllFeatures })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500/50 cursor-pointer ${
+                className={`shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500/50 cursor-pointer ${
                   settings.unlockAllFeatures ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
                 }`}
               >
@@ -441,16 +449,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   key={places}
                   type="button"
                   onClick={() => updateSettings({ decimalPlaces: places })}
-                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-semibold text-center transition-all touch-target ${
+                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-2.5 sm:p-3 rounded-2xl border font-semibold text-center transition-all touch-target flex flex-col items-center justify-center min-h-[58px] ${
                     settings.decimalPlaces === places
-                      ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
+                      ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shadow-xs'
                       : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                   }`}
                 >
-                  <div>{places} {t.decimals_suffix}</div>
-                  {places === 2 && (
-                    <div className="text-[10px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">Aprox. didático</div>
-                  )}
+                  <div className="font-bold">{places} {t.decimals_suffix}</div>
+                  <div className="text-[10px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                    {places === 2 ? 'Aprox. didático' : places === 4 ? 'Padrão exato' : 'Alta precisão'}
+                  </div>
                 </button>
               ))}
             </div>
@@ -464,23 +472,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             <div className="grid grid-cols-2 gap-2">
               {(
                 [
-                  { sep: ',', label: t.separator_comma },
-                  { sep: '.', label: t.separator_dot },
+                  { sep: ',', label: t.separator_comma, sub: '(ex: 3,14)' },
+                  { sep: '.', label: t.separator_dot, sub: '(ex: 3.14)' },
                 ] as const
-              ).map((item) => (
-                <button
-                  key={item.sep}
-                  type="button"
-                  onClick={() => updateSettings({ decimalSeparator: item.sep as DecimalSeparator })}
-                  className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-semibold text-center transition-all touch-target ${
-                    settings.decimalSeparator === item.sep
-                      ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
-                      : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
+              ).map((item) => {
+                const cleanLabel = item.label.split('(')[0].trim();
+                return (
+                  <button
+                    key={item.sep}
+                    type="button"
+                    onClick={() => updateSettings({ decimalSeparator: item.sep as DecimalSeparator })}
+                    className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-semibold text-center transition-all touch-target flex flex-col items-center justify-center min-h-[58px] ${
+                      settings.decimalSeparator === item.sep
+                        ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <span className="font-bold">{cleanLabel}</span>
+                    <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                      {item.sub}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -651,12 +665,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex justify-between items-center text-xs text-slate-400">
-          <span>Quantora v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.1.1'} ({t.definitive_edition})</span>
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex flex-row justify-between items-center gap-3 text-xs text-slate-400 shrink-0">
+          <span className="truncate">Quantora v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.1.1'} ({t.definitive_edition})</span>
           <button
             type="button"
             onClick={onClose}
-            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold touch-target"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold touch-target shrink-0 cursor-pointer"
           >
             {t.done}
           </button>
