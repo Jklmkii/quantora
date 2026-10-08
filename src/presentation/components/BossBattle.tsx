@@ -138,6 +138,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     elapsedThisRoundRef.current = elapsedThisRound;
   }, [elapsedThisRound]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as unknown as { __bossBattleState?: BossBattleState }).__bossBattleState = battleState;
+    }
+  }, [battleState]);
+
   // Player level derived from totalXp (100 XP per level, min 1)
   const playerLevel = Math.floor(totalXp / 100) + 1;
 
