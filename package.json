@@ -22,7 +22,8 @@
     "cap:sync": "npm run build && cap sync",
     "cap:android": "cap open android",
     "apk:build": "node scripts/build-apk.cjs",
-    "test:e2e:record": "node scripts/record-quantora-e2e.mjs"
+    "test:e2e:record": "node scripts/record-quantora-e2e.mjs",
+    "test:e2e:boss": "node scripts/record-boss-battle-e2e.mjs"
   },
   "build": {
     "appId": "com.quantora.desktop",
