@@ -232,7 +232,7 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
   1. *Comando do Usuário:* Invocar imediatamente `vault_guardian` via `invoke_subagent`.
   2. *Pós-Documentação:* Disparar automaticamente o `vault_guardian` após adições de novos projetos, novos MOCs ou refatorações de notas para assegurar a blindagem do cofre.
 - **Ronda Obrigatória do Guardião:**
-  - Garantir a paleta oficial de cores no Graph View (7 grupos com cores canônicas) e a física aberta anti-amontoamento (`centerStrength: 0.08`, `repelStrength: 24`, `linkDistance: 90`).
+  - Garantir a paleta oficial de cores no Graph View (8 grupos RGB com Laranja Tangerina `#F97316` para Gravações E2E) e a física aberta anti-amontoamento (`centerStrength: 0.08`, `repelStrength: 24`, `linkDistance: 90`).
   - Remover estilos `classDef` com cores fixas e escuras de diagramas Mermaid em novas notas para não quebrar temas.
   - Converter citações cruas em callouts oficiais do Obsidian (`> [!NOTE]`, `> [!SUCCESS]`, etc.).
   - Executar `.antigravity/automation/find_unresolved.cjs` (0 links quebrados).
@@ -256,6 +256,27 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
 ### 20.3. Contrato de Definição de Pronto (*Definition of Done*)
 - Nenhuma tarefa que envolva alteração no código-fonte pode ser declarada concluída sem que o agente execute e reporte expressamente o resultado dos comandos de validação (`npx vitest run`, `npm run lint` e/ou `npm run build`), acompanhados da orientação prática para o teste visual do usuário.
 
+## 21. Regra de Teste Prático Obrigatório Pós-Ajuste (Mandatory Practical Testing no Quantora)
+- **Princípio Absoluto:** O Antigravity **NUNCA deve concluir qualquer ajuste, correção de bug ou nova funcionalidade dizendo que "está pronto" sem executar o teste prático correspondente no final**.
+- **Mecanismos de Teste Aplicáveis:**
+  1. *Motores Matemáticos & Física Analítica:* Executar a suíte automatizada (`npx vitest run`) garantindo 100% de aprovação e cobrindo os novos casos de borda e estabilidade numérica `big.js`.
+  2. *Simulações Interativas, SVG & Scratchpad Canvas:* Executar o motor autônomo de gravação E2E (`node ./scripts/record-quantora-e2e.mjs`) validando a renderização e interatividade.
+  3. *Funcionalidades Mobile (Capacitor 8) & Desktop (Electron 44):* Testar ciclo de vida, haptics e integridade dos empacotamentos nativos.
+- **Relatório Obrigatório:** Toda entrega deve obrigatoriamente apresentar a telemetria, logs de execução ou evidências comprovando o teste bem-sucedido na tabela final de verificação com `✅`.
+
+## 22. Padrão Mandatório de Entrega de Testes com Gravação Audiovisual Completa & Evidências E2E
+- **Princípio Absoluto:** Sempre que o usuário solicitar qualquer teste de funcionalidade, auditoria, validação de fluxo ou verificação E2E no Quantora, a entrega NÃO DEVE limitar-se a logs de texto ou asserções frias. Toda entrega de teste DEVE compor compulsoriamente o **pacote completo de evidências do Quantora Autonomous E2E Engine**:
+  1. *Gravação de Vídeo em Alta Definição:* Captura contínua de frames via Chromium Screencast (`Page.startScreencast`) codificada com FFmpeg em múltiplos formatos na pasta do repositório (`release/e2e-evidence/video/`) e sincronizada na pasta dedicada do Obsidian Vault (`10 - Projetos/Quantora/Gravacoes E2E/videos/`):
+     - Arquivo `.mp4` (H.264 / 1280x800) para reprodução nativa no Windows e player nativo no Obsidian.
+     - Arquivo `.webm` (VP9) para consumo web direto em navegadores modernos.
+     - Arquivo `.gif` animado portátil para visualização rápida em documentações.
+     - Player HTML5 standalone interativo (`player.html`) com tema cósmico, índice de capítulos e timeline.
+  2. *Artefato Visual com Carrossel de Marcos:* Criação de documento de artefato com carrossel dos marcos cronológicos da execução (`milestone_01_...`, etc.).
+  3. *Laudo JSON Estruturado de Evidências:* Laudo master persistido com tempos, status e passos auditados (`release/QUANTORA_E2E_MASTER_REPORT.json` ou equivalente).
+  4. *Tabela Estruturada de Qualidade & Governança:* Tabela com Build, Lint (0 erros/warnings), Testes Unitários (100%), Execução Prática e link do commit no GitHub.
+  5. *Persistência Obrigatória de Nota de Referência `.md` no Vault:* Cada gravação gerada DEVE possuir uma nota de referência em `.md` correspondente dentro de `10 - Projetos/Quantora/Gravacoes E2E/` (com player de vídeo embutido, tabela de mídias, marcos visuais e descrição cronológica dos capítulos), indexada no `[[Gravacoes E2E - MOC]]`.
+  6. *Ronda Mandatória do Vault Guardian:* Registro do Prompt no `Historico de Prompts & Demandas.md` seguido da auditoria e recalibração obrigatória do subagente `vault_guardian`.
+
 ## Registro no Obsidian
 Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`20 - Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe
@@ -270,3 +291,4 @@ e o histórico dos casos reais que motivaram cada seção.
 * [[AGENTS]]
 * [[Decisoes & Estado Atual]]
 * [[Historico de Prompts & Demandas]]
+* [[Gravacoes E2E - MOC]]

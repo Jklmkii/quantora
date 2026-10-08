@@ -227,7 +227,7 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
   1. *Comando Explícito do Usuário:* Disparo imediato do `vault_guardian` via `invoke_subagent`.
   2. *Gatilho Pós-Documentação:* Disparo autônomo ao concluir criação de novos projetos, novos MOCs ou refatoração profunda de notas.
 * **Ronda Obrigatória do Guardião:**
-  - Garantir a paleta oficial de 7 grupos cromáticos no Graph View e a física aberta anti-amontoamento (`centerStrength: 0.08`, `repelStrength: 24`, `linkDistance: 90`).
+  - Garantir a paleta oficial de 8 grupos cromáticos no Graph View (incluindo Gravações E2E em Laranja Tangerina `#F97316`) e a física aberta anti-amontoamento (`centerStrength: 0.08`, `repelStrength: 24`, `linkDistance: 90`).
   - Remover estilos `classDef` com cores fixas e escuras de diagramas Mermaid em novas notas para não quebrar temas.
   - Converter citações cruas em callouts oficiais do Obsidian (`> [!NOTE]`, `> [!SUCCESS]`, etc.).
   - Executar `.antigravity/automation/find_unresolved.cjs` (0 links quebrados).
@@ -238,6 +238,14 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 * **Prompts Lacônicos ou Ambíguos:** Diante de instruções ultracurtas (`"faca"`, `"sim"`, `"prossiga"`) ou ambíguas, o agente DEVE declarar sua interpretação e o escopo exato em 1 frase curta antes de tocar nos arquivos, prevenindo *Context Poisoning* e retrabalho.
 * **Proteção contra Buscas Cegas:** Comandos do usuário com `/browser` para debugar erros no código privado local devem ser gentilmente redirecionados para as ferramentas locais de diagnóstico (leitura de arquivos, terminal, logs e testes unitários com Vitest).
 * **Contrato de Definição de Pronto (DoD):** Toda alteração de código deve ser comprovada com execução e reporte do resultado real de `npx vitest run`, `npm run lint` e/ou `npm run build`.
+
+### M. Padrão Mandatório de Entrega de Testes com Gravação Audiovisual Completa & Evidências E2E
+* **Princípio Absoluto:** Todo agente colaborando neste repositório DEVE testar na prática cada função ajustada antes de finalizar a resposta ao usuário. O encerramento de tarefas de teste ou auditoria exige apresentação dos resultados reais de execução e compõe compulsoriamente o **pacote completo de evidências do Quantora Autonomous E2E Engine**:
+  1. *Gravação de Vídeo em Alta Definição:* Captura contínua de frames no Chromium (`Page.startScreencast`) e codificação em `.mp4` (H.264), `.webm` (VP9), `.gif` animado e `player.html` interativo em `release/e2e-evidence/video/` e sincronizada na pasta dedicada do Obsidian Vault (`10 - Projetos/Quantora/Gravacoes E2E/videos/`).
+  2. *Artefato Visual com Carrossel de Marcos:* Exibição dos marcos de execução na interface do assistente (`milestone_01_...`, etc.).
+  3. *Laudo JSON Estruturado:* Relatório master de auditoria persistido no repositório (`release/QUANTORA_E2E_MASTER_REPORT.json`).
+  4. *Nota de Referência `.md` no Vault:* Cada gravação DEVE possuir nota `.md` correspondente no Obsidian Vault (`10 - Projetos/Quantora/Gravacoes E2E/`) com player embutido, marcos e capítulos, indexada no `[[Gravacoes E2E - MOC]]`.
+  5. *Tabela Estruturada de Qualidade:* Build, Lint (0 erros/warnings), Vitest (100%), telemetria prática e commit no GitHub.
 
 ---
 
