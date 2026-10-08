@@ -152,7 +152,15 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
             const errorDesc = hashParams.get('error_description') || searchParams.get('error_description') ||
                               hashParams.get('error') || searchParams.get('error');
             if (errorDesc) {
-              return { error: new Error(decodeURIComponent(errorDesc.replace(/\+/g, ' '))) };
+              const decoded = decodeURIComponent(errorDesc.replace(/\+/g, ' '));
+              if (decoded.includes('Unable to exchange external code')) {
+                return {
+                  error: new Error(
+                    'O Google autorizou o login, mas recusou a troca de chaves com o Supabase. Verifique se o Client Secret e a URL de callback estão corretos no Supabase, ou se seu e-mail está na lista de "Usuários de Teste" no Google Cloud Console. Você também pode entrar com Email e Senha abaixo!'
+                  ),
+                };
+              }
+              return { error: new Error(decoded) };
             }
 
             const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
