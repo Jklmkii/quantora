@@ -24,6 +24,7 @@ import {
   applyOracleInBattle,
   applyTimeFreezeInBattle,
   getBossIdentityForLevel,
+  rollBossDebuffForRound,
 } from '../core/quiz/bossEngine';
 import { useAppStore } from '../store/useAppStore';
 
@@ -465,6 +466,20 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       // Consome novamente sem saldo
       const failedUse = useAppStore.getState().consumeBossConsumableCharge('oracle');
       expect(failedUse).toBe(false);
+    });
+
+    it('garante que a mecânica de debuffs (como Névoa Algébrica) só ocorre a partir do nível 4', () => {
+      // Níveis 1 a 3 são 100% livres de debuffs (sempre 'none')
+      expect(rollBossDebuffForRound(1, 1, 1)).toBe('none');
+      expect(rollBossDebuffForRound(2, 1, 1)).toBe('none');
+      expect(rollBossDebuffForRound(3, 1, 1)).toBe('none');
+
+      // Do nível 4 em diante, pode sortear debuffs válidos
+      const validDebuffs = new Set(['none', 'fog', 'mirror', 'time_siphon']);
+      for (let i = 0; i < 50; i++) {
+        const debuff = rollBossDebuffForRound(4, 1, 2);
+        expect(validDebuffs.has(debuff)).toBe(true);
+      }
     });
   });
 });

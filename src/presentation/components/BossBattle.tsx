@@ -52,6 +52,7 @@ import {
   playBossDamageTaken,
   playBossVictory,
   playBossShieldBreak,
+  playComboTick,
 } from '../../core/platform/audio';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -128,6 +129,18 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const [showExplanation, setShowExplanation] = useState<boolean>(false);
   const [manualInput, setManualInput] = useState<string>('');
   const [isManualInputMode, setIsManualInputMode] = useState<boolean>(false);
+  const [dispelledQuestionId, setDispelledQuestionId] = useState<string | null>(null);
+
+  const isFogDispelled = Boolean(
+    battleState.currentQuestion?.id && dispelledQuestionId === battleState.currentQuestion.id
+  );
+
+  const handleDispelFog = useCallback(() => {
+    if (battleState.currentQuestion?.id) {
+      setDispelledQuestionId(battleState.currentQuestion.id);
+      playComboTick();
+    }
+  }, [battleState.currentQuestion]);
 
   const timerRef = useRef<number | null>(null);
   const roundStartTimeRef = useRef<number>(0);
@@ -189,6 +202,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       setManualInput('');
       setLastRoundResult(null);
       setShowExplanation(false);
+      setDispelledQuestionId(null);
       setScreen('battle');
       roundStartTimeRef.current = Date.now();
     },
@@ -415,15 +429,29 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     unlockAchievement,
   ]);
 
-  // Keyboard controls: 1, 2, 3, 4 for multiple choice options
+  // Keyboard controls: 1, 2, 3, 4 for multiple choice options & Space to dispel fog
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         screen !== 'battle' ||
         isResolving ||
-        battleState.status !== 'fighting' ||
-        isManualInputMode
+        battleState.status !== 'fighting'
       ) {
+        return;
+      }
+
+      // Atalho de Teclado: Barra de Espaço dissipa a névoa imediatamente
+      if (
+        (e.code === 'Space' || e.key === ' ') &&
+        battleState.currentQuestion?.debuff === 'fog' &&
+        !isFogDispelled
+      ) {
+        e.preventDefault();
+        handleDispelFog();
+        return;
+      }
+
+      if (isManualInputMode) {
         return;
       }
 
@@ -441,7 +469,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [screen, isResolving, battleState, isManualInputMode, handleAnswerSubmit]);
+  }, [screen, isResolving, battleState, isManualInputMode, isFogDispelled, handleDispelFog, handleAnswerSubmit]);
 
   // --------------------------------------------------------------------------
   // SCREEN 1: LEVEL SELECTION & ARSENAL FORGE (SHOP)
@@ -1279,8 +1307,14 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
             {/* Cognitive Debuff Badges */}
             {battleState.currentQuestion.debuff === 'fog' && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-600/30 text-slate-300 border border-slate-500/40">
-                🌫️ Névoa Algébrica
+              <span
+                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all flex items-center gap-1.5 ${
+                  isFogDispelled
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/50 animate-pulse'
+                }`}
+              >
+                {isFogDispelled ? '✨ Névoa Dissipada!' : '🌫️ Ataque do Chefe: Névoa Algébrica'}
               </span>
             )}
             {battleState.currentQuestion.debuff === 'mirror' && (
@@ -1302,22 +1336,76 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             ) : null}
           </div>
 
+          {/* Banner de Ataque do Chefe (Aviso Didático & Ação Rápida de Dissipar) */}
+          {battleState.currentQuestion.debuff === 'fog' && !isFogDispelled && (
+            <div className="w-full max-w-md mx-auto flex items-center justify-between gap-2 py-1.5 px-3 rounded-xl bg-amber-950/70 border border-amber-500/60 text-amber-200 text-xs font-semibold shadow-md animate-pulse select-none">
+              <span className="flex items-center gap-1.5 text-[11px] sm:text-xs">
+                <span>🌫️</span>
+                <span><strong>Ataque do Chefe:</strong> Equação sob névoa!</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleDispelFog}
+                className="shrink-0 bg-amber-500/30 hover:bg-amber-500/50 text-amber-100 border border-amber-400/60 px-2 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                title="Dissipar névoa agora"
+              >
+                <span>Dissipar</span>
+                <kbd className="hidden sm:inline bg-amber-900/90 px-1 rounded text-[9px] font-mono">[Espaço]</kbd>
+              </button>
+            </div>
+          )}
+
           <p className="text-xs sm:text-sm font-semibold text-slate-300">
             {battleState.currentQuestion.prompt}
           </p>
 
           {/* Big Math Expression */}
           <div
-            className={`py-2.5 px-6 rounded-xl bg-slate-950/80 border border-slate-800/80 shadow-inner ${
-              battleState.currentQuestion.debuff === 'fog'
-                ? 'filter blur-[2px] select-none hover:filter-none transition-all duration-300 cursor-pointer'
-                : ''
+            role={battleState.currentQuestion.debuff === 'fog' && !isFogDispelled ? 'button' : undefined}
+            tabIndex={battleState.currentQuestion.debuff === 'fog' && !isFogDispelled ? 0 : undefined}
+            onClick={() => {
+              if (battleState.currentQuestion.debuff === 'fog') handleDispelFog();
+            }}
+            onMouseEnter={() => {
+              if (battleState.currentQuestion.debuff === 'fog') handleDispelFog();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                if (battleState.currentQuestion.debuff === 'fog') handleDispelFog();
+              }
+            }}
+            className={`relative py-3 px-6 rounded-2xl bg-slate-950/80 border transition-all duration-300 ${
+              battleState.currentQuestion.debuff === 'fog' && !isFogDispelled
+                ? 'border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.25)] cursor-pointer hover:border-amber-400'
+                : 'border-slate-800/80 shadow-inner'
             }`}
-            title={battleState.currentQuestion.debuff === 'fog' ? 'Névoa ativa: passe o mouse ou toque para focar' : undefined}
+            title={
+              battleState.currentQuestion.debuff === 'fog'
+                ? isFogDispelled
+                  ? 'Névoa dissipada!'
+                  : 'Névoa ativa: passe o mouse, toque ou aperte Espaço para focar'
+                : undefined
+            }
           >
-            <span className="text-2xl sm:text-3xl font-black font-mono tracking-wide text-white">
+            <span
+              className={`text-2xl sm:text-3xl font-black font-mono tracking-wide text-white transition-all duration-300 ${
+                battleState.currentQuestion.debuff === 'fog' && !isFogDispelled
+                  ? 'filter blur-[3px] select-none'
+                  : ''
+              }`}
+            >
               {battleState.currentQuestion.displayExpression}
             </span>
+
+            {/* Hint Flutuante quando a névoa estiver ativa */}
+            {battleState.currentQuestion.debuff === 'fog' && !isFogDispelled && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40 rounded-2xl pointer-events-none">
+                <span className="text-[10px] sm:text-xs font-bold text-amber-200 bg-amber-950/90 border border-amber-500/70 px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1.5 animate-bounce">
+                  <span>🌫️ Passe o mouse ou aperte</span>
+                  <kbd className="bg-amber-900/90 px-1 rounded text-[10px] font-mono">[Espaço]</kbd>
+                </span>
+              </div>
+            )}
           </div>
 
           {/* 4 MULTIPLE CHOICE OPTIONS */}
