@@ -16,6 +16,7 @@ import {
   getAllowedTracksForLevel,
   getRoundTimeLimitForLevel,
   getCriticalTimeThresholdForLevel,
+  getQuestionTimeBonus,
   generateBossQuestion,
   getBossPhase,
   DIFFICULTY_CAP_LEVEL,
@@ -130,9 +131,9 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       const initialState = createInitialBossBattleState(2, 2); // 135 HP, upgrade 2 (+6)
       const correctAns = initialState.currentQuestion.correctAnswer;
 
-      const { nextState, roundResult } = processRound(initialState, correctAns, 5.0, 15);
+      const { nextState, roundResult } = processRound(initialState, correctAns, 8.0, 15);
       expect(roundResult.isCorrect).toBe(true);
-      // Dano = 15 base + 6 upgrade = 21
+      // Dano = 15 base + 6 upgrade = 21 (Golpe Padrão após a janela crítica)
       expect(roundResult.damageResult.damage).toBe(21);
       expect(nextState.bossHp).toBe(135 - 21);
       expect(nextState.level).toBe(2);
@@ -227,53 +228,77 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       expect(getAllowedTracksForLevel(12)).toEqual(['equation', 'powers', 'roots', 'mixed']);
     });
 
-    it('calcula o tempo de rodada decrescente de 15s no Nível 1 até o piso de 8s', () => {
-      expect(getRoundTimeLimitForLevel(1)).toBe(15);
-      expect(getRoundTimeLimitForLevel(2)).toBe(14);
-      expect(getRoundTimeLimitForLevel(3)).toBe(13);
-      expect(getRoundTimeLimitForLevel(4)).toBe(12);
-      expect(getRoundTimeLimitForLevel(5)).toBe(11);
-      expect(getRoundTimeLimitForLevel(6)).toBe(10);
-      expect(getRoundTimeLimitForLevel(7)).toBe(9);
-      expect(getRoundTimeLimitForLevel(8)).toBe(8);
-      expect(getRoundTimeLimitForLevel(9)).toBe(8);
-      expect(getRoundTimeLimitForLevel(15)).toBe(8);
+    it('calcula o tempo de rodada decrescente de 18s no Nível 1 até o piso generoso de 12s', () => {
+      expect(getRoundTimeLimitForLevel(1)).toBe(18);
+      expect(getRoundTimeLimitForLevel(2)).toBe(17);
+      expect(getRoundTimeLimitForLevel(3)).toBe(16);
+      expect(getRoundTimeLimitForLevel(4)).toBe(15);
+      expect(getRoundTimeLimitForLevel(5)).toBe(14);
+      expect(getRoundTimeLimitForLevel(6)).toBe(13);
+      expect(getRoundTimeLimitForLevel(7)).toBe(12);
+      expect(getRoundTimeLimitForLevel(8)).toBe(12);
+      expect(getRoundTimeLimitForLevel(9)).toBe(12);
+      expect(getRoundTimeLimitForLevel(15)).toBe(12);
     });
 
     it('calcula a janela de golpe crítico proporcional a ~30% do tempo de rodada (mínimo 2.0s)', () => {
-      // Nível 1: 15 * 0.3 = 4.5s
-      expect(getCriticalTimeThresholdForLevel(1)).toBe(4.5);
-      // Nível 2: 14 * 0.3 = 4.2s
-      expect(getCriticalTimeThresholdForLevel(2)).toBe(4.2);
-      // Nível 6: 10 * 0.3 = 3.0s
-      expect(getCriticalTimeThresholdForLevel(6)).toBe(3.0);
-      // Nível 8: 8 * 0.3 = 2.4s
-      expect(getCriticalTimeThresholdForLevel(8)).toBe(2.4);
+      // Nível 1: 18 * 0.3 = 5.4s
+      expect(getCriticalTimeThresholdForLevel(1)).toBe(5.4);
+      // Nível 2: 17 * 0.3 = 5.1s
+      expect(getCriticalTimeThresholdForLevel(2)).toBe(5.1);
+      // Nível 6: 13 * 0.3 = 3.9s
+      expect(getCriticalTimeThresholdForLevel(6)).toBe(3.9);
+      // Nível 8: 12 * 0.3 = 3.6s
+      expect(getCriticalTimeThresholdForLevel(8)).toBe(3.6);
+    });
+
+    it('concede bônus de tempo cognitivo para multiplicações, equações e expressões densas', () => {
+      // Multiplicação combinada: +6s
+      expect(getQuestionTimeBonus('mental_math', '(12 + 15) × 4').bonusSeconds).toBe(6);
+      expect(getQuestionTimeBonus('mental_math', '8 × 7 - 12').bonusSeconds).toBe(6);
+      expect(getQuestionTimeBonus('mental_math', '4 × 6 + 3 × 5').bonusSeconds).toBe(6);
+
+      // Multiplicação simples: +4s
+      expect(getQuestionTimeBonus('mental_math', '7 × 8').bonusSeconds).toBe(4);
+
+      // Equação de 1º grau: +4s
+      expect(getQuestionTimeBonus('equation', '3x + 5 = 20').bonusSeconds).toBe(4);
+
+      // Potenciação: +3s
+      expect(getQuestionTimeBonus('powers', '2⁶').bonusSeconds).toBe(3);
+
+      // Radiciação / Misto: +3s
+      expect(getQuestionTimeBonus('roots', '√64 + √36').bonusSeconds).toBe(3);
+
+      // Adição / Subtração pura: 0s (já beneficiada pela elevação do tempo base)
+      expect(getQuestionTimeBonus('mental_math', '14 + 19').bonusSeconds).toBe(0);
+      expect(getQuestionTimeBonus('mental_math', '25 - 8').bonusSeconds).toBe(0);
     });
 
     it('gera apenas questões de mental_math e com tempo de rodada correto para o Nível 1', () => {
       for (let i = 0; i < 20; i++) {
         const q = generateBossQuestion(i + 1, 1);
         expect(q.category).toBe('mental_math');
-        expect(q.timeLimitSeconds).toBe(15);
+        // Para adição/subtração é 18s; para tabuada é 18s + 4s = 22s
+        expect(q.timeLimitSeconds).toBeGreaterThanOrEqual(18);
         expect(q.options).toHaveLength(4);
         expect(q.options).toContain(q.correctAnswer);
       }
     });
 
     it('aplica golpe crítico respeitando a janela proporcional dinâmica do nível', () => {
-      // No Nível 1 (threshold 4.5s), responder em 4.0s deve ser CRÍTICO
-      const resCritLvl1 = calculateBossDamage(true, 4.0, 30, 0, 15, 4.5);
+      // No Nível 1 (threshold 5.4s), responder em 4.0s deve ser CRÍTICO
+      const resCritLvl1 = calculateBossDamage(true, 4.0, 30, 0, 18, 5.4);
       expect(resCritLvl1.isCritical).toBe(true);
       expect(resCritLvl1.reason).toBe('critical');
 
-      // No Nível 8 (threshold 2.4s), responder em 4.0s deve ser PADRÃO
-      const resStdLvl8 = calculateBossDamage(true, 4.0, 18, 0, 8, 2.4);
+      // No Nível 8 (threshold 3.6s), responder em 4.0s deve ser PADRÃO
+      const resStdLvl8 = calculateBossDamage(true, 4.0, 18, 0, 12, 3.6);
       expect(resStdLvl8.isCritical).toBe(false);
       expect(resStdLvl8.reason).toBe('standard');
 
-      // No Nível 8 (tempo limite 8s), responder em 9.0s deve ser TIMEOUT
-      const resTimeoutLvl8 = calculateBossDamage(true, 9.0, undefined, 0, 8, 2.4);
+      // No Nível 8 (tempo limite 12s), responder em 13.0s deve ser TIMEOUT
+      const resTimeoutLvl8 = calculateBossDamage(true, 13.0, undefined, 0, 12, 3.6);
       expect(resTimeoutLvl8.damage).toBe(0);
       expect(resTimeoutLvl8.shieldDamage).toBe(1);
       expect(resTimeoutLvl8.reason).toBe('timeout');
@@ -298,48 +323,48 @@ describe('Boss Battle por Níveis, Moedas & Upgrades (bossLevels)', () => {
       expect(getBossPhase(33, 135)).toBe(3);
     });
 
-    it('reduz o tempo de rodada em ~20% na Fase 2 e ~30% na Fase 3', () => {
-      // Nível 1: base = 15s -> Fase 2 = round(15 * 0.8) = 12s -> Fase 3 = round(15 * 0.7) = 11s
-      expect(getRoundTimeLimitForLevel(1, 1)).toBe(15);
-      expect(getRoundTimeLimitForLevel(1, 2)).toBe(12);
-      expect(getRoundTimeLimitForLevel(1, 3)).toBe(11);
+    it('reduz o tempo de rodada em ~15% na Fase 2 e ~25% na Fase 3', () => {
+      // Nível 1: base = 18s -> Fase 2 = round(18 * 0.85) = 15s -> Fase 3 = round(18 * 0.75) = 14s
+      expect(getRoundTimeLimitForLevel(1, 1)).toBe(18);
+      expect(getRoundTimeLimitForLevel(1, 2)).toBe(15);
+      expect(getRoundTimeLimitForLevel(1, 3)).toBe(14);
 
-      // Nível 8: base = 8s -> Fase 2 = round(8 * 0.8) = 6s -> Fase 3 = round(8 * 0.7) = 6s (ou min 5s)
-      expect(getRoundTimeLimitForLevel(8, 1)).toBe(8);
-      expect(getRoundTimeLimitForLevel(8, 2)).toBe(6);
-      expect(getRoundTimeLimitForLevel(8, 3)).toBe(6);
+      // Nível 8: base = 12s -> Fase 2 = round(12 * 0.85) = 10s -> Fase 3 = round(12 * 0.75) = 9s
+      expect(getRoundTimeLimitForLevel(8, 1)).toBe(12);
+      expect(getRoundTimeLimitForLevel(8, 2)).toBe(10);
+      expect(getRoundTimeLimitForLevel(8, 3)).toBe(9);
     });
 
     it('recalcula a janela crítica proporcionalmente ao tempo reduzido da Fase 2 e Fase 3', () => {
-      // Nível 1: Fase 1 (15s) -> 4.5s; Fase 2 (12s) -> round(12 * 0.3 * 10)/10 = 3.6s
-      expect(getCriticalTimeThresholdForLevel(1, 1)).toBe(4.5);
-      expect(getCriticalTimeThresholdForLevel(1, 2)).toBe(3.6);
+      // Nível 1: Fase 1 (18s) -> 5.4s; Fase 2 (15s) -> round(15 * 0.3 * 10)/10 = 4.5s
+      expect(getCriticalTimeThresholdForLevel(1, 1)).toBe(5.4);
+      expect(getCriticalTimeThresholdForLevel(1, 2)).toBe(4.5);
 
-      // Nível 8: Fase 1 (8s) -> 2.4s; Fase 2 (6s) -> 2.0s
-      expect(getCriticalTimeThresholdForLevel(8, 1)).toBe(2.4);
-      expect(getCriticalTimeThresholdForLevel(8, 2)).toBe(2.0);
+      // Nível 8: Fase 1 (12s) -> 3.6s; Fase 2 (10s) -> 3.0s
+      expect(getCriticalTimeThresholdForLevel(8, 1)).toBe(3.6);
+      expect(getCriticalTimeThresholdForLevel(8, 2)).toBe(3.0);
     });
 
     it('inicia o combate na Fase 1 e transiciona para Fase 2 quando o HP cai a <= 50%', () => {
       const state = createInitialBossBattleState(1, 0);
       expect(state.phase).toBe(1);
       expect(state.bossHp).toBe(100);
-      expect(state.currentQuestion.timeLimitSeconds).toBe(15);
+      expect(state.currentQuestion.timeLimitSeconds).toBeGreaterThanOrEqual(18);
 
       // Golpe 1: Causa 30 de dano crítico -> HP vai para 70 (> 50% => Fase 1)
       const r1 = processRound(state, state.currentQuestion.correctAnswer, 1.0, 30);
       expect(r1.nextState.bossHp).toBe(70);
       expect(r1.nextState.phase).toBe(1);
-      expect(r1.nextState.currentQuestion.timeLimitSeconds).toBe(15);
+      expect(r1.nextState.currentQuestion.timeLimitSeconds).toBeGreaterThanOrEqual(18);
 
       // Golpe 2: Causa 30 de dano crítico -> HP vai para 40 (<= 50% e > 25% => Fase 2 Sobrecarga)
       const r2 = processRound(r1.nextState, r1.nextState.currentQuestion.correctAnswer, 1.0, 30);
       expect(r2.nextState.bossHp).toBe(40);
       expect(r2.nextState.phase).toBe(2);
-      expect(r2.nextState.currentQuestion.timeLimitSeconds).toBe(12);
+      expect(r2.nextState.currentQuestion.timeLimitSeconds).toBeGreaterThanOrEqual(15);
 
-      // Golpe 3: Causa 20 de dano padrão -> HP vai para 20 (<= 25% => Fase 3 Enrage)
-      const r3 = processRound(r2.nextState, r2.nextState.currentQuestion.correctAnswer, 4.0, 20);
+      // Golpe 3: Causa 20 de dano padrão (fora da janela crítica de 4.5s) -> HP vai para 20 (<= 25% => Fase 3 Enrage)
+      const r3 = processRound(r2.nextState, r2.nextState.currentQuestion.correctAnswer, 6.0, 20);
       expect(r3.nextState.bossHp).toBe(20);
       expect(r3.nextState.phase).toBe(3);
     });

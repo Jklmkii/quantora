@@ -156,7 +156,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const currentLevel = battleState.level ?? 1;
   const currentRoundTimeLimit =
     battleState.currentQuestion?.timeLimitSeconds || getRoundTimeLimitForLevel(currentLevel, battleState.phase);
-  const currentCriticalThreshold = getCriticalTimeThresholdForLevel(currentLevel, battleState.phase);
+  const currentCriticalThreshold = getCriticalTimeThresholdForLevel(
+    currentLevel,
+    battleState.phase,
+    currentRoundTimeLimit
+  );
 
   const timeLeft = Math.max(0, currentRoundTimeLimit - elapsedThisRound);
   const timerPercentage = Math.max(0, Math.min(100, (timeLeft / currentRoundTimeLimit) * 100));
@@ -1222,6 +1226,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               >
                 {timeLeft.toFixed(1)}s
               </span>
+              {battleState.currentQuestion.timeBonusSeconds ? (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow-sm">
+                  ⏱️ +{battleState.currentQuestion.timeBonusSeconds}s
+                </span>
+              ) : null}
             </div>
 
             {isCriticalWindow ? (
@@ -1284,6 +1293,13 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 ⏳ Dreno Temporal (-25%)
               </span>
             )}
+
+            {/* Extended Time Bonus Badge */}
+            {battleState.currentQuestion.timeBonusSeconds ? (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                ⏱️ {battleState.currentQuestion.bonusReason || `+${battleState.currentQuestion.timeBonusSeconds}s Tempo Estendido`}
+              </span>
+            ) : null}
           </div>
 
           <p className="text-xs sm:text-sm font-semibold text-slate-300">

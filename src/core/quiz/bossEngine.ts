@@ -197,26 +197,95 @@ export function rollBossDebuffForRound(
 /**
  * Computes round time limit for a given boss level (15s on level 1, decreasing smoothly to 8s on level 8+).
  * - Phase 2 (Sobrecarga): time reduced by ~20%.
- * - Phase 3 (Enrage Mode): time reduced by ~30% (min 5s).
+ * - Phase 1: Base time (18s at Level 1, decaying gently to a generous 12s floor at Level 8+)
+ * - Phase 2 (Overload): time reduced by ~15% (min 10s)
+ * - Phase 3 (Enrage Mode): time reduced by ~25% (min 8s)
  */
 export function getRoundTimeLimitForLevel(level: number = 1, phase: BossPhase = 1): number {
   const safeLevel = getEffectiveDifficultyLevel(level);
-  const baseTime = Math.max(8, 16 - safeLevel);
+  // Base scales smoothly from 18s at level 1 down to a generous floor of 12s at level 7+
+  const baseTime = Math.max(12, 19 - safeLevel);
   if (phase === 3) {
-    return Math.max(5, Math.round(baseTime * 0.7));
+    return Math.max(8, Math.round(baseTime * 0.75));
   }
   if (phase === 2) {
-    return Math.max(6, Math.round(baseTime * 0.8));
+    return Math.max(10, Math.round(baseTime * 0.85));
   }
   return baseTime;
 }
 
 /**
  * Computes critical hit time threshold proportional to the round time (~30% of time limit, min 2.0s).
+ * Supports optional customTimeLimit for questions with cognitive time bonuses.
  */
-export function getCriticalTimeThresholdForLevel(level: number = 1, phase: BossPhase = 1): number {
-  const timeLimit = getRoundTimeLimitForLevel(level, phase);
+export function getCriticalTimeThresholdForLevel(
+  level: number = 1,
+  phase: BossPhase = 1,
+  customTimeLimit?: number
+): number {
+  const timeLimit = customTimeLimit ?? getRoundTimeLimitForLevel(level, phase);
   return Math.max(2.0, Math.round(timeLimit * 0.3 * 10) / 10);
+}
+
+export interface QuestionTimeBonusResult {
+  bonusSeconds: number;
+  bonusReason: string;
+}
+
+/**
+ * Calculates cognitive bonus time based on question complexity,
+ * granting extra seconds for multiplications, linear equations, powers and combined operations.
+ */
+export function getQuestionTimeBonus(
+  category: BossQuestionCategory,
+  displayExpression: string
+): QuestionTimeBonusResult {
+  const hasMult = displayExpression.includes('×') || displayExpression.includes('*');
+  const isCombinedMult =
+    hasMult &&
+    (displayExpression.includes('+') ||
+      displayExpression.includes('-') ||
+      displayExpression.includes('('));
+
+  if (isCombinedMult) {
+    return {
+      bonusSeconds: 6,
+      bonusReason: 'Multiplicação Complexa (+6s)',
+    };
+  }
+
+  if (hasMult) {
+    return {
+      bonusSeconds: 4,
+      bonusReason: 'Multiplicação (+4s)',
+    };
+  }
+
+  if (category === 'equation') {
+    return {
+      bonusSeconds: 4,
+      bonusReason: 'Equação de 1º Grau (+4s)',
+    };
+  }
+
+  if (category === 'powers') {
+    return {
+      bonusSeconds: 3,
+      bonusReason: 'Potenciação (+3s)',
+    };
+  }
+
+  if (category === 'mixed' || category === 'roots') {
+    return {
+      bonusSeconds: 3,
+      bonusReason: 'Operação Composta (+3s)',
+    };
+  }
+
+  return {
+    bonusSeconds: 0,
+    bonusReason: '',
+  };
 }
 
 export type BossQuestionCategory = 'equation' | 'mental_math' | 'powers' | 'roots' | 'mixed';
@@ -233,6 +302,8 @@ export interface BossQuestion {
   options: number[];
   explanation: string[];
   timeLimitSeconds: number;
+  timeBonusSeconds?: number;
+  bonusReason?: string;
   debuff?: BossDebuffType;
 }
 
@@ -954,12 +1025,17 @@ export function generateBossQuestion(
   const debuff = rollBossDebuffForRound(level, round, phase);
   let timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel, phase);
   if (debuff === 'time_siphon') {
-    timeLimitSeconds = Math.max(5, Math.round(timeLimitSeconds * 0.75));
+    timeLimitSeconds = Math.max(8, Math.round(timeLimitSeconds * 0.75));
   }
   const baseQuestion = generateBossQuestionInner(round, safeLevel, timeLimitSeconds);
+  const bonus = getQuestionTimeBonus(baseQuestion.category, baseQuestion.displayExpression);
+  const totalTimeLimitSeconds = timeLimitSeconds + bonus.bonusSeconds;
+
   return {
     ...baseQuestion,
-    timeLimitSeconds,
+    timeLimitSeconds: totalTimeLimitSeconds,
+    timeBonusSeconds: bonus.bonusSeconds,
+    bonusReason: bonus.bonusReason,
     debuff,
   };
 }
@@ -1080,7 +1156,7 @@ export function processRound(
   const upgradeLevel = damageUpgradeLevel ?? state.damageUpgradeLevel ?? 0;
   const isCorrect = checkAnswerCorrectness(userAnswer, state.currentQuestion.correctAnswer);
   const timeLimit = state.currentQuestion.timeLimitSeconds ?? getRoundTimeLimitForLevel(safeLevel, currentPhase);
-  const criticalThreshold = getCriticalTimeThresholdForLevel(safeLevel, currentPhase);
+  const criticalThreshold = getCriticalTimeThresholdForLevel(safeLevel, currentPhase, timeLimit);
   const damageResult = calculateBossDamage(
     isCorrect,
     responseTimeSeconds,
