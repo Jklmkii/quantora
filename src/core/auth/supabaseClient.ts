@@ -99,6 +99,23 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
         ? window.location.origin
         : undefined);
 
+    // Pre-warm: evita 502 Bad Gateway no navegador caso o container GoTrue esteja em repouso (cold start no plano gratuito)
+    const { url: supabaseUrl, anonKey } = getSupabaseCredentials();
+    if (supabaseUrl && anonKey && typeof fetch !== 'undefined') {
+      try {
+        const ping = await fetch(`${supabaseUrl}/auth/v1/health`, {
+          headers: { apikey: anonKey },
+          signal: AbortSignal.timeout(3000),
+        });
+        if (ping.status === 502) {
+          // Container GoTrue acordando: aguarda 2s para estabilização
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+      } catch {
+        // Ignora erros de rede no ping preventivo para não travar o fluxo
+      }
+    }
+
     const { data, error } = await client.auth.signInWithOAuth({
       provider: 'google',
       options: {

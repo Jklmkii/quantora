@@ -92,6 +92,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleResetDefaults = () => {
+    try {
+      localStorage.removeItem('quantora_supabase_url');
+      localStorage.removeItem('quantora_supabase_anon_key');
+      const { url, anonKey } = getSupabaseCredentials();
+      setCustomUrl(url);
+      setCustomKey(anonKey);
+      setConfigured(isSupabaseConfigured());
+      setShowConfigForm(false);
+      setStatusMessage({ text: 'Credenciais oficiais restauradas com sucesso!' });
+      getCurrentUser().then(setCurrentUser);
+    } catch {
+      setStatusMessage({ text: 'Erro ao restaurar credenciais.', isError: true });
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     setStatusMessage({
@@ -312,15 +328,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <div className="flex gap-2 pt-1">
                   <button
                     type="submit"
-                    className="flex-1 p-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    className="flex-1 p-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer"
                   >
                     {t.save_config}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetDefaults}
+                    className="p-2.5 rounded-xl border border-amber-300 dark:border-amber-700/60 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/40 text-xs font-semibold transition-colors cursor-pointer"
+                    title="Restaurar credenciais oficiais do Quantora"
+                  >
+                    {t.restore_default_config}
                   </button>
                   {configured && (
                     <button
                       type="button"
                       onClick={() => setShowConfigForm(false)}
-                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-xs font-semibold"
+                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-xs font-semibold cursor-pointer"
                     >
                       {t.cancel}
                     </button>
