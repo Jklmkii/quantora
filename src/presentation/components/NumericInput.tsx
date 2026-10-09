@@ -111,7 +111,7 @@ export const NumericInput: React.FC<NumericInputProps> = React.memo(({
           <button
             type="button"
             onClick={() => onChange('')}
-            className="p-2 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg transition-colors"
+            className="p-2 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
             title="Limpar campo"
             aria-label="Limpar campo"
           >
