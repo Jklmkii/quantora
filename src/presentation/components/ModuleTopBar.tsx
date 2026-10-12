@@ -252,13 +252,21 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
               )}
             </button>
 
-            <NotificationPopover
-              isOpen={isNotificationOpen}
-              onClose={() => setIsNotificationOpen(false)}
-              onNavigateToDaily={() => openQuizWithSubmode('daily')}
-              onNavigateToMistakes={() => openQuizWithSubmode('spaced')}
-              onOpenProfile={onOpenProfile}
-            />
+            {/*
+              * ⚡ Bolt Performance Optimization
+              * 💡 What: Conditionally mount NotificationPopover only when open.
+              * 🎯 Why: When hidden via early returns, its useAppStore hooks still ran on every update, causing invisible re-renders.
+              * 📊 Impact: Eliminates unnecessary React subscription evaluations.
+            */}
+            {isNotificationOpen && (
+              <NotificationPopover
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                onNavigateToDaily={() => openQuizWithSubmode('daily')}
+                onNavigateToMistakes={() => openQuizWithSubmode('spaced')}
+                onOpenProfile={onOpenProfile}
+              />
+            )}
           </div>
 
           {/* Configurações */}

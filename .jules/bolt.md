@@ -18,3 +18,6 @@
 ## 2024-05-18 - [Minimize Store Subscriptions]
 **Learning:** Extracting primitive values sequentially from Zustand's `useAppStore` within a single component (like `decimalPlaces` and `separator` in `PhysicsChart.tsx`) causes multiple distinct store subscriptions and re-renders.
 **Action:** Always combine them into a single object selector wrapped with `useShallow` (from `zustand/react/shallow`) to minimize store subscriptions and prevent unnecessary component re-renders.
+## 2025-03-02 - Conditionally Mount Modals/Popovers Subscribed to Stores
+**Learning:** Returning `null` *inside* a child component (like `NotificationPopover`) based on an `isOpen` prop does not prevent that component from re-rendering or evaluating its hooks when global state changes. If it uses `useAppStore` to subscribe to frequently changing state, these hidden subscriptions hurt performance.
+**Action:** Always conditionally mount components that subscribe to a global store (e.g., `{isOpen && <Popover />}`) from their parent, avoiding hidden background subscriptions and wasted React render cycles entirely.
