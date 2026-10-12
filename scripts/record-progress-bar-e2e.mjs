@@ -152,8 +152,8 @@ async function run() {
     banner.style.cssText =
       'background:linear-gradient(90deg,#1e3a8a,#3b82f6);color:#fff;padding:10px 16px;border-radius:10px;margin-bottom:12px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 15px rgba(59,130,246,0.3);';
     banner.innerHTML =
-      '<span>🧪 AUDITORIA E2E • PAINEL PROGRESSO & ETA MULTI-PROJETO</span><span id="e2eStepLabel">Passo 1/4: Conversa Aberta (quantora)</span>';
-    document.querySelector('.container').prepend(banner);
+      '<span>🧪 AUDITORIA E2E • HUD v3.0 ALTO CONTRASTE (PROGRESSO & ETA)</span><span id="e2eStepLabel">Passo 1/4: Conversa Aberta (quantora)</span>';
+    (document.querySelector('.hud-container') || document.querySelector('.container') || document.body).prepend(banner);
   });
 
   // Milestone 1: Conversa Aberta (quantora)
