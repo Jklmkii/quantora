@@ -48,3 +48,8 @@
 **Vulnerability:** The Electron `will-navigate` listener used `parsedUrl.hostname.endsWith('supabase.co')` to whitelist domains. This allowed an attacker to spoof the domain by registering something like `attacker-supabase.co`, completely bypassing the navigation restrictions because the string technically ends with the expected value.
 **Learning:** Checking `endsWith` on hostnames is dangerous and insufficient for validating domains, as it matches any domain suffix. This is a common flaw in URL validation logic.
 **Prevention:** Always check for an exact hostname match (`hostname === 'domain.com'`) or ensure the suffix check includes the dot separator (`hostname.endsWith('.domain.com')`) to prevent prefix injection attacks.
+
+## 2025-05-24 - Missing Host Header Validation on Loopback Server
+**Vulnerability:** The local loopback HTTP server used for the Google OAuth callback lacked `Host` header validation. While `Origin` validation protected against CSRF, an attacker could still exploit this via a DNS Rebinding attack to trick the local application into serving its OAuth flow to a malicious external site.
+**Learning:** `Origin` header validation alone is insufficient for local loopback servers. A malicious domain can rebind its IP address to `127.0.0.1` after bypassing DNS caching. The attacker's browser will then send the `Host` header corresponding to the attacker's domain (e.g., `attacker.com:3000`) instead of `127.0.0.1:3000`.
+**Prevention:** Always validate the `Host` header (`req.headers.host`) on loopback servers against the expected local loopback address and port (e.g., `127.0.0.1:3000`) to completely neutralize DNS rebinding attacks.
