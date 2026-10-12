@@ -336,6 +336,14 @@ app.whenReady().then(() => {
       }
 
       const server = http.createServer((req, res) => {
+        // Security: Strict Host validation to prevent DNS Rebinding attacks
+        const host = req.headers.host;
+        if (host !== '127.0.0.1:3000' && host !== 'localhost:3000') {
+          res.writeHead(403);
+          res.end('Forbidden: Invalid Host');
+          return;
+        }
+
         // Endpoint que recebe a URL completa e tokens extraídos da página de callback
         if (req.method === 'POST' && req.url === '/auth-callback-data') {
           // Security: Strict Origin validation to prevent CSRF from malicious external sites
@@ -478,7 +486,7 @@ app.whenReady().then(() => {
       server.listen(3000, '127.0.0.1', () => {
         activeOAuthServer = server;
         // Abre a URL de autenticação no navegador padrão do sistema operacional
-        shell.openExternal(url);
+        shell.openExternal(parsedUrl.href);
       });
 
       // Timeout de segurança de 3 minutos
@@ -586,7 +594,7 @@ app.whenReady().then(() => {
       }
 
       // Validate each item structure
-      const validTypes = ['bhaskara', 'regra_simples', 'regra_composta', 'physics'];
+      const validTypes = ['bhaskara', 'regra_simples', 'regra_composta', 'physics', 'pitagoras'];
       for (let i = 0; i < parsed.length; i++) {
         const item = parsed[i];
         if (
