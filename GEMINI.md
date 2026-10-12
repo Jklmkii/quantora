@@ -215,6 +215,12 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
      | Tarefa | Status | Build | Lint |
      indicando o estado de cada entrega com checkmarks verdes (`✅`).
   5. **Condução Proativa:** Concluir sempre oferecendo de forma direta o próximo passo lógico (ex: *"Quer que eu faça o commit dessas alterações?"* ou *"Pronto para testar visualmente com run_app.bat"*).
+  6. **Barra de Progresso de Coding & Previsão de Término (Estilo Files by Google / Google Drive):**
+     - **No Chat (Narração Passo a Passo):** Em toda tarefa que acione ferramentas, exibir no topo de cada narração intermediária uma barra de progresso com porcentagem monotônica (`0%` $\to$ `100%`), previsão de término em segundos (ETA regressivo) e etapa atual das 5 fases (*1. Análise* $\to$ *2. Código* $\to$ *3. Build* $\to$ *4. Testes* $\to$ *5. Entrega*):
+       `⏳ [██████░░░░] 60% • ~12s restantes • Etapa 3/5: Compilando bundle (npm run build)...`
+       E ao concluir:
+       `✅ [██████████] 100% • Concluído • Todas as 5 etapas finalizadas!`
+     - **No Painel Lateral (UI Extension `coding-progress-bar` + Hooks):** O hook `coding-progress-tracker` em `.agents/hooks.json` (`PreInvocation`, `PreToolUse`, `PostToolUse`, `Stop`) atualiza em `< 5ms` o estado em `~/.gemini/antigravity/coding_progress_state.json`, alimentando em tempo real o painel lateral `coding-progress-bar/panel` sem custo de tokens.
 
 ## 17. Protocolo de Leitura Cirúrgica do Vault (Navegação Coarse-to-Fine)
 - **Motivação:** Ler notas markdown inteiras de centenas ou milhares de linhas satura rapidamente a janela de contexto do agente, aumenta o custo em tokens, gera latência desnecessária e induz o efeito de degradação atencional (*Lost in the Middle*).

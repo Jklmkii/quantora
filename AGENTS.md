@@ -209,6 +209,7 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 * **Comunicação Ativa:** Antes de cada ferramenta ou edição, contextualizar brevemente a ação em frases curtas (ex: *"Agora vou inspecionar o arquivo X:"*, *"Edit 1: Adicionar filtro de coleção ao useMemo:"*).
 * **Diagnóstico Aberto:** Se um replace corromper linhas ou a compilação falhar, relatar o diagnóstico e a correção em andamento abertamente.
 * **Feedback Atômico de Qualidade:** Reportar compilação e linter imediatamente com marcadores visuais (ex: *"Build passou com código 0! ✅ Agora vou rodar o lint:"*).
+* **Barra de Progresso de Coding & Previsão de Término (Estilo Files by Google):** Em cada narração passo a passo durante o uso de ferramentas, exibir no topo a barra de progresso com porcentagem, ETA em segundos e fase atual (`⏳ [██████░░░░] 60% • ~12s restantes • Etapa 3/5: ...`), finalizando em `✅ [██████████] 100% • Concluído`, sincronizada em tempo real via `.agents/hooks.json` (`coding-progress-tracker.cjs`) com o painel lateral UI Extension `coding-progress-bar`.
 * **Tabela de Fechamento:** Ao concluir, estruturar a tabela resumo com Tarefa, Status, Build e Lint com checkmarks verdes (`✅`).
 
 ### I. Diretriz de Leitura Cirúrgica de Documentação no Vault (Economia de Tokens & Alta Precisão)
