@@ -293,6 +293,26 @@ function main() {
     if (Array.isArray(state.recentSteps) && state.recentSteps.length > 0) {
       state.recentSteps[0].status = payload.error ? 'error' : 'done';
       state.recentSteps[0].durationMs = stepDuration;
+
+      // Feature #10 (Vault Guardian v5.0): Hook Reativo Pós-Edição de Nota no Obsidian Vault
+      const lastStep = state.recentSteps[0];
+      const lastTool = String(lastStep.tool || '').toLowerCase();
+      const lastDetail = String(lastStep.detail || '');
+      if (
+        !payload.error &&
+        (lastTool.includes('write_to_file') || lastTool.includes('replace_file_content')) &&
+        lastDetail.includes('Obsidian-Vault')
+      ) {
+        try {
+          const corePath = path.resolve(__dirname, '../.antigravity/automation/vault_guardian_core.cjs');
+          if (fs.existsSync(corePath)) {
+            const { runVaultGuardian } = require(corePath);
+            runVaultGuardian({ autoFix: true, syncCatalogs: true, silent: true });
+          }
+        } catch {
+          // Never block the hook if vault guardian fails
+        }
+      }
     }
 
     saveState(state);
