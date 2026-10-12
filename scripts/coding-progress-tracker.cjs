@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Quantora & Antigravity — Google Files Style Coding Progress & ETA Tracker
+ * Quantora & Antigravity — Google Files Style Coding Progress & ETA Tracker + Anti-Hang Guard
  * Intercepts PreInvocation, PreToolUse, PostToolUse, and Stop lifecycle hooks
  * to compute real-time % completion, phase classification, transfer-like speed,
- * and dynamic countdown ETA (in seconds).
+ * dynamic countdown ETA (in seconds), and prevent runaway recursive shell commands.
  */
 
 const fs = require('node:fs');
@@ -65,6 +65,30 @@ function shortenPath(p) {
   const parts = normalized.split('/').filter(Boolean);
   if (parts.length <= 3) return normalized;
   return '…/' + parts.slice(-3).join('/');
+}
+
+function checkAntiHangGuard(toolName, args) {
+  if (String(toolName || '').toLowerCase() !== 'run_command') {
+    return null;
+  }
+  const cmd = String(args?.CommandLine || '');
+
+  // 1. Block unguarded Get-ChildItem -Recurse without -Depth (traverses node_modules on OneDrive for 30+ mins)
+  if (/Get-ChildItem\b/i.test(cmd) && /-Recurse\b/i.test(cmd) && !/-Depth\b/i.test(cmd)) {
+    return '[Anti-Hang Guard] Comando bloqueado: Get-ChildItem -Recurse sem -Depth varre node_modules/.git no OneDrive e trava em background. Use -Depth 2 ou um script node -e que ignore node_modules, .git, dist, release e android.';
+  }
+
+  // 2. Block nested powershell -Command "... $_ ..." which strips $_ in outer PowerShell
+  if (/powershell(?:\.exe)?\s+-Command\s+"[^"]*\$_/i.test(cmd)) {
+    return '[Anti-Hang Guard] Comando bloqueado: powershell -Command com aspas duplas consome a variavel $_ no shell externo e quebra filtros Where-Object/ForEach-Object. Execute os cmdlets diretamente sem invocar outro powershell -Command.';
+  }
+
+  // 3. Block slow single-threaded libvpx-vp9 without -deadline realtime
+  if (/libvpx-vp9/i.test(cmd) && !/-deadline\s+realtime/i.test(cmd)) {
+    return '[Anti-Hang Guard] Comando bloqueado: FFmpeg libvpx-vp9 sem "-deadline realtime -cpu-used 8" trava por varios minutos em 1080p. Adicione -deadline realtime -cpu-used 8 -row-mt 1.';
+  }
+
+  return null;
 }
 
 function classifyToolAndEstimate(toolName, args, prevPercent, stepsCompleted) {
@@ -205,6 +229,17 @@ function main() {
     const toolCall = payload.toolCall || {};
     const toolName = toolCall.name || 'tool';
     const args = toolCall.args || {};
+
+    const hangBlockReason = checkAntiHangGuard(toolName, args);
+    if (hangBlockReason) {
+      process.stdout.write(
+        JSON.stringify({
+          decision: 'deny',
+          reason: hangBlockReason,
+        }) + '\n'
+      );
+      return;
+    }
 
     if (state.status !== 'working') {
       state.status = 'working';

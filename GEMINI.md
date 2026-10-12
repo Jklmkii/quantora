@@ -283,6 +283,25 @@ A cada solicitação ou tarefa processada pelo Antigravity, o agente **DEVE semp
   5. *Persistência Obrigatória de Nota de Referência `.md` no Vault:* Cada gravação gerada DEVE possuir uma nota de referência em `.md` correspondente dentro de `10 - Projetos/Quantora/Gravacoes E2E/` (com player de vídeo embutido, tabela de mídias, marcos visuais e descrição cronológica dos capítulos), indexada no `[[Gravacoes E2E - MOC]]`.
   6. *Ronda Mandatória do Vault Guardian:* Registro do Prompt no `Historico de Prompts & Demandas.md` seguido da auditoria e recalibração obrigatória do subagente `vault_guardian`.
 
+## 23. Protocolo Anti-Engasgo de Tasks em Background & Watchdog Auto-Wakeup (`schedule(TimerCondition)`)
+- **Diagnóstico da Causa Raiz (Por que o agente engasgava esperando uma task):**
+  1. Quando um `run_command` excede `WaitMsBeforeAsync`, ele vai para segundo plano (`task-XXXXX`).
+  2. Se o comando entrar em loop infinito ou travar no Windows/OneDrive (ex.: `Get-ChildItem -Recurse` sem `-Depth` varrendo `node_modules` na nuvem, subshell `powershell -Command "... $_ ..."` com interpolação prematura de `$_` ou `ffmpeg libvpx-vp9` sem `-deadline realtime`), a task **nunca termina sozinha**.
+  3. Se o agente encerrar o turno esperando passivamente o evento de conclusão de uma task que travou, o sistema nunca recebe o sinal de término e todas as mensagens subsequentes do usuário ficam retidas em `Queued Messages` até intervenção manual.
+- **Três Camadas Obrigatórias de Prevenção e Auto-Recuperação:**
+  1. **Camada 1 — Bloqueio Preventivo no Hook `PreToolUse` (`scripts/coding-progress-tracker.cjs`):**
+     - O hook `PreToolUse` inspeciona cada `run_command` antes da execução e **rejeita automaticamente (`decision: "deny"`)** comandos propensos a congelamento:
+       - `Get-ChildItem ... -Recurse` sem `-Depth` ou sem filtro de exclusão de `node_modules`/`.git`.
+       - `powershell -Command "..."` com aspas duplas contendo variáveis `$_` (que quebram o pipeline e travam o subshell).
+       - `ffmpeg ... libvpx-vp9` sem `-deadline realtime` e `-cpu-used`.
+  2. **Camada 2 — Execução Síncrona Preferencial (`WaitMsBeforeAsync: 5000..10000`):**
+     - Sempre configurar `WaitMsBeforeAsync: 10000` para builds, testes e scripts rápidos, e preferir scripts Node.js (`fs.readdirSync` com filtro explícito) em vez de pipelines recursivos do PowerShell.
+  3. **Camada 3 — Watchdog Auto-Wakeup Obrigatório (`schedule` com `TimerCondition`):**
+     - Sempre que uma ferramenta `run_command` for enviada para background (`task-XXXXX`) e o agente precisar aguardar sua conclusão, o agente **NUNCA deve encerrar o turno de mãos vazias**.
+     - No **mesmo turno**, o agente DEVE obrigatoriamente armar um **Watchdog Timer de Auto-Wakeup** usando a ferramenta `schedule`:
+       - `DurationSeconds: 15`, `TimerCondition: "<task-id>"`, `Prompt: "Watchdog: verificar status da task em background, ler o log ou encerrar se estiver travada e concluir a entrega."`
+     - **Como funciona:** Se a task terminar antes dos 15 segundos, o `TimerCondition: "<task-id>"` cancela o timer automaticamente e acorda o agente com o resultado da task. Se a task engasgar ou demorar mais de 15 segundos, o timer dispara sozinho, acorda o agente sem precisar que o usuário envie mensagem no chat, permite inspecionar/matar (`manage_task(Action="kill")`) a task travada e concluir a entrega imediatamente!
+
 ## Registro no Obsidian
 Referenciar este arquivo em [[Antigravity & Cotas de IA]] (`20 - Sistemas & Integracoes/Antigravity & Cotas de IA.md`) — o
 `GEMINI.md` é a fonte executável da regra, o Obsidian é a documentação de por que ela existe

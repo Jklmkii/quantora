@@ -250,6 +250,17 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 
 ---
 
+### N. Protocolo Anti-Engasgo de Tasks em Background & Watchdog Auto-Wakeup
+* **Proibição de Comandos Propensos a Travamento no Windows/OneDrive:**
+  - Nunca executar `Get-ChildItem -Recurse` sem `-Depth` (varre `node_modules` no OneDrive e trava por dezenas de minutos), nunca invocar `powershell -Command "... $_ ..."` com aspas duplas (que interpolam `$_` vazio) e nunca rodar `ffmpeg -c:v libvpx-vp9` sem `-deadline realtime -cpu-used 8`. Esses padrões são bloqueados preventivamente pelo hook `PreToolUse` em `scripts/coding-progress-tracker.cjs`.
+* **Watchdog Auto-Wakeup Obrigatório (`schedule` com `TimerCondition`):**
+  - Sempre que um comando for para background (`task-XXXXX`) e o agente precisar aguardar o término para continuar, é **proibido encerrar o turno passivamente** sem rede de segurança.
+  - O agente DEVE agendar no mesmo turno `schedule(DurationSeconds=15, TimerCondition="<task-id>", Prompt="Watchdog: verificar ou destravar task em background")`, garantindo que o próprio sistema acorde o agente após 15s caso a task engasgue, sem depender de uma nova mensagem do usuário e sem represar a fila `Queued Messages`.
+* **Painel Multi-Conversa em Tempo Real (`coding-progress-bar`):**
+  - O sidecar `C:\Users\lucas\.gemini\config\plugins\coding-progress-bar\sidecars\panel\main.mjs` lê diretamente os últimos 96 KB dos arquivos `transcript.jsonl` em `~/.gemini/antigravity/brain/*/.system_generated/logs/transcript.jsonl`, atualizando automaticamente o projeto ativo (`quantora`, `gerenciador_senhas`, etc.) e a porcentagem real (`0%` a `100%`) sem depender de mocks estáticos.
+
+---
+
 ## 🤖 6. Carta de Funções & Atribuições da Jules AI no Quantora
 
 Para maximizar a eficiência, poupar a cota de tokens do Antigravity e manter a integridade da aplicação, a **Jules AI** possui 5 funções vitais e oficiais de atuação autônoma no repositório:
