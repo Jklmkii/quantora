@@ -368,8 +368,8 @@ async function runRecordAllClassesE2E() {
     console.log('  ↳ [MARCO 1] Salvo: milestone_01_hero_roster_9_classes.jpg');
 
     // Helper para responder a pergunta atual na tela
-    const answerCurrentQuestion = async (critical = true) => {
-      await page.evaluate((isCrit) => {
+    const answerCurrentQuestion = async (_critical = true) => {
+      await page.evaluate(() => {
         const state = window.__bossBattleState;
         if (!state || !state.currentQuestion) return false;
         const correct = state.currentQuestion.correctAnswer;
@@ -393,14 +393,14 @@ async function runRecordAllClassesE2E() {
           return true;
         }
         return false;
-      }, critical);
+      });
       await new Promise((r) => setTimeout(r, 900));
     };
 
     // Helper para iniciar combate em classe específica de herói e chefe
     const setupBattle = async (playerClass, bossClass, gamblerBet = 0) => {
       await page.evaluate(
-        ({ pClass, bClass, gBet }) => {
+        ({ pClass, _bClass, gBet }) => {
           if (window.__quantoraStore) {
             const store = window.__quantoraStore.getState();
             store.setSelectedPlayerClass(pClass);
@@ -412,7 +412,7 @@ async function runRecordAllClassesE2E() {
           );
           if (startBtn) startBtn.click();
         },
-        { pClass: playerClass, bClass: bossClass, gBet: gamblerBet }
+        { pClass: playerClass, _bClass: bossClass, gBet: gamblerBet }
       );
       await new Promise((r) => setTimeout(r, 1200));
 
