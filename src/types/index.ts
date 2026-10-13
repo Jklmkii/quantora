@@ -234,6 +234,7 @@ export interface UserProfileStats {
   unlockedBossWeapons?: BossWeaponId[];
   equippedBossWeapon?: BossWeaponId;
   debugUnlockAllClasses?: boolean;
+  bossHardModeEnabled?: boolean;
   spacedBox5Count?: number;
   spacedCleanCount?: number;
   rare67Hits?: number;

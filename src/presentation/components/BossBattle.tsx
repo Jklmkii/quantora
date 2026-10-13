@@ -23,6 +23,7 @@ import {
   XCircle,
   Eye,
   Snowflake,
+  Skull,
 } from 'lucide-react';
 import {
   createInitialBossBattleState,
@@ -50,6 +51,8 @@ import {
   getTargetSPlusTimeForLevel,
   toggleParryModeInBattle,
   rollBossClassForLevel,
+  getHardModeDamageReductionPct,
+  isClassWithTrueDamage,
   type BossWeaponId,
 } from '../../core/quiz/bossEngine';
 import type { BossBattleState, BossRoundResult } from '../../core/quiz/bossEngine';
@@ -121,6 +124,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     debugUnlockAllClasses,
     toggleDebugUnlockAllClasses,
     bossesDefeated,
+    bossHardModeEnabled,
+    setBossHardModeEnabled,
   } = useAppStore(
     useShallow((s) => ({
       totalXp: s.profile?.totalXp || 0,
@@ -155,6 +160,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       debugUnlockAllClasses: s.debugUnlockAllClasses ?? s.profile?.stats?.debugUnlockAllClasses ?? false,
       toggleDebugUnlockAllClasses: s.toggleDebugUnlockAllClasses,
       bossesDefeated: s.profile?.stats?.bossesDefeated ?? 0,
+      bossHardModeEnabled: s.bossHardModeEnabled ?? s.profile?.stats?.bossHardModeEnabled ?? false,
+      setBossHardModeEnabled: s.setBossHardModeEnabled,
     }))
   );
 
@@ -176,6 +183,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         previousBossClass: lastBossClass,
         equippedWeapon: equippedBossWeapon,
         gamblerBet: selectedGamblerBet,
+        isHardMode: bossHardModeEnabled,
       }
     )
   );
@@ -285,6 +293,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           previousBossClass: lastBossClass,
           equippedWeapon: equippedBossWeapon,
           gamblerBet: selectedGamblerBet,
+          isHardMode: bossHardModeEnabled,
         }
       );
       if (nextBattleState.bossClass && typeof setLastBossClass === 'function') {
@@ -311,6 +320,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       lastBossClass,
       equippedBossWeapon,
       setLastBossClass,
+      bossHardModeEnabled,
     ]
   );
 
@@ -445,6 +455,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           if (roundResult.lastStandActivated) {
             addFloatingText('☢️ ÚLTIMO SUSPIRO ATIVO!', 'critical');
           }
+          if (roundResult.trueDamageBypassedArmor) {
+            addFloatingText('⚡ DANO VERDADEIRO (100%)!', 'critical');
+          } else if (roundResult.damageBlockedByArmor && roundResult.damageBlockedByArmor > 0) {
+            addFloatingText(`🛡️ -${roundResult.damageBlockedByArmor} CARAPAÇA`, 'shield_loss');
+          }
           setTimeout(() => {
             setIsShaking(false);
             setFlashColor(null);
@@ -453,6 +468,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           playBossHitStandard();
           setFlashColor('emerald');
           addFloatingText(`-${roundResult.damageResult.damage}`, 'standard');
+          if (roundResult.trueDamageBypassedArmor) {
+            addFloatingText('⚡ DANO VERDADEIRO (100%)!', 'critical');
+          } else if (roundResult.damageBlockedByArmor && roundResult.damageBlockedByArmor > 0) {
+            addFloatingText(`🛡️ -${roundResult.damageBlockedByArmor} CARAPAÇA`, 'shield_loss');
+          }
           if (roundResult.lastStandActivated) {
             addFloatingText('☢️ ÚLTIMO SUSPIRO ATIVO!', 'critical');
           }
@@ -505,7 +525,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             const totalTime = Math.max(1, Math.round(nextState.totalTimeSeconds));
             const shieldsRemaining = nextState.shields;
             const xpEarned = nextState.earnedXp;
-            const coinsEarned = coinsForLevel(nextState.level);
+            const baseCoins = coinsForLevel(nextState.level);
+            const coinsEarned = nextState.isHardMode ? Math.round(baseCoins * 1.5) : baseCoins;
 
             if (typeof recordBossVictory === 'function') {
               const summary = recordBossVictory(
@@ -607,7 +628,8 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       const totalTime = Math.max(1, Math.round(battleState.totalTimeSeconds));
       const shieldsRemaining = battleState.shields;
       const xpEarned = battleState.earnedXp;
-      const coinsEarned = coinsForLevel(battleState.level);
+      const baseCoins = coinsForLevel(battleState.level);
+      const coinsEarned = battleState.isHardMode ? Math.round(baseCoins * 1.5) : baseCoins;
 
       if (typeof recordBossVictory === 'function') {
         recordBossVictory(
@@ -639,6 +661,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     battleState.earnedXp,
     battleState.bossClass,
     battleState.lastStandBonusCoinsMultiplier,
+    battleState.isHardMode,
     recordBossVictory,
     addXp,
     unlockAchievement,
@@ -877,6 +900,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                     <span className="inline-block mt-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
                       {cls.badge}
                     </span>
+                    {cls.hasTrueDamage && (
+                      <span className="inline-block mt-1 ml-1 text-[10px] font-mono font-black px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+                        ⚡ Dano Verdadeiro
+                      </span>
+                    )}
                     <p
                       className={`text-[11px] mt-1.5 leading-snug ${
                         isSelected ? 'text-slate-200' : 'text-slate-500 dark:text-slate-400'
@@ -1235,6 +1263,83 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           </div>
         </div>
 
+        {/* Seletor de Dificuldade da Batalha: Normal vs Modo Difícil */}
+        <div
+          data-testid="boss-difficulty-selector"
+          className={`p-4 sm:p-5 rounded-3xl border-2 transition-all flex flex-col sm:flex-row items-center justify-between gap-4 ${
+            bossHardModeEnabled
+              ? 'bg-gradient-to-r from-red-950/80 via-slate-900 to-amber-950/80 border-red-500/60 shadow-xl shadow-red-950/40 text-white'
+              : 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200 dark:border-slate-800 shadow-md'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border ${
+                bossHardModeEnabled
+                  ? 'bg-red-500/20 text-red-400 border-red-500/40 shadow-inner'
+                  : 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800'
+              }`}
+            >
+              {bossHardModeEnabled ? (
+                <Flame size={22} className="text-red-400 animate-pulse" />
+              ) : (
+                <Shield size={22} />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-black tracking-wide">
+                  {bossHardModeEnabled
+                    ? 'Modo Difícil 💀 (Carapaça Blindada)'
+                    : 'Dificuldade da Torre: Normal'}
+                </span>
+                <span
+                  className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full border ${
+                    bossHardModeEnabled
+                      ? 'bg-red-500/30 text-red-300 border-red-400/50'
+                      : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                  }`}
+                >
+                  {bossHardModeEnabled ? '+50% Recompensas' : 'Padrão'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-md">
+                {bossHardModeEnabled
+                  ? 'O Chefe reduz o dano recebido em 30% (Fase 1), 50% (Fase 2) e 70% (Fase 3). Classes com Dano Verdadeiro (Breaker & Alquimista) ignoram 100% dessa redução!'
+                  : 'Dano pleno em todas as fases. Ative o Modo Difícil para testar classes com Dano Verdadeiro e ganhar bônus de XP & Moedas.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-800 shrink-0">
+            <button
+              type="button"
+              data-testid="boss-mode-normal-btn"
+              onClick={() => setBossHardModeEnabled(false)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                !bossHardModeEnabled
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-slate-700'
+                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              Normal
+            </button>
+            <button
+              type="button"
+              data-testid="boss-mode-hard-btn"
+              onClick={() => setBossHardModeEnabled(true)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1 ${
+                bossHardModeEnabled
+                  ? 'bg-gradient-to-r from-red-600 to-amber-600 text-white shadow-md shadow-red-900/50 border border-red-400'
+                  : 'text-slate-500 hover:text-red-400'
+              }`}
+            >
+              <span>Difícil</span>
+              <Skull size={13} />
+            </button>
+          </div>
+        </div>
+
         {/* Levels Selection Grid */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-1">
@@ -1424,6 +1529,29 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </span>
             </div>
           </div>
+
+          {/* HARD MODE VICTORY BANNER */}
+          {battleState.isHardMode && (
+            <div
+              data-testid="boss-hard-mode-victory-banner"
+              className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-red-600/30 via-amber-500/20 to-red-600/30 border border-red-500/50 text-white flex items-center justify-between gap-2 shadow-lg z-10"
+            >
+              <div className="flex items-center gap-2 text-left">
+                <Skull size={18} className="text-red-400 shrink-0" />
+                <div>
+                  <span className="text-xs font-black text-red-300 block">
+                    {t.boss_hard_mode_victory_bonus || '💀 Bônus do Modo Difícil (+50% XP & Moedas)!'}
+                  </span>
+                  <span className="text-[10px] text-slate-300">
+                    A Carapaça Blindada do Chefe foi superada com sucesso!
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-black px-2 py-0.5 rounded-lg bg-red-500/30 text-red-200 border border-red-400/40">
+                x1.5 BÔNUS
+              </span>
+            </div>
+          )}
 
           {/* RANK S+ GHOST PACE VICTORY BANNER */}
           {victorySummary?.isSPlus && (
@@ -1855,6 +1983,21 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                     ? 'FASE 2 • SOBRECARGA'
                     : `FASE 1 • NÍVEL ${battleState.level}`}
                 </span>
+                {battleState.isHardMode && (
+                  <span
+                    data-testid="boss-hard-mode-indicator"
+                    className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full uppercase border flex items-center gap-1 ${
+                      isClassWithTrueDamage(battleState.playerClass) || battleState.isBossStaggered
+                        ? 'bg-emerald-500/25 text-emerald-300 border-emerald-400 animate-pulse'
+                        : 'bg-red-500/25 text-red-300 border-red-400'
+                    }`}
+                  >
+                    <Skull size={10} />
+                    {isClassWithTrueDamage(battleState.playerClass) || battleState.isBossStaggered
+                      ? `⚡ DANO VERDADEIRO (IGNORA -${battleState.bossDamageReductionPct || getHardModeDamageReductionPct(battleState.phase || 1)}%)`
+                      : `🛡️ CARAPAÇA: -${battleState.bossDamageReductionPct || getHardModeDamageReductionPct(battleState.phase || 1)}% DANO`}
+                  </span>
+                )}
               </h3>
               <p className="text-[11px] text-slate-300 font-semibold flex items-center justify-center gap-1.5 flex-wrap">
                 <span className="text-amber-400 font-bold">{battleState.bossIdentity.title}</span> •{' '}

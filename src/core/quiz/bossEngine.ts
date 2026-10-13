@@ -74,6 +74,30 @@ export interface PlayerClassDef {
   accentColor: 'amber' | 'purple' | 'cyan' | 'emerald' | 'rose' | 'teal' | 'indigo';
   unlockRequirementPt?: string;
   unlockRequirementEn?: string;
+  hasTrueDamage?: boolean;
+}
+
+/**
+ * Retorna a porcentagem de redução de dano da Carapaça do Chefe no Modo Difícil:
+ * - Fase 1: 30% de redução
+ * - Fase 2: 50% de redução
+ * - Fase 3 (Enrage): 70% de redução
+ */
+export function getHardModeDamageReductionPct(phase: BossPhase | number = 1): number {
+  if (phase <= 1) return 30;
+  if (phase === 2) return 50;
+  return 70;
+}
+
+/**
+ * Verifica se a classe do jogador possui Dano Verdadeiro (True Damage)
+ * capaz de furar e ignorar a carapaça de redução de dano do Modo Difícil.
+ * Classes oficiais com Dano Verdadeiro:
+ * - breaker (Quebrador de Postura): Stagger & Selos
+ * - alchemist (Alquimista dos Primos): Cargas de Elixir & Primos
+ */
+export function isClassWithTrueDamage(playerClass?: PlayerClassId): boolean {
+  return playerClass === 'breaker' || playerClass === 'alchemist';
 }
 
 export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
@@ -114,12 +138,13 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     id: 'breaker',
     name: 'Quebrador de Postura',
     subtitle: 'Quebra de Guarda (Stagger)',
-    badge: '🔨 3 Selos → Stagger 2x',
+    badge: '🔨 3 Selos → Stagger (Dano Verdadeiro)',
     description:
-      'Aplica 3 Selos de Postura no Chefe. Acertar 3 Críticos seguidos deixa o Chefe ATORDADO: zero debuffs, 2x tempo e 2x Dano Verdadeiro!',
+      'Aplica 3 Selos de Postura no Chefe. Acertar 3 Críticos seguidos deixa o Chefe ATORDADO: zero debuffs, 2x tempo e 2x Dano Verdadeiro que perfura 100% da carapaça do Modo Difícil!',
     accentColor: 'emerald',
     unlockRequirementPt: 'Classe Inicial',
     unlockRequirementEn: 'Starter Class',
+    hasTrueDamage: true,
   },
   gambler: {
     id: 'gambler',
@@ -158,12 +183,13 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     id: 'alchemist',
     name: 'Alquimista dos Primos',
     subtitle: 'Transmutação de Fatores',
-    badge: '🧪 Primos & Fatores (Transmutação)',
+    badge: '🧪 Primos & Elixir (Dano Verdadeiro)',
     description:
-      'Respostas primas ou com fatores ímpares acumulam Cargas de Elixir (até 3). Com 3 cargas, o próximo golpe vira Dano Verdadeiro Crítico e concede +10 Moedas bônus!',
+      'Respostas primas ou com fatores ímpares acumulam Cargas de Elixir (até 3). Com 3 cargas ou em primos, o golpe vira Dano Verdadeiro que perfura 100% da carapaça do Modo Difícil (+10 Moedas)!',
     accentColor: 'emerald',
     unlockRequirementPt: 'Vença o Nível 5 da Torre',
     unlockRequirementEn: 'Clear Tower Level 5',
+    hasTrueDamage: true,
   },
   gambit: {
     id: 'gambit',
@@ -822,6 +848,7 @@ export interface BossDamageResult {
   isCritical: boolean;
   shieldDamage: number;
   reason: DamageReason;
+  isTrueDamage?: boolean;
 }
 
 export interface BossRoundResult {
@@ -857,6 +884,10 @@ export interface BossRoundResult {
   paladinRetributionDamage?: number;
   hydraSplitTriggered?: boolean;
   cipherBonusUnlocked?: boolean;
+  // Hard Mode & True Damage Piercing
+  hardModeReductionPct?: number;
+  damageBlockedByArmor?: number;
+  trueDamageBypassedArmor?: boolean;
 }
 
 export interface BossRpgConfig {
@@ -866,6 +897,7 @@ export interface BossRpgConfig {
   equippedWeapon?: BossWeaponId;
   enableArenaModifiers?: boolean;
   gamblerBet?: 0 | 2 | 3;
+  isHardMode?: boolean;
 }
 
 export interface BossBattleState {
@@ -916,6 +948,9 @@ export interface BossBattleState {
   paladinIntactRounds?: number;
   isHydraSplit?: boolean;
   cipherQuickBonusActive?: boolean;
+  // Hard Mode Carapace State
+  isHardMode?: boolean;
+  bossDamageReductionPct?: number;
 }
 
 function getRandomInt(min: number, max: number): number {
@@ -2267,6 +2302,8 @@ export function createInitialBossBattleState(
     paladinIntactRounds: 0,
     isHydraSplit: false,
     cipherQuickBonusActive: false,
+    isHardMode: Boolean(rpgConfig?.isHardMode),
+    bossDamageReductionPct: rpgConfig?.isHardMode ? getHardModeDamageReductionPct(1) : 0,
   };
 }
 
@@ -2710,6 +2747,33 @@ export function processRound(
     }
   }
 
+  // 3. Hard Mode Carapace (30% -> 50% -> 70% damage reduction) & True Damage Piercing
+  let hardModeReductionPct: number | undefined = undefined;
+  let damageBlockedByArmor: number | undefined = undefined;
+  let trueDamageBypassedArmor = false;
+
+  if (state.isHardMode && damageResult.damage > 0) {
+    hardModeReductionPct = getHardModeDamageReductionPct(currentPhase);
+    const isClassTrue = isClassWithTrueDamage(state.playerClass);
+    const isSkillTrue = Boolean(
+      state.isBossStaggered ||
+      staggerTriggered ||
+      alchemistTransmuted ||
+      (state.playerClass === 'breaker' && damageResult.isCritical)
+    );
+    const isTrueDamage = isClassTrue || isSkillTrue;
+
+    if (isTrueDamage) {
+      trueDamageBypassedArmor = true;
+      damageResult.isTrueDamage = true;
+      damageBlockedByArmor = 0;
+    } else {
+      damageBlockedByArmor = Math.round(damageResult.damage * (hardModeReductionPct / 100));
+      damageResult.damage = Math.max(1, damageResult.damage - damageBlockedByArmor);
+      damageResult.isTrueDamage = false;
+    }
+  }
+
   const bossHpBefore = state.bossHp;
   const shieldsBefore = state.shields;
 
@@ -2784,6 +2848,9 @@ export function processRound(
       paladinRetributionDamage,
       hydraSplitTriggered,
       cipherBonusUnlocked,
+      hardModeReductionPct,
+      damageBlockedByArmor,
+      trueDamageBypassedArmor,
     };
 
     return {
@@ -2820,6 +2887,8 @@ export function processRound(
         paladinIntactRounds: nextPaladinIntactRounds,
         isHydraSplit: nextIsHydraSplit,
         cipherQuickBonusActive: nextCipherQuickBonus,
+        isHardMode: state.isHardMode,
+        bossDamageReductionPct: state.isHardMode ? getHardModeDamageReductionPct(1) : 0,
       },
       roundResult,
     };
@@ -2832,7 +2901,7 @@ export function processRound(
 
   if (isVictory) {
     const rewards = calculateVictoryRewards(newShields, state.maxShields);
-    xpEarned = rewards.xpEarned;
+    xpEarned = state.isHardMode ? Math.round(rewards.xpEarned * 1.5) : rewards.xpEarned;
     achievements = rewards.unlockedAchievements;
   }
 
@@ -2865,6 +2934,9 @@ export function processRound(
     paladinRetributionDamage,
     hydraSplitTriggered,
     cipherBonusUnlocked,
+    hardModeReductionPct,
+    damageBlockedByArmor,
+    trueDamageBypassedArmor,
   };
 
   const nextPhase = getBossPhase(newBossHp, state.bossMaxHp);
@@ -2924,6 +2996,8 @@ export function processRound(
     paladinIntactRounds: nextPaladinIntactRounds,
     isHydraSplit: nextIsHydraSplit,
     cipherQuickBonusActive: nextCipherQuickBonus,
+    isHardMode: state.isHardMode,
+    bossDamageReductionPct: state.isHardMode ? getHardModeDamageReductionPct(nextPhase) : 0,
   };
 
   return { nextState, roundResult };

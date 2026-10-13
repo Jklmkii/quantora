@@ -106,9 +106,11 @@ interface AppState {
   unlockedBossWeapons: BossWeaponId[];
   equippedBossWeapon: BossWeaponId;
   debugUnlockAllClasses: boolean;
+  bossHardModeEnabled: boolean;
   setSelectedPlayerClass: (classId: PlayerClassId) => void;
   setSelectedGamblerBet: (bet: 0 | 2 | 3) => void;
   setLastBossClass: (bossClass: BossClassId) => void;
+  setBossHardModeEnabled: (enabled: boolean) => void;
   equipBossWeapon: (weaponId: BossWeaponId) => boolean;
   unlockBossWeaponWithTokens: (weaponId: BossWeaponId) => boolean;
   toggleDebugUnlockAllClasses: () => void;
@@ -213,6 +215,7 @@ const DEFAULT_PROFILE: UserProfile = {
     unlockedBossWeapons: ['starter_blade'],
     equippedBossWeapon: 'starter_blade',
     debugUnlockAllClasses: false,
+    bossHardModeEnabled: false,
   },
 };
 
@@ -475,6 +478,7 @@ export const useAppStore = create<AppState>()(
       unlockedBossWeapons: ['starter_blade'],
       equippedBossWeapon: 'starter_blade',
       debugUnlockAllClasses: false,
+      bossHardModeEnabled: false,
 
       toggleDebugUnlockAllClasses: () => {
         set((state) => {
@@ -540,6 +544,23 @@ export const useAppStore = create<AppState>()(
               stats: {
                 ...prevStats,
                 lastBossClass: bossClass,
+              },
+            },
+          };
+        });
+      },
+
+      setBossHardModeEnabled: (enabled) => {
+        set((state) => {
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          return {
+            bossHardModeEnabled: enabled,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                bossHardModeEnabled: enabled,
               },
             },
           };
@@ -1007,6 +1028,7 @@ export const useAppStore = create<AppState>()(
           bossSPlusLevels: [],
           unlockedBossWeapons: ['starter_blade'],
           equippedBossWeapon: 'starter_blade',
+          bossHardModeEnabled: false,
           profile: {
             ...state.profile,
             stats: {
@@ -1025,6 +1047,7 @@ export const useAppStore = create<AppState>()(
               bossSPlusLevels: [],
               unlockedBossWeapons: ['starter_blade'],
               equippedBossWeapon: 'starter_blade',
+              bossHardModeEnabled: false,
             },
           },
         }));

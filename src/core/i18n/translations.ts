@@ -155,6 +155,14 @@ export const translations = {
     boss_back_to_levels: 'Voltar aos Níveis',
     boss_retry_level: 'Repetir Nível',
     boss_coins_earned: 'Moedas Ganhas',
+    boss_mode_normal: 'Normal',
+    boss_mode_hard: 'Modo Difícil 💀',
+    boss_mode_hard_desc: 'O Chefe ganha Carapaça Blindada: -30% a -70% de redução de dano progressiva por fase. Classes com Dano Verdadeiro perfuram a blindagem (+50% Recompensas).',
+    boss_carapace_active: 'Carapaça Blindada',
+    boss_carapace_reduction: 'Redução de Dano',
+    boss_true_damage_pierce: '⚡ DANO VERDADEIRO: Blindagem Perfurada!',
+    boss_armor_blocked: 'Bloqueado pela carapaça',
+    boss_hard_mode_victory_bonus: '💀 Bônus do Modo Difícil (+50% XP & Moedas)!',
     back_to_lobby: 'Voltar ao Treino',
 
     // Treino Mental / Sobrevivência
@@ -603,6 +611,14 @@ export const translations = {
     boss_back_to_levels: 'Back to Levels',
     boss_retry_level: 'Retry Level',
     boss_coins_earned: 'Coins Earned',
+    boss_mode_normal: 'Normal',
+    boss_mode_hard: 'Hard Mode 💀',
+    boss_mode_hard_desc: 'The Boss gains Armored Carapace: -30% to -70% progressive damage reduction per phase. True Damage classes pierce through armor (+50% Rewards).',
+    boss_carapace_active: 'Armored Carapace',
+    boss_carapace_reduction: 'Damage Reduction',
+    boss_true_damage_pierce: '⚡ TRUE DAMAGE: Armor Pierced!',
+    boss_armor_blocked: 'Blocked by armor',
+    boss_hard_mode_victory_bonus: '💀 Hard Mode Bonus (+50% XP & Coins)!',
     back_to_lobby: 'Back to Training',
 
     // Treino Mental / Sobrevivência
