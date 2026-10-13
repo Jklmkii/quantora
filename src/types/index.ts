@@ -179,6 +179,16 @@ export interface AchievementDef {
   descriptionEn?: string;
 }
 
+export type PlayerClassId = 'duelist' | 'channeler' | 'chronos' | 'breaker' | 'berserker';
+export type BossClassId =
+  | 'illusionist'
+  | 'parity_lord'
+  | 'speed_executioner'
+  | 'glass_colossus'
+  | 'core_engineer'
+  | 'operator_architect';
+export type BossWeaponId = 'starter_blade' | 'quantum_blade' | 'euler_staff' | 'gauss_cannon';
+
 export interface UserProfileStats {
   totalCalculations: number;
   totalBhaskara: number;
@@ -200,6 +210,12 @@ export interface UserProfileStats {
   damageUpgradeLevel?: number;
   bossOracleCharges?: number;
   bossTimeFreezeCharges?: number;
+  selectedPlayerClass?: PlayerClassId;
+  lastBossClass?: BossClassId | null;
+  bossBestTimeByLevel?: Record<number, number>;
+  bossSPlusLevels?: number[];
+  unlockedBossWeapons?: BossWeaponId[];
+  equippedBossWeapon?: BossWeaponId;
   spacedBox5Count?: number;
   spacedCleanCount?: number;
   rare67Hits?: number;
@@ -232,6 +248,12 @@ export interface BossRushStats {
   damageUpgradeLevel?: number;
   bossOracleCharges?: number;
   bossTimeFreezeCharges?: number;
+  selectedPlayerClass?: PlayerClassId;
+  lastBossClass?: BossClassId | null;
+  bossBestTimeByLevel?: Record<number, number>;
+  bossSPlusLevels?: number[];
+  unlockedBossWeapons?: BossWeaponId[];
+  equippedBossWeapon?: BossWeaponId;
 }
 
 export interface UserProfile {

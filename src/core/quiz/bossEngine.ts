@@ -39,6 +39,291 @@ export type BossPhase = 1 | 2 | 3;
 
 export type BossDebuffType = 'none' | 'fog' | 'mirror' | 'time_siphon';
 
+export type PlayerClassId = 'duelist' | 'channeler' | 'chronos' | 'breaker' | 'berserker';
+
+export type BossClassId =
+  | 'illusionist'
+  | 'parity_lord'
+  | 'speed_executioner'
+  | 'glass_colossus'
+  | 'core_engineer'
+  | 'operator_architect';
+
+export type BossWeaponId = 'starter_blade' | 'quantum_blade' | 'euler_staff' | 'gauss_cannon';
+
+export interface PlayerClassDef {
+  id: PlayerClassId;
+  name: string;
+  subtitle: string;
+  badge: string;
+  description: string;
+  accentColor: 'amber' | 'purple' | 'cyan' | 'emerald' | 'rose';
+}
+
+export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
+  duelist: {
+    id: 'duelist',
+    name: 'Duelista de Precisão',
+    subtitle: 'Contra-Ataque Perfeito (Parry)',
+    badge: '⚔️ Parry 2x Dano',
+    description:
+      'Pode ativar o Modo Parry (digitação sem opções) para causar 2x Dano! A cada 3 Parries certos, regenera +1 Escudo.',
+    accentColor: 'amber',
+  },
+  channeler: {
+    id: 'channeler',
+    name: 'Canalizador Arcano',
+    subtitle: 'Ricochete Algébrico [Ans]',
+    badge: '🔗 Ricochete [Ans] +50%',
+    description:
+      'A resposta correta da rodada anterior é canalizada como [Ans] na próxima equação, concedendo +50% de Dano de Sinergia!',
+    accentColor: 'purple',
+  },
+  chronos: {
+    id: 'chronos',
+    name: 'Guardião Cronos',
+    subtitle: 'Cristal de Reserva Temporal',
+    badge: '⏳ Reserva Cronos (Até 6s)',
+    description:
+      'Estoca 50% dos segundos que sobram (até +6s). Causa +3 de dano por segundo estocado e queima a reserva para impedir perda de escudo por timeout!',
+    accentColor: 'cyan',
+  },
+  breaker: {
+    id: 'breaker',
+    name: 'Quebrador de Postura',
+    subtitle: 'Quebra de Guarda (Stagger)',
+    badge: '🔨 3 Selos → Stagger 2x',
+    description:
+      'Aplica 3 Selos de Postura no Chefe. Acertar 3 Críticos seguidos deixa o Chefe ATORDADO: zero debuffs, 2x tempo e 2x Dano Verdadeiro!',
+    accentColor: 'emerald',
+  },
+  berserker: {
+    id: 'berserker',
+    name: 'Berserker do Tudo ou Nada',
+    subtitle: 'Aposta Sangrenta de 2 ou 3 Escudos',
+    badge: '🩸 Aposta 2/3 Escudos',
+    description:
+      'Aposte 2 Escudos (+150% Dano) ou 3 Escudos (+250% Dano) antes de responder. Se errar 1 conta durante a aposta, perde todos os escudos apostados na hora!',
+    accentColor: 'rose',
+  },
+};
+
+export interface BossClassDef {
+  id: BossClassId;
+  name: string;
+  lawTitle: string;
+  badge: string;
+  description: string;
+  hpMultiplier: number;
+}
+
+export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
+  illusionist: {
+    id: 'illusionist',
+    name: 'Vampiro Ilusionista',
+    lawTitle: 'Lei da Alternativa Armadilha',
+    badge: '💣 Armadilha (+15 HP Cura)',
+    description:
+      'Planta 1 Alternativa Armadilha baseada em erro clássico de cálculo. Clicar nela cura o Chefe em +15 HP!',
+    hpMultiplier: 1.0,
+  },
+  parity_lord: {
+    id: 'parity_lord',
+    name: 'Soberano dos Pares',
+    lawTitle: 'Lei da Paridade Absoluta',
+    badge: '⚖️ Só Respostas Pares (+15% HP)',
+    description:
+      'Todas as respostas corretas desta arena são números PARES! O Chefe possui +15% de HP máximo.',
+    hpMultiplier: 1.15,
+  },
+  speed_executioner: {
+    id: 'speed_executioner',
+    name: 'Carrasco Veloz',
+    lawTitle: 'Lei da Velocidade Pura',
+    badge: '⚡ Crítico +75% / Padrão -50%',
+    description:
+      'Golpes normais lentos causam apenas 50% do dano, mas Golpes Críticos causam +75% de dano bônus!',
+    hpMultiplier: 1.0,
+  },
+  glass_colossus: {
+    id: 'glass_colossus',
+    name: 'Colosso de Vidro',
+    lawTitle: 'Lei do Cristal Mortal',
+    badge: '💎 -25% HP Boss / +1 Dano Escudo',
+    description:
+      'O Chefe tem -25% de HP máximo, mas qualquer erro do jogador destrói +1 escudo adicional!',
+    hpMultiplier: 0.75,
+  },
+  core_engineer: {
+    id: 'core_engineer',
+    name: 'Engenheiro do Núcleo',
+    lawTitle: 'Lei do Último Suspiro',
+    badge: '☢️ Último Suspiro (3 Mini-Contas)',
+    description:
+      'Quando o HP chega a 0, ativa 3 mini-contas de desarme rápido! Desarmar concede 2x Moedas; errar revive o Chefe com 15% HP.',
+    hpMultiplier: 1.0,
+  },
+  operator_architect: {
+    id: 'operator_architect',
+    name: 'Arquiteto de Operadores',
+    lawTitle: 'Lei da Sobrecarga de Sinais',
+    badge: '🎛️ Sobrecarga de Operadores',
+    description:
+      'Invoca expressões de Sobrecarga de Operadores (a [?] b [?] c) onde o Dano Causado escala com o valor numérico da expressão!',
+    hpMultiplier: 1.05,
+  },
+};
+
+export const ALL_BOSS_CLASS_IDS: BossClassId[] = [
+  'illusionist',
+  'parity_lord',
+  'speed_executioner',
+  'glass_colossus',
+  'core_engineer',
+  'operator_architect',
+];
+
+/**
+ * Rolls a random Boss Class (Arena Law) for the current floor, strictly forbidding repetition
+ * of the previous floor's Boss Class (`previousBossClass`).
+ */
+export function rollBossClassForLevel(
+  level: number = 1,
+  previousBossClass?: BossClassId | null,
+  customIndex?: number
+): BossClassId {
+  let pool = ALL_BOSS_CLASS_IDS;
+  if (level <= 1) {
+    // Nível 1 (Lord Mathgoth) preserva os 100 HP canônicos sem distorções de Colosso/Paridade
+    pool = pool.filter((id) => id !== 'glass_colossus' && id !== 'parity_lord');
+  }
+  const candidates = previousBossClass
+    ? pool.filter((id) => id !== previousBossClass)
+    : pool;
+
+  if (customIndex !== undefined) {
+    return candidates[Math.abs(Math.round(customIndex)) % candidates.length];
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+export interface BossWeaponDef {
+  id: BossWeaponId;
+  name: string;
+  badge: string;
+  description: string;
+  sPlusRequired: number;
+  tokenCost: number;
+  damageBonus: number;
+  critDamageBonus: number;
+  critWindowBonusSeconds: number;
+  coinMultiplier: number;
+  executeThresholdPct: number;
+}
+
+export const BOSS_WEAPONS: Record<BossWeaponId, BossWeaponDef> = {
+  starter_blade: {
+    id: 'starter_blade',
+    name: 'Lâmina Aritmética',
+    badge: '🗡️ Padrão',
+    description: 'Espada tática padrão dos Guerreiros Matemáticos.',
+    sPlusRequired: 0,
+    tokenCost: 0,
+    damageBonus: 0,
+    critDamageBonus: 0,
+    critWindowBonusSeconds: 0,
+    coinMultiplier: 1.0,
+    executeThresholdPct: 0,
+  },
+  quantum_blade: {
+    id: 'quantum_blade',
+    name: 'Lâmina Quântica S+',
+    badge: '⚡ +8 Dano / +0.8s Crítico',
+    description:
+      'Desbloqueada com 1 Rank S+ (ou 2 Fichas): +8 de Dano em todos os golpes e +0.8s extras na janela de Crítico!',
+    sPlusRequired: 1,
+    tokenCost: 2,
+    damageBonus: 8,
+    critDamageBonus: 8,
+    critWindowBonusSeconds: 0.8,
+    coinMultiplier: 1.0,
+    executeThresholdPct: 0,
+  },
+  euler_staff: {
+    id: 'euler_staff',
+    name: 'Cajado de Euler S+',
+    badge: '🔮 +16 Dano Crítico / +25% Moedas',
+    description:
+      'Desbloqueado com 2 Ranks S+ (ou 3 Fichas): +16 de Dano em Golpes Críticos, +0.4s janela crítica e +25% Moedas!',
+    sPlusRequired: 2,
+    tokenCost: 3,
+    damageBonus: 6,
+    critDamageBonus: 16,
+    critWindowBonusSeconds: 0.4,
+    coinMultiplier: 1.25,
+    executeThresholdPct: 0,
+  },
+  gauss_cannon: {
+    id: 'gauss_cannon',
+    name: 'Canhão de Gauss S+',
+    badge: '☄️ +15 Dano / Execução <8% HP / +50% 🪙',
+    description:
+      'Desbloqueado com 3 Ranks S+ (ou 4 Fichas): +15 Dano Base, +20 Crítico, +50% Moedas e Executa chefes com <8% HP!',
+    sPlusRequired: 3,
+    tokenCost: 4,
+    damageBonus: 15,
+    critDamageBonus: 20,
+    critWindowBonusSeconds: 0.5,
+    coinMultiplier: 1.5,
+    executeThresholdPct: 0.08,
+  },
+};
+
+/**
+ * Computes the target time (in seconds) required to achieve Rank S+ on a given level.
+ */
+export function getTargetSPlusTimeForLevel(level: number = 1): number {
+  const safeLevel = Math.min(DIFFICULTY_CAP_LEVEL, Math.max(1, Math.round(level)));
+  return Math.round(28 + safeLevel * 3);
+}
+
+/**
+ * Evaluates whether a victory qualifies for Rank S+ (Ghost Pace beaten + all shields intact).
+ */
+export function evaluateBossRankSPlus(
+  level: number,
+  totalTimeSeconds: number,
+  shieldsRemaining: number,
+  maxShields: number = PLAYER_INITIAL_SHIELDS,
+  previousBestTimeSeconds?: number
+): {
+  isSPlus: boolean;
+  targetTimeSeconds: number;
+  beatPersonalRecord: boolean;
+  bonusTokens: number;
+  bonusCoinsMultiplier: number;
+} {
+  const baseTarget = getTargetSPlusTimeForLevel(level);
+  const targetTimeSeconds =
+    previousBestTimeSeconds !== undefined && previousBestTimeSeconds > 0
+      ? Math.max(12, Math.min(baseTarget, previousBestTimeSeconds))
+      : baseTarget;
+
+  const isFlawless = shieldsRemaining >= maxShields;
+  const beatPersonalRecord =
+    previousBestTimeSeconds === undefined || totalTimeSeconds <= previousBestTimeSeconds;
+  const withinTarget = totalTimeSeconds <= targetTimeSeconds;
+  const isSPlus = isFlawless && withinTarget;
+
+  return {
+    isSPlus,
+    targetTimeSeconds,
+    beatPersonalRecord: isFlawless && beatPersonalRecord,
+    bonusTokens: isSPlus ? 1 : 0,
+    bonusCoinsMultiplier: isSPlus ? 2.0 : 1.0,
+  };
+}
+
 export interface BossIdentity {
   name: string;
   title: string;
@@ -288,7 +573,15 @@ export function getQuestionTimeBonus(
   };
 }
 
-export type BossQuestionCategory = 'equation' | 'mental_math' | 'powers' | 'roots' | 'mixed';
+export type BossQuestionCategory =
+  | 'equation'
+  | 'mental_math'
+  | 'powers'
+  | 'roots'
+  | 'mixed'
+  | 'operator_overload'
+  | 'ricochet'
+  | 'last_stand';
 
 export interface BossQuestion {
   id: string;
@@ -305,6 +598,15 @@ export interface BossQuestion {
   timeBonusSeconds?: number;
   bonusReason?: string;
   debuff?: BossDebuffType;
+  // RPG Expansion Fields
+  trapAnswer?: number;
+  trapExplanation?: string;
+  isRicochetAns?: boolean;
+  previousAnsUsed?: number;
+  isOperatorOverload?: boolean;
+  operatorExpressions?: Record<number, string>;
+  isLastStandMiniQuestion?: boolean;
+  lastStandStepNumber?: number;
 }
 
 export type DamageReason = 'critical' | 'standard' | 'timeout' | 'wrong';
@@ -331,6 +633,24 @@ export interface BossRoundResult {
   isDefeat: boolean;
   xpEarned: number;
   unlockedAchievements: string[];
+  // RPG Expansion Feedback
+  triggeredTrap?: boolean;
+  bossHealedAmount?: number;
+  chronosSavedTimeout?: boolean;
+  parryHit?: boolean;
+  shieldRegenerated?: boolean;
+  staggerTriggered?: boolean;
+  lastStandActivated?: boolean;
+  lastStandStepCleared?: number;
+  lastStandFailedRevive?: boolean;
+}
+
+export interface BossRpgConfig {
+  playerClass?: PlayerClassId;
+  bossClass?: BossClassId;
+  previousBossClass?: BossClassId | null;
+  equippedWeapon?: BossWeaponId;
+  enableArenaModifiers?: boolean;
 }
 
 export interface BossBattleState {
@@ -359,6 +679,22 @@ export interface BossBattleState {
   eliminatedOptions: number[];
   isTimeFrozen: boolean;
   bossIdentity: BossIdentity;
+  // RPG Expansion State
+  rpgModeActive?: boolean;
+  playerClass?: PlayerClassId;
+  bossClass?: BossClassId;
+  equippedWeapon?: BossWeaponId;
+  parryModeActive?: boolean;
+  parrySuccessStreak?: number;
+  lastCorrectAnswer?: number | null;
+  chronosBankedSeconds?: number;
+  staggerSeals?: number;
+  isBossStaggered?: boolean;
+  shieldBet?: 0 | 2 | 3;
+  isLastStandActive?: boolean;
+  lastStandStep?: number;
+  lastStandCompleted?: boolean;
+  lastStandBonusCoinsMultiplier?: number;
 }
 
 function getRandomInt(min: number, max: number): number {
@@ -1011,6 +1347,186 @@ function generateBossQuestionInner(
 }
 
 /**
+ * Item #10: Generates an Operator Overload question (`a [?] b [?] c`) where the player
+ * selects the maximum-value outcome and deals bonus damage proportional to the result.
+ */
+export function generateOperatorOverloadQuestion(
+  level: number = 1,
+  timeLimitSeconds: number = 14
+): BossQuestion {
+  const id = `boss_q_op_${generateSecureId()}`;
+  const safeLevel = getEffectiveDifficultyLevel(level);
+  const a = getRandomInt(4, Math.min(12, 5 + safeLevel));
+  const b = getRandomInt(3, Math.min(9, 4 + Math.floor(safeLevel / 2)));
+  const c = getRandomInt(2, 7);
+
+  const v1 = a * b + c;
+  const v2 = Math.max(1, a * b - c);
+  const v3 = a + b * c;
+  const v4 = a + b + c;
+
+  const rawCandidates = [
+    { val: v1, expr: `${a} × ${b} + ${c} = ${v1}` },
+    { val: v2, expr: `${a} × ${b} - ${c} = ${v2}` },
+    { val: v3, expr: `${a} + ${b} × ${c} = ${v3}` },
+    { val: v4, expr: `${a} + ${b} + ${c} = ${v4}` },
+  ];
+
+  const uniqueMap = new Map<number, string>();
+  for (const item of rawCandidates) {
+    if (!uniqueMap.has(item.val)) {
+      uniqueMap.set(item.val, item.expr);
+    }
+  }
+  let fallbackOffset = 1;
+  while (uniqueMap.size < 4) {
+    const extraVal = v1 + fallbackOffset * 2;
+    if (!uniqueMap.has(extraVal)) {
+      uniqueMap.set(extraVal, `${a} × ${b} + ${c + fallbackOffset * 2} = ${extraVal}`);
+    }
+    fallbackOffset++;
+  }
+
+  const allValues = Array.from(uniqueMap.keys());
+  const correctAnswer = Math.max(...allValues);
+  const options = shuffleArray(allValues.slice(0, 4));
+  if (!options.includes(correctAnswer)) {
+    options[0] = correctAnswer;
+  }
+
+  const operatorExpressions: Record<number, string> = {};
+  for (const opt of options) {
+    operatorExpressions[opt] = uniqueMap.get(opt) || `${opt}`;
+  }
+
+  return {
+    id,
+    category: 'operator_overload',
+    categoryLabel: 'Sobrecarga de Operadores',
+    title: 'Lei dos Sinais: Ataque Máximo',
+    prompt: `Qual combinação de operadores (+, -, ×) em ${a} [?] ${b} [?] ${c} gera o MAIOR resultado (e maior dano)?`,
+    displayExpression: `${a} [?] ${b} [?] ${c} ➔ MÁX`,
+    correctAnswer,
+    formattedCorrectAnswer: `${correctAnswer} (${operatorExpressions[correctAnswer]})`,
+    options,
+    explanation: [
+      `Testando combinações em ${a} [?] ${b} [?] ${c}:`,
+      `• ${a} × ${b} + ${c} = ${v1}`,
+      `• ${a} + ${b} × ${c} = ${v3}`,
+      `• ${a} × ${b} - ${c} = ${v2}`,
+      `O maior ataque é ${correctAnswer}!`,
+    ],
+    timeLimitSeconds: timeLimitSeconds + 4,
+    timeBonusSeconds: 4,
+    bonusReason: 'Sobrecarga de Operadores (+4s)',
+    debuff: 'none',
+    isOperatorOverload: true,
+    operatorExpressions,
+  };
+}
+
+/**
+ * Item #2: Generates a Channeler Ricochet `[Ans]` question chained from the previous round's answer.
+ */
+export function generateRicochetAnsQuestion(
+  previousAnswer: number,
+  timeLimitSeconds: number = 14
+): BossQuestion {
+  const id = `boss_q_ans_${generateSecureId()}`;
+  const clampedAns = Math.max(2, Math.min(35, Math.abs(Math.round(previousAnswer)) || 6));
+  const mult = getRandomInt(2, 3);
+  const add = getRandomInt(3, 11);
+  const answer = clampedAns * mult + add;
+  const options = generateOptions(answer, [
+    clampedAns + mult + add,
+    clampedAns * mult - add,
+    answer + mult,
+    answer - 2,
+  ]);
+
+  return {
+    id,
+    category: 'ricochet',
+    categoryLabel: 'Sinergia Arcana [Ans]',
+    title: 'Ricochete Algébrico (+50% Dano)',
+    prompt: `Use [Ans = ${clampedAns}] da rodada anterior para canalizar o golpe:`,
+    displayExpression: `[Ans] × ${mult} + ${add}   (onde [Ans] = ${clampedAns})`,
+    correctAnswer: answer,
+    formattedCorrectAnswer: answer.toString(),
+    options,
+    explanation: [
+      `Substituindo [Ans] = ${clampedAns}:`,
+      `Passo 1: ${clampedAns} × ${mult} = ${clampedAns * mult}`,
+      `Passo 2: ${clampedAns * mult} + ${add} = ${answer}`,
+    ],
+    timeLimitSeconds: timeLimitSeconds + 4,
+    timeBonusSeconds: 4,
+    bonusReason: 'Canalização [Ans] (+4s)',
+    debuff: 'none',
+    isRicochetAns: true,
+    previousAnsUsed: clampedAns,
+  };
+}
+
+/**
+ * Item #8: Generates one of the 3 rapid Last Stand Core Defusal mini-questions.
+ */
+export function generateLastStandMiniQuestion(step: number = 1): BossQuestion {
+  const id = `boss_q_laststand_${generateSecureId()}`;
+  const safeStep = Math.max(1, Math.min(3, Math.round(step)));
+  let a = getRandomInt(6, 14);
+  let b = getRandomInt(4, 11);
+  let expr = `${a} + ${b}`;
+  let answer = a + b;
+
+  if (safeStep === 2) {
+    a = getRandomInt(4, 9);
+    b = getRandomInt(3, 8);
+    expr = `${a} × ${b}`;
+    answer = a * b;
+  } else if (safeStep === 3) {
+    a = getRandomInt(5, 9);
+    b = getRandomInt(4, 7);
+    const c = getRandomInt(3, 9);
+    expr = `${a} × ${b} - ${c}`;
+    answer = a * b - c;
+  }
+
+  const options = generateOptions(answer, [answer + 2, answer - 2, answer + 5, answer - 4]);
+
+  return {
+    id,
+    category: 'last_stand',
+    categoryLabel: `☢️ DESARME DO NÚCLEO (${safeStep}/3)`,
+    title: `Último Suspiro do Chefe • Trava ${safeStep} de 3`,
+    prompt: 'Desarme o núcleo antes que o Chefe se regenere! (Acerte as 3 para 2x Moedas):',
+    displayExpression: expr,
+    correctAnswer: answer,
+    formattedCorrectAnswer: answer.toString(),
+    options,
+    explanation: [`Cálculo de desarme (${safeStep}/3): ${expr} = ${answer}`],
+    timeLimitSeconds: 10,
+    debuff: 'none',
+    isLastStandMiniQuestion: true,
+    lastStandStepNumber: safeStep,
+  };
+}
+
+/**
+ * Item #4: Attaches a Trap Option (`trapAnswer`) to a question for the `illusionist` Boss Class.
+ */
+export function attachIllusionistTrap(question: BossQuestion): BossQuestion {
+  const wrongOptions = question.options.filter((opt) => opt !== question.correctAnswer);
+  if (wrongOptions.length === 0) return question;
+  const trapAnswer = wrongOptions[0];
+  return {
+    ...question,
+    trapAnswer,
+    trapExplanation: `💣 Armadilha Ilusionista (${trapAnswer}): Erro clássico de prioridade/sinal! O Chefe drenou sua energia e curou +15 HP.`,
+  };
+}
+
+/**
  * Thematic Question Generator for Boss Battle.
  * Dynamically scales category tracks, operand ranges, and round timers based on the boss level.
  * Difficulty reaches an asymptotic cap at level 15 (DIFFICULTY_CAP_LEVEL), while boss HP keeps scaling.
@@ -1019,25 +1535,91 @@ function generateBossQuestionInner(
 export function generateBossQuestion(
   round: number = 1,
   level: number = 1,
-  phase: BossPhase = 1
+  phase: BossPhase = 1,
+  rpgContext?: {
+    playerClass?: PlayerClassId;
+    bossClass?: BossClassId;
+    lastCorrectAnswer?: number | null;
+    isBossStaggered?: boolean;
+  }
 ): BossQuestion {
   const safeLevel = getEffectiveDifficultyLevel(level);
-  const debuff = rollBossDebuffForRound(level, round, phase);
+  const isStaggered = Boolean(rpgContext?.isBossStaggered);
+  const debuff: BossDebuffType = isStaggered
+    ? 'none'
+    : rollBossDebuffForRound(level, round, phase);
+
   let timeLimitSeconds = getRoundTimeLimitForLevel(safeLevel, phase);
   if (debuff === 'time_siphon') {
     timeLimitSeconds = Math.max(8, Math.round(timeLimitSeconds * 0.75));
   }
-  const baseQuestion = generateBossQuestionInner(round, safeLevel, timeLimitSeconds);
+  if (isStaggered) {
+    timeLimitSeconds = timeLimitSeconds * 2;
+  }
+
+  // Check if Channeler Ricochet [Ans] should trigger (when playerClass is 'channeler' and previous round was correct)
+  if (
+    rpgContext?.playerClass === 'channeler' &&
+    typeof rpgContext.lastCorrectAnswer === 'number' &&
+    round > 1 &&
+    rpgContext.bossClass !== 'parity_lord'
+  ) {
+    let ricochetQ = generateRicochetAnsQuestion(rpgContext.lastCorrectAnswer, timeLimitSeconds);
+    if (rpgContext.bossClass === 'illusionist') {
+      ricochetQ = attachIllusionistTrap(ricochetQ);
+    }
+    return ricochetQ;
+  }
+
+  // Check if Operator Overload question should trigger (for 'operator_architect' boss or mid-battle special round)
+  if (
+    rpgContext?.bossClass === 'operator_architect' &&
+    (round % 2 === 1 || Math.random() < 0.6)
+  ) {
+    return generateOperatorOverloadQuestion(safeLevel, timeLimitSeconds);
+  }
+
+  // Parity Lord Law: all correct answers must be EVEN numbers
+  let baseQuestion = generateBossQuestionInner(round, safeLevel, timeLimitSeconds);
+  if (rpgContext?.bossClass === 'parity_lord') {
+    let attempts = 0;
+    while (Math.abs(baseQuestion.correctAnswer) % 2 !== 0 && attempts < 15) {
+      baseQuestion = generateBossQuestionInner(round + attempts + 1, safeLevel, timeLimitSeconds);
+      attempts++;
+    }
+    if (Math.abs(baseQuestion.correctAnswer) % 2 !== 0) {
+      const evenA = getRandomInt(2, 6) * 2;
+      const evenB = getRandomInt(2, 6) * 2;
+      const evenAns = evenA + evenB;
+      baseQuestion = {
+        ...baseQuestion,
+        displayExpression: `${evenA} + ${evenB}`,
+        correctAnswer: evenAns,
+        formattedCorrectAnswer: evenAns.toString(),
+        options: generateOptions(evenAns, [evenAns + 2, evenAns - 2, evenAns + 4, evenAns - 4]),
+        explanation: [`Lei da Paridade: ${evenA} + ${evenB} = ${evenAns} (Par)`],
+      };
+    }
+  }
+
   const bonus = getQuestionTimeBonus(baseQuestion.category, baseQuestion.displayExpression);
   const totalTimeLimitSeconds = timeLimitSeconds + bonus.bonusSeconds;
 
-  return {
+  let finalQuestion: BossQuestion = {
     ...baseQuestion,
     timeLimitSeconds: totalTimeLimitSeconds,
     timeBonusSeconds: bonus.bonusSeconds,
-    bonusReason: bonus.bonusReason,
+    bonusReason: isStaggered
+      ? '🔨 Chefe Atordoado (2x Tempo!)'
+      : bonus.bonusReason,
     debuff,
   };
+
+  if (rpgContext?.bossClass === 'illusionist') {
+    finalQuestion = attachIllusionistTrap(finalQuestion);
+  }
+
+  return finalQuestion;
 }
 
 function formatSuperscript(exp: number): string {
@@ -1061,30 +1643,83 @@ function formatSuperscript(exp: number): string {
 }
 
 /**
+ * Toggles Parry Mode (direct numeric input for 2x damage) for the Duelist class.
+ */
+export function toggleParryModeInBattle(
+  state: BossBattleState,
+  active?: boolean
+): BossBattleState {
+  return {
+    ...state,
+    parryModeActive: active !== undefined ? active : !state.parryModeActive,
+  };
+}
+
+/**
+ * Sets the Berserker Shield Bet (`0`, `2`, or `3` shields at risk on the current question).
+ */
+export function setBerserkerShieldBet(
+  state: BossBattleState,
+  bet: 0 | 2 | 3
+): BossBattleState {
+  const validBet: 0 | 2 | 3 = bet === 2 || bet === 3 ? bet : 0;
+  return {
+    ...state,
+    shieldBet: validBet,
+  };
+}
+
+/**
  * Creates a fresh initial Boss Battle state for a given level and upgrade tier.
  * Shields always reset to full (PLAYER_INITIAL_SHIELDS = 3).
+ * When `rpgConfig` is supplied, activates Player Class, non-repeating Boss Class (Arena Law), and Mythic Weapons.
  */
 export function createInitialBossBattleState(
   level: number = 1,
   damageUpgradeLevel: number = 0,
   oracleCharges: number = 0,
-  timeFreezeCharges: number = 0
+  timeFreezeCharges: number = 0,
+  rpgConfig?: BossRpgConfig
 ): BossBattleState {
   const safeLevel = Math.max(1, Math.round(level));
-  const hp = getBossHpForLevel(safeLevel);
+  const baseHp = getBossHpForLevel(safeLevel);
   const safeUpgrade = Math.max(0, Math.round(damageUpgradeLevel));
   const identity = getBossIdentityForLevel(safeLevel);
+
+  const rpgModeActive = Boolean(rpgConfig);
+  const playerClass: PlayerClassId = rpgConfig?.playerClass ?? 'duelist';
+  const bossClass: BossClassId =
+    rpgConfig?.bossClass ?? rollBossClassForLevel(safeLevel, rpgConfig?.previousBossClass);
+  const equippedWeapon: BossWeaponId = rpgConfig?.equippedWeapon ?? 'starter_blade';
+
+  const applyHpMod = rpgConfig?.enableArenaModifiers ?? rpgModeActive;
+  const hpMultiplier = applyHpMod ? (BOSS_CLASSES[bossClass]?.hpMultiplier ?? 1.0) : 1.0;
+  const finalHp = Math.max(50, Math.round(baseHp * hpMultiplier));
+
+  const firstQuestion = generateBossQuestion(
+    1,
+    safeLevel,
+    1,
+    rpgModeActive
+      ? {
+          playerClass,
+          bossClass,
+          lastCorrectAnswer: null,
+          isBossStaggered: false,
+        }
+      : undefined
+  );
 
   return {
     level: safeLevel,
     phase: 1,
-    bossHp: hp,
-    bossMaxHp: hp,
+    bossHp: finalHp,
+    bossMaxHp: finalHp,
     damageUpgradeLevel: safeUpgrade,
     shields: PLAYER_INITIAL_SHIELDS,
     maxShields: PLAYER_INITIAL_SHIELDS,
     round: 1,
-    currentQuestion: generateBossQuestion(1, safeLevel, 1),
+    currentQuestion: firstQuestion,
     history: [],
     status: 'fighting',
     totalDamageDealt: 0,
@@ -1100,6 +1735,21 @@ export function createInitialBossBattleState(
     eliminatedOptions: [],
     isTimeFrozen: false,
     bossIdentity: identity,
+    rpgModeActive,
+    playerClass,
+    bossClass,
+    equippedWeapon,
+    parryModeActive: false,
+    parrySuccessStreak: 0,
+    lastCorrectAnswer: null,
+    chronosBankedSeconds: 0,
+    staggerSeals: 0,
+    isBossStaggered: false,
+    shieldBet: 0,
+    isLastStandActive: false,
+    lastStandStep: 0,
+    lastStandCompleted: false,
+    lastStandBonusCoinsMultiplier: 1,
   };
 }
 
@@ -1155,9 +1805,16 @@ export function processRound(
   const currentPhase = state.phase ?? getBossPhase(state.bossHp, state.bossMaxHp);
   const upgradeLevel = damageUpgradeLevel ?? state.damageUpgradeLevel ?? 0;
   const isCorrect = checkAnswerCorrectness(userAnswer, state.currentQuestion.correctAnswer);
-  const timeLimit = state.currentQuestion.timeLimitSeconds ?? getRoundTimeLimitForLevel(safeLevel, currentPhase);
-  const criticalThreshold = getCriticalTimeThresholdForLevel(safeLevel, currentPhase, timeLimit);
-  const damageResult = calculateBossDamage(
+  const timeLimit =
+    state.currentQuestion.timeLimitSeconds ?? getRoundTimeLimitForLevel(safeLevel, currentPhase);
+
+  const weaponDef = BOSS_WEAPONS[state.equippedWeapon || 'starter_blade'] || BOSS_WEAPONS.starter_blade;
+  const baseCriticalThreshold = getCriticalTimeThresholdForLevel(safeLevel, currentPhase, timeLimit);
+  const criticalThreshold = state.rpgModeActive
+    ? baseCriticalThreshold + weaponDef.critWindowBonusSeconds
+    : baseCriticalThreshold;
+
+  const baseDamageResult = calculateBossDamage(
     isCorrect,
     responseTimeSeconds,
     customDamageRoll,
@@ -1167,11 +1824,360 @@ export function processRound(
     currentPhase
   );
 
+  const damageResult: BossDamageResult = { ...baseDamageResult };
+
+  if (responseTimeSeconds > timeLimit) {
+    damageResult.reason = 'timeout';
+    damageResult.damage = 0;
+    damageResult.isCritical = false;
+  }
+
+  // RPG Feedback flags
+  let triggeredTrap = false;
+  let bossHealedAmount = 0;
+  let chronosSavedTimeout = false;
+  let parryHit = false;
+  let shieldRegenerated = false;
+  let staggerTriggered = false;
+  let lastStandStepCleared: number | undefined = undefined;
+
+  let nextParryStreak = state.parrySuccessStreak || 0;
+  let nextChronosBanked = state.chronosBankedSeconds || 0;
+  let nextStaggerSeals = state.staggerSeals || 0;
+  let nextIsBossStaggered = false;
+  let nextLastCorrectAnswer: number | null = state.lastCorrectAnswer ?? null;
+
+  // 1. Handle Last Stand Mode (Core Engineer Boss Class at 0 HP)
+  if (state.isLastStandActive) {
+    const bossHpBefore = state.bossHp;
+    const shieldsBefore = state.shields;
+    const currentStep = state.lastStandStep || 1;
+
+    if (isCorrect && damageResult.reason !== 'timeout') {
+      lastStandStepCleared = currentStep;
+      if (currentStep < 3) {
+        const nextStep = currentStep + 1;
+        const nextMiniQ = generateLastStandMiniQuestion(nextStep);
+        const roundResult: BossRoundResult = {
+          round: state.round,
+          question: state.currentQuestion,
+          userAnswer,
+          isCorrect: true,
+          responseTimeSeconds,
+          damageResult: { damage: 0, isCritical: true, shieldDamage: 0, reason: 'critical' },
+          bossHpBefore,
+          bossHpAfter: 1,
+          shieldsBefore,
+          shieldsAfter: state.shields,
+          isVictory: false,
+          isDefeat: false,
+          xpEarned: 0,
+          unlockedAchievements: [],
+          lastStandStepCleared,
+        };
+        return {
+          nextState: {
+            ...state,
+            round: state.round + 1,
+            currentQuestion: nextMiniQ,
+            history: [...state.history, roundResult],
+            totalTimeSeconds: state.totalTimeSeconds + responseTimeSeconds,
+            isLastStandActive: true,
+            lastStandStep: nextStep,
+            eliminatedOptions: [],
+            isTimeFrozen: false,
+          },
+          roundResult,
+        };
+      } else {
+        // All 3 mini-questions defused! Boss is destroyed with 2x Coins bonus!
+        const rewards = calculateVictoryRewards(state.shields, state.maxShields);
+        const roundResult: BossRoundResult = {
+          round: state.round,
+          question: state.currentQuestion,
+          userAnswer,
+          isCorrect: true,
+          responseTimeSeconds,
+          damageResult: { damage: 1, isCritical: true, shieldDamage: 0, reason: 'critical' },
+          bossHpBefore,
+          bossHpAfter: 0,
+          shieldsBefore,
+          shieldsAfter: state.shields,
+          isVictory: true,
+          isDefeat: false,
+          xpEarned: rewards.xpEarned,
+          unlockedAchievements: rewards.unlockedAchievements,
+          lastStandStepCleared: 3,
+        };
+        return {
+          nextState: {
+            ...state,
+            bossHp: 0,
+            status: 'victory',
+            history: [...state.history, roundResult],
+            totalTimeSeconds: state.totalTimeSeconds + responseTimeSeconds,
+            earnedXp: state.earnedXp + rewards.xpEarned,
+            unlockedAchievements: [
+              ...new Set([...state.unlockedAchievements, ...rewards.unlockedAchievements]),
+            ],
+            isLastStandActive: false,
+            lastStandCompleted: true,
+            lastStandBonusCoinsMultiplier: 2,
+          },
+          roundResult,
+        };
+      }
+    } else {
+      // Failed Last Stand defusal -> Boss revives to 15% HP!
+      const revivedHp = Math.max(15, Math.round(state.bossMaxHp * 0.15));
+      const newShields = Math.max(0, state.shields - 1);
+      const { isVictory, isDefeat, status } = checkVictoryAndDefeat(revivedHp, newShields);
+      const nextPhase = getBossPhase(revivedHp, state.bossMaxHp);
+      const nextQ =
+        status === 'fighting'
+          ? generateBossQuestion(state.round + 1, safeLevel, nextPhase, {
+              playerClass: state.playerClass,
+              bossClass: state.bossClass,
+              lastCorrectAnswer: null,
+              isBossStaggered: false,
+            })
+          : state.currentQuestion;
+      const roundResult: BossRoundResult = {
+        round: state.round,
+        question: state.currentQuestion,
+        userAnswer,
+        isCorrect: false,
+        responseTimeSeconds,
+        damageResult: { damage: 0, isCritical: false, shieldDamage: 1, reason: 'wrong' },
+        bossHpBefore,
+        bossHpAfter: revivedHp,
+        shieldsBefore,
+        shieldsAfter: newShields,
+        isVictory,
+        isDefeat,
+        xpEarned: 0,
+        unlockedAchievements: [],
+        lastStandFailedRevive: true,
+      };
+      return {
+        nextState: {
+          ...state,
+          phase: nextPhase,
+          bossHp: revivedHp,
+          shields: newShields,
+          round: status === 'fighting' ? state.round + 1 : state.round,
+          currentQuestion: nextQ,
+          history: [...state.history, roundResult],
+          status,
+          errorsCount: state.errorsCount + 1,
+          totalTimeSeconds: state.totalTimeSeconds + responseTimeSeconds,
+          isLastStandActive: false,
+          lastStandCompleted: true,
+          eliminatedOptions: [],
+          isTimeFrozen: false,
+        },
+        roundResult,
+      };
+    }
+  }
+
+  // 2. Apply Weapon & Class Damage / Shield Modifiers
+  if (damageResult.damage > 0) {
+    // Weapon flat bonus
+    if (state.rpgModeActive && weaponDef.id !== 'starter_blade') {
+      damageResult.damage += damageResult.isCritical
+        ? weaponDef.critDamageBonus
+        : weaponDef.damageBonus;
+    }
+
+    // Operator Overload bonus (#10)
+    if (state.currentQuestion.isOperatorOverload) {
+      damageResult.damage += Math.min(45, Math.round(state.currentQuestion.correctAnswer * 0.45));
+    }
+
+    // Channeler Ricochet [Ans] synergy bonus (#2: +50% damage)
+    if (state.currentQuestion.isRicochetAns) {
+      damageResult.damage = Math.round(damageResult.damage * 1.5);
+    }
+
+    // Chronos banked time bonus (#3: +3 damage per banked second, and banks 50% of unused time up to 6s)
+    if (state.playerClass === 'chronos' && state.rpgModeActive) {
+      const chronosBonus = Math.round(nextChronosBanked * 3);
+      damageResult.damage += chronosBonus;
+      const unusedTime = Math.max(0, timeLimit - responseTimeSeconds);
+      nextChronosBanked = Math.min(6.0, Math.round((nextChronosBanked + unusedTime * 0.5) * 10) / 10);
+    }
+
+    // Duelist Parry Mode (#1: 2x Damage + regenerate 1 shield every 3 parries)
+    if (state.parryModeActive) {
+      damageResult.damage = Math.round(damageResult.damage * 2);
+      damageResult.isCritical = true;
+      parryHit = true;
+      nextParryStreak += 1;
+      if (nextParryStreak % 3 === 0) {
+        shieldRegenerated = true;
+      }
+    }
+
+    // Berserker Shield Bet (#6: 2 shields = 2.5x damage, 3 shields = 3.5x damage)
+    if (state.shieldBet === 2) {
+      damageResult.damage = Math.round(damageResult.damage * 2.5);
+      damageResult.isCritical = true;
+    } else if (state.shieldBet === 3) {
+      damageResult.damage = Math.round(damageResult.damage * 3.5);
+      damageResult.isCritical = true;
+    }
+
+    // Boss Staggered (#5: 2x True Damage)
+    if (state.isBossStaggered) {
+      damageResult.damage = Math.round(damageResult.damage * 2);
+      damageResult.isCritical = true;
+    }
+
+    // Speed Executioner Boss Law (#7b: Crits +75%, Standard 50%)
+    if (state.rpgModeActive && state.bossClass === 'speed_executioner' && !state.isBossStaggered) {
+      if (damageResult.isCritical) {
+        damageResult.damage = Math.round(damageResult.damage * 1.75);
+      } else {
+        damageResult.damage = Math.max(5, Math.round(damageResult.damage * 0.5));
+      }
+    }
+
+    // Stagger Breaker Class (#5: 3 consecutive crits trigger Boss Stagger on next round)
+    if (state.playerClass === 'breaker') {
+      if (damageResult.isCritical) {
+        nextStaggerSeals += 1;
+        if (nextStaggerSeals >= 3) {
+          nextStaggerSeals = 0;
+          nextIsBossStaggered = true;
+          staggerTriggered = true;
+        }
+      } else {
+        nextStaggerSeals = 0;
+      }
+    }
+
+    nextLastCorrectAnswer = state.currentQuestion.correctAnswer;
+  } else {
+    // Miss or Timeout
+    nextParryStreak = 0;
+    nextStaggerSeals = 0;
+    nextLastCorrectAnswer = null;
+
+    // Chronos Auto-Save on Timeout (#3: burns banked seconds to prevent shield loss!)
+    if (
+      damageResult.reason === 'timeout' &&
+      state.playerClass === 'chronos' &&
+      nextChronosBanked >= 1.5
+    ) {
+      damageResult.shieldDamage = 0;
+      nextChronosBanked = 0;
+      chronosSavedTimeout = true;
+    } else {
+      // Glass Colossus Boss Law (#7c: +1 extra shield damage on error)
+      if (state.rpgModeActive && state.bossClass === 'glass_colossus') {
+        damageResult.shieldDamage += 1;
+      }
+
+      // Berserker Shield Bet Penalty (#6: lose all 2 or 3 bet shields on a single error!)
+      if (state.shieldBet === 2 || state.shieldBet === 3) {
+        damageResult.shieldDamage = Math.max(damageResult.shieldDamage, state.shieldBet);
+      }
+
+      // Illusionist Trap Option (#4: clicking trap option heals Boss by +15 HP!)
+      if (
+        state.currentQuestion.trapAnswer !== undefined &&
+        checkAnswerCorrectness(userAnswer, state.currentQuestion.trapAnswer)
+      ) {
+        triggeredTrap = true;
+        bossHealedAmount = 15;
+      }
+    }
+  }
+
   const bossHpBefore = state.bossHp;
   const shieldsBefore = state.shields;
 
-  const newBossHp = Math.max(0, state.bossHp - damageResult.damage);
-  const newShields = Math.max(0, state.shields - damageResult.shieldDamage);
+  let newBossHp = Math.max(
+    0,
+    Math.min(state.bossMaxHp, state.bossHp - damageResult.damage + bossHealedAmount)
+  );
+
+  // Gauss Cannon Execution (<8% HP instant execute)
+  if (
+    state.rpgModeActive &&
+    weaponDef.executeThresholdPct > 0 &&
+    damageResult.damage > 0 &&
+    newBossHp > 0 &&
+    newBossHp <= state.bossMaxHp * weaponDef.executeThresholdPct
+  ) {
+    newBossHp = 0;
+  }
+
+  let newShields = Math.max(0, state.shields - damageResult.shieldDamage);
+  if (shieldRegenerated) {
+    newShields = Math.min(state.maxShields, newShields + 1);
+  }
+
+  // Check if Core Engineer triggers Last Stand instead of dying immediately (#8)
+  if (
+    newBossHp <= 0 &&
+    newShields > 0 &&
+    state.bossClass === 'core_engineer' &&
+    state.rpgModeActive &&
+    !state.lastStandCompleted
+  ) {
+    newBossHp = 1;
+    const firstMiniQ = generateLastStandMiniQuestion(1);
+    const roundResult: BossRoundResult = {
+      round: state.round,
+      question: state.currentQuestion,
+      userAnswer,
+      isCorrect,
+      responseTimeSeconds,
+      damageResult,
+      bossHpBefore,
+      bossHpAfter: 1,
+      shieldsBefore,
+      shieldsAfter: newShields,
+      isVictory: false,
+      isDefeat: false,
+      xpEarned: 0,
+      unlockedAchievements: [],
+      parryHit,
+      shieldRegenerated,
+      staggerTriggered,
+      lastStandActivated: true,
+    };
+
+    return {
+      nextState: {
+        ...state,
+        bossHp: 1,
+        shields: newShields,
+        round: state.round + 1,
+        currentQuestion: firstMiniQ,
+        history: [...state.history, roundResult],
+        status: 'fighting',
+        totalDamageDealt: state.totalDamageDealt + damageResult.damage,
+        criticalHitsCount: state.criticalHitsCount + (damageResult.isCritical ? 1 : 0),
+        standardHitsCount:
+          state.standardHitsCount + (damageResult.reason === 'standard' ? 1 : 0),
+        totalTimeSeconds: state.totalTimeSeconds + responseTimeSeconds,
+        parrySuccessStreak: nextParryStreak,
+        lastCorrectAnswer: nextLastCorrectAnswer,
+        chronosBankedSeconds: nextChronosBanked,
+        staggerSeals: nextStaggerSeals,
+        isBossStaggered: false,
+        shieldBet: 0,
+        isLastStandActive: true,
+        lastStandStep: 1,
+        eliminatedOptions: [],
+        isTimeFrozen: false,
+      },
+      roundResult,
+    };
+  }
 
   const { isVictory, isDefeat, status } = checkVictoryAndDefeat(newBossHp, newShields);
 
@@ -1199,12 +2205,30 @@ export function processRound(
     isDefeat,
     xpEarned,
     unlockedAchievements: achievements,
+    triggeredTrap,
+    bossHealedAmount,
+    chronosSavedTimeout,
+    parryHit,
+    shieldRegenerated,
+    staggerTriggered,
   };
 
   const nextPhase = getBossPhase(newBossHp, state.bossMaxHp);
   const nextQuestion =
     status === 'fighting'
-      ? generateBossQuestion(state.round + 1, safeLevel, nextPhase)
+      ? generateBossQuestion(
+          state.round + 1,
+          safeLevel,
+          nextPhase,
+          state.rpgModeActive
+            ? {
+                playerClass: state.playerClass,
+                bossClass: state.bossClass,
+                lastCorrectAnswer: nextLastCorrectAnswer,
+                isBossStaggered: nextIsBossStaggered,
+              }
+            : undefined
+        )
       : state.currentQuestion;
 
   const nextState: BossBattleState = {
@@ -1228,6 +2252,12 @@ export function processRound(
     unlockedAchievements: [...new Set([...state.unlockedAchievements, ...achievements])],
     eliminatedOptions: [],
     isTimeFrozen: false,
+    parrySuccessStreak: nextParryStreak,
+    lastCorrectAnswer: nextLastCorrectAnswer,
+    chronosBankedSeconds: nextChronosBanked,
+    staggerSeals: nextStaggerSeals,
+    isBossStaggered: nextIsBossStaggered,
+    shieldBet: 0,
   };
 
   return { nextState, roundResult };

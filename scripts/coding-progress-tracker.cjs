@@ -68,7 +68,32 @@ function shortenPath(p) {
 }
 
 function checkAntiHangGuard(toolName, args) {
-  if (String(toolName || '').toLowerCase() !== 'run_command') {
+  const tName = String(toolName || '').toLowerCase();
+
+  // [Vault SSOT Guard] Impede que conversas/projetos sobrescrevam os proxies locais do vault_guardian_core.cjs ou corrompam as cores do grafo
+  if (tName.includes('write_to_file') || tName.includes('replace_file_content')) {
+    const targetFile = String(args?.TargetFile || '').replace(/\\/g, '/');
+    const codeText = String(args?.CodeContent || args?.ReplacementContent || '');
+
+    const isLocalProxy =
+      (targetFile.includes('/quantora/.antigravity/automation/vault_guardian_core.cjs') ||
+        targetFile.includes('/gerenciador_senhas/.antigravity/automation/vault_guardian_core.cjs')) &&
+      !targetFile.includes('Obsidian-Vault');
+
+    if (isLocalProxy && (codeText.includes('colorGroups') || codeText.includes('GRAPH_CONFIG'))) {
+      return '[Vault SSOT Guard] Edição bloqueada: O arquivo vault_guardian_core.cjs nos repositórios Quantora/Aegon é apenas um proxy delegado! A Fonte Única da Verdade (SSOT) reside em Obsidian-Vault/.antigravity/automation/vault_guardian_core.cjs e as cores oficiais estão travadas em graph_palette.lock.json.';
+    }
+
+    if (
+      (targetFile.endsWith('.obsidian/graph.json') || targetFile.endsWith('graph_palette.lock.json')) &&
+      codeText.includes('colorGroups') &&
+      (!codeText.includes('11032055') || !codeText.includes('440020') || !codeText.includes('16449316'))
+    ) {
+      return '[Vault SSOT Guard] Edição bloqueada: Tentativa de alterar a paleta cromática oficial do Obsidian Vault com valores RGB divergentes de graph_palette.lock.json (Hub: 16449316, Quantora: 440020, Aegon: 11032055, Sistemas: 3900150, E2E: 16347926).';
+    }
+  }
+
+  if (tName !== 'run_command') {
     return null;
   }
   const cmd = String(args?.CommandLine || '');

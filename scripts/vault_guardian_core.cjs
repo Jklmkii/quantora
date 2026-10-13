@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * 🛡️ Vault Guardian Core v5.0 — Runner Oficial na pasta scripts/
- * Suporta: --no-fix (apenas auditoria), --no-sync (pula regeneração de catálogos) e --fast / --silent (execução silenciosa para hooks)
+ * 🛡️ Vault Guardian Core v6.0 — Runner Oficial na pasta scripts/ (Delega para SSOT no Obsidian-Vault)
  */
 const path = require('path');
-const coreScript = path.resolve(__dirname, '../.antigravity/automation/vault_guardian_core.cjs');
-const { runVaultGuardian } = require(coreScript);
+const ssotEnginePath = path.resolve(
+  'c:/Users/lucas/OneDrive/Área de Trabalho/code/Obsidian-Vault/.antigravity/automation/vault_guardian_core.cjs'
+);
+const { runVaultGuardian } = require(ssotEnginePath);
 
 const args = process.argv.slice(2);
 runVaultGuardian({

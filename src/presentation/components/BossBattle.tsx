@@ -44,6 +44,14 @@ import {
   applyTimeFreezeInBattle,
   ORACLE_COST,
   TIME_FREEZE_COST,
+  PLAYER_CLASSES,
+  BOSS_CLASSES,
+  BOSS_WEAPONS,
+  getTargetSPlusTimeForLevel,
+  toggleParryModeInBattle,
+  setBerserkerShieldBet,
+  type PlayerClassId,
+  type BossWeaponId,
 } from '../../core/quiz/bossEngine';
 import type { BossBattleState, BossRoundResult } from '../../core/quiz/bossEngine';
 import { hapticBossHit, hapticBossDamageTaken } from '../../core/platform/haptics';
@@ -55,7 +63,7 @@ import {
   playBossShieldBreak,
   playComboTick,
 } from '../../core/platform/audio';
-import { useAppStore } from '../../store/useAppStore';
+import { useAppStore, type BossVictorySummary } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
 
@@ -85,6 +93,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     damageUpgradeLevel,
     bossOracleCharges,
     bossTimeFreezeCharges,
+    selectedPlayerClass,
+    lastBossClass,
+    bossBestTimeByLevel,
+    bossSPlusLevels,
+    unlockedBossWeapons,
+    equippedBossWeapon,
+    setSelectedPlayerClass,
+    setLastBossClass,
+    equipBossWeapon,
+    unlockBossWeaponWithTokens,
     recordBossVictory,
     purchaseDamageUpgrade,
     purchaseDamageUpgradeWithToken,
@@ -104,6 +122,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       damageUpgradeLevel: s.damageUpgradeLevel ?? s.profile?.stats?.damageUpgradeLevel ?? 0,
       bossOracleCharges: s.bossOracleCharges ?? s.profile?.stats?.bossOracleCharges ?? 0,
       bossTimeFreezeCharges: s.bossTimeFreezeCharges ?? s.profile?.stats?.bossTimeFreezeCharges ?? 0,
+      selectedPlayerClass: s.selectedPlayerClass ?? s.profile?.stats?.selectedPlayerClass ?? 'duelist',
+      lastBossClass: s.lastBossClass ?? s.profile?.stats?.lastBossClass ?? null,
+      bossBestTimeByLevel: s.bossBestTimeByLevel ?? s.profile?.stats?.bossBestTimeByLevel ?? {},
+      bossSPlusLevels: s.bossSPlusLevels ?? s.profile?.stats?.bossSPlusLevels ?? [],
+      unlockedBossWeapons: s.unlockedBossWeapons ?? s.profile?.stats?.unlockedBossWeapons ?? ['starter_blade'],
+      equippedBossWeapon: s.equippedBossWeapon ?? s.profile?.stats?.equippedBossWeapon ?? 'starter_blade',
+      setSelectedPlayerClass: s.setSelectedPlayerClass,
+      setLastBossClass: s.setLastBossClass,
+      equipBossWeapon: s.equipBossWeapon,
+      unlockBossWeaponWithTokens: s.unlockBossWeaponWithTokens,
       recordBossVictory: s.recordBossVictory,
       purchaseDamageUpgrade: s.purchaseDamageUpgrade,
       purchaseDamageUpgradeWithToken: s.purchaseDamageUpgradeWithToken,
@@ -124,7 +152,17 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
   // Combat State
   const [battleState, setBattleState] = useState<BossBattleState>(() =>
-    createInitialBossBattleState(initialLevel, damageUpgradeLevel, bossOracleCharges, bossTimeFreezeCharges)
+    createInitialBossBattleState(
+      initialLevel,
+      damageUpgradeLevel,
+      bossOracleCharges,
+      bossTimeFreezeCharges,
+      {
+        playerClass: selectedPlayerClass,
+        previousBossClass: lastBossClass,
+        equippedWeapon: equippedBossWeapon,
+      }
+    )
   );
   const [elapsedThisRound, setElapsedThisRound] = useState<number>(0);
   const [isResolving, setIsResolving] = useState<boolean>(false);
@@ -140,6 +178,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const [isManualInputMode, setIsManualInputMode] = useState<boolean>(false);
   const [dispelledQuestionId, setDispelledQuestionId] = useState<string | null>(null);
   const [isFirstClearReward, setIsFirstClearReward] = useState<boolean>(false);
+  const [victorySummary, setVictorySummary] = useState<BossVictorySummary | null>(null);
 
   const isFogDispelled = Boolean(
     battleState.currentQuestion?.id && dispelledQuestionId === battleState.currentQuestion.id
@@ -173,21 +212,40 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   // Boss Phases
   const isPhase2 = battleState.phase === 2;
   const isPhase3 = battleState.phase === 3;
-  const isRageMode = (isPhase2 || isPhase3 || battleState.bossHp <= battleState.bossMaxHp * 0.5) && battleState.bossHp > 0;
+  const isRageMode =
+    (isPhase2 || isPhase3 || battleState.bossHp <= battleState.bossMaxHp * 0.5) &&
+    battleState.bossHp > 0;
 
   // Time calculations
   const currentLevel = battleState.level ?? 1;
   const currentRoundTimeLimit =
-    battleState.currentQuestion?.timeLimitSeconds || getRoundTimeLimitForLevel(currentLevel, battleState.phase);
-  const currentCriticalThreshold = getCriticalTimeThresholdForLevel(
-    currentLevel,
-    battleState.phase,
-    currentRoundTimeLimit
-  );
+    battleState.currentQuestion?.timeLimitSeconds ||
+    getRoundTimeLimitForLevel(currentLevel, battleState.phase);
+  const weaponDef =
+    BOSS_WEAPONS[battleState.equippedWeapon || equippedBossWeapon || 'starter_blade'] ||
+    BOSS_WEAPONS.starter_blade;
+  const currentCriticalThreshold =
+    getCriticalTimeThresholdForLevel(currentLevel, battleState.phase, currentRoundTimeLimit) +
+    (battleState.rpgModeActive ? weaponDef.critWindowBonusSeconds : 0);
 
   const timeLeft = Math.max(0, currentRoundTimeLimit - elapsedThisRound);
   const timerPercentage = Math.max(0, Math.min(100, (timeLeft / currentRoundTimeLimit) * 100));
   const isCriticalWindow = elapsedThisRound < currentCriticalThreshold;
+
+  // Ghost Pace (Sombra do Recorde / Alvo S+)
+  const totalLiveElapsedSeconds = battleState.totalTimeSeconds + elapsedThisRound;
+  const personalRecordSeconds = bossBestTimeByLevel?.[currentLevel];
+  const targetSPlusSeconds = getTargetSPlusTimeForLevel(currentLevel);
+  const ghostTargetSeconds =
+    personalRecordSeconds && personalRecordSeconds > 0
+      ? Math.min(targetSPlusSeconds, personalRecordSeconds)
+      : targetSPlusSeconds;
+  const ghostHpFractionRemaining = Math.max(
+    0,
+    Math.min(100, (1 - totalLiveElapsedSeconds / Math.max(1, ghostTargetSeconds)) * 100)
+  );
+  const isOnSPlusPace =
+    battleState.shields >= battleState.maxShields && totalLiveElapsedSeconds <= targetSPlusSeconds;
 
   // Start battle for a specific discrete level
   const startBattle = useCallback(
@@ -198,26 +256,43 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       }
       victoryRecordedRef.current = false;
       setIsFirstClearReward(false);
+      setVictorySummary(null);
       setSelectedLevel(level);
-      setBattleState(
-        createInitialBossBattleState(
-          level,
-          damageUpgradeLevel,
-          bossOracleCharges,
-          bossTimeFreezeCharges
-        )
+      const nextBattleState = createInitialBossBattleState(
+        level,
+        damageUpgradeLevel,
+        bossOracleCharges,
+        bossTimeFreezeCharges,
+        {
+          playerClass: selectedPlayerClass,
+          previousBossClass: lastBossClass,
+          equippedWeapon: equippedBossWeapon,
+        }
       );
+      if (nextBattleState.bossClass && typeof setLastBossClass === 'function') {
+        setLastBossClass(nextBattleState.bossClass);
+      }
+      setBattleState(nextBattleState);
       setElapsedThisRound(0);
       setIsResolving(false);
       setSelectedOption(null);
       setManualInput('');
+      setIsManualInputMode(false);
       setLastRoundResult(null);
       setShowExplanation(false);
       setDispelledQuestionId(null);
       setScreen('battle');
       roundStartTimeRef.current = Date.now();
     },
-    [damageUpgradeLevel, bossOracleCharges, bossTimeFreezeCharges]
+    [
+      damageUpgradeLevel,
+      bossOracleCharges,
+      bossTimeFreezeCharges,
+      selectedPlayerClass,
+      lastBossClass,
+      equippedBossWeapon,
+      setLastBossClass,
+    ]
   );
 
   // Helper to add floating combat numbers
@@ -230,6 +305,25 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       }, 1500);
     },
     []
+  );
+
+  const handleToggleParry = useCallback(() => {
+    if (isResolving || battleState.status !== 'fighting') return;
+    setBattleState((prev) => {
+      const next = toggleParryModeInBattle(prev);
+      setIsManualInputMode(Boolean(next.parryModeActive));
+      return next;
+    });
+    playComboTick();
+  }, [isResolving, battleState.status]);
+
+  const handleSetShieldBet = useCallback(
+    (bet: 0 | 2 | 3) => {
+      if (isResolving || battleState.status !== 'fighting') return;
+      setBattleState((prev) => setBerserkerShieldBet(prev, bet));
+      playComboTick();
+    },
+    [isResolving, battleState.status]
   );
 
   // Consumable Action Handlers
@@ -314,41 +408,79 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         setIsBossRecoiling(true);
         setTimeout(() => setIsBossRecoiling(false), 500);
 
-        if (roundResult.damageResult.isCritical) {
-          // Critical hit: screen shake + gold flash + floating text + audio
+        if (roundResult.lastStandStepCleared) {
+          playBossHitCritical();
+          setFlashColor('gold');
+          addFloatingText(
+            `☢️ TRAVA ${roundResult.lastStandStepCleared}/3 DESARMADA!`,
+            'critical'
+          );
+          setTimeout(() => setFlashColor(null), 600);
+        } else if (roundResult.damageResult.isCritical) {
           playBossHitCritical();
           setIsShaking(true);
           setFlashColor('gold');
-          const critLabel = battleState.phase === 3 ? 'CRÍTICO FURIOSO 1.5x!' : 'CRÍTICO!';
+          const critLabel = roundResult.parryHit
+            ? 'PARRY 2x!'
+            : battleState.phase === 3
+            ? 'CRÍTICO FURIOSO 1.5x!'
+            : 'CRÍTICO!';
           addFloatingText(`-${roundResult.damageResult.damage} ${critLabel}`, 'critical');
+          if (roundResult.shieldRegenerated) {
+            addFloatingText('🛡️ +1 ESCUDO REGENERADO!', 'correction');
+          }
+          if (roundResult.staggerTriggered) {
+            addFloatingText('🔨 CHEFE ATORDOADO (STAGGER)!', 'critical');
+          }
+          if (roundResult.lastStandActivated) {
+            addFloatingText('☢️ ÚLTIMO SUSPIRO ATIVO!', 'critical');
+          }
           setTimeout(() => {
             setIsShaking(false);
             setFlashColor(null);
           }, 600);
         } else {
-          // Standard hit: emerald flash + floating text + audio
           playBossHitStandard();
           setFlashColor('emerald');
           addFloatingText(`-${roundResult.damageResult.damage}`, 'standard');
+          if (roundResult.lastStandActivated) {
+            addFloatingText('☢️ ÚLTIMO SUSPIRO ATIVO!', 'critical');
+          }
           setTimeout(() => setFlashColor(null), 400);
         }
       } else {
-        // Wrong or timeout: player recoil + red flash + shield loss text at boss portrait + audio
-        hapticBossDamageTaken();
-        playBossDamageTaken();
-        playBossShieldBreak();
-        setIsPlayerRecoiling(true);
-        setFlashColor('red');
-        const shieldLoss = roundResult.damageResult.shieldDamage || 1;
-        const lossText = shieldLoss > 1 ? `-${shieldLoss} ESCUDOS (FÚRIA)!` : '-1 ESCUDO!';
-        addFloatingText(lossText, 'shield_loss');
-        setTimeout(() => {
-          setIsPlayerRecoiling(false);
-          setFlashColor(null);
-        }, 600);
+        if (roundResult.chronosSavedTimeout) {
+          playComboTick();
+          setFlashColor('emerald');
+          addFloatingText('⏳ RESERVA CRONOS SALVOU SEU ESCUDO!', 'correction');
+          setTimeout(() => setFlashColor(null), 600);
+        } else {
+          hapticBossDamageTaken();
+          playBossDamageTaken();
+          playBossShieldBreak();
+          setIsPlayerRecoiling(true);
+          setFlashColor('red');
+          const shieldLoss = roundResult.damageResult.shieldDamage || 1;
+          const lossText =
+            shieldLoss >= 3
+              ? `-${shieldLoss} ESCUDOS (APOSTA TOTAL PERDIDA)!`
+              : shieldLoss > 1
+              ? `-${shieldLoss} ESCUDOS!`
+              : '-1 ESCUDO!';
+          addFloatingText(lossText, 'shield_loss');
+          if (roundResult.triggeredTrap) {
+            addFloatingText('💣 ARMADILHA! CHEFE +15 HP!', 'shield_loss');
+          }
+          if (roundResult.lastStandFailedRevive) {
+            addFloatingText('💥 DESARME FALHOU! CHEFE REVIVEU!', 'shield_loss');
+          }
+          setTimeout(() => {
+            setIsPlayerRecoiling(false);
+            setFlashColor(null);
+          }, 600);
+        }
       }
 
-      // Dynamic cinematic delay: fast (800ms) on hit to maintain rhythm, extended (1500ms) on error to absorb correct answer
       const nextDelay = roundResult.isCorrect ? 800 : 1500;
       setTimeout(() => {
         if (nextState.status === 'victory') {
@@ -356,10 +488,44 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             (bossClearedLevels || []).includes(nextState.level) ||
             nextState.level <= (highestBossLevelCleared || 0);
           setIsFirstClearReward(!wasCleared);
+
+          if (!victoryRecordedRef.current) {
+            victoryRecordedRef.current = true;
+            playBossVictory();
+            const totalTime = Math.max(1, Math.round(nextState.totalTimeSeconds));
+            const shieldsRemaining = nextState.shields;
+            const xpEarned = nextState.earnedXp;
+            const coinsEarned = coinsForLevel(nextState.level);
+
+            if (typeof recordBossVictory === 'function') {
+              const summary = recordBossVictory(
+                nextState.level,
+                totalTime,
+                shieldsRemaining,
+                xpEarned,
+                coinsEarned,
+                {
+                  evaluateSPlus: true,
+                  bossClass: nextState.bossClass,
+                  lastStandMultiplier: nextState.lastStandBonusCoinsMultiplier || 1,
+                }
+              );
+              setVictorySummary(summary);
+            } else {
+              addXp(xpEarned, 'Vitória no Boss Rush');
+              unlockAchievement('boss_slayer');
+              if (shieldsRemaining >= 3) {
+                unlockAchievement('boss_flawless');
+              }
+            }
+          }
         }
         setBattleState(nextState);
         setSelectedOption(null);
         setManualInput('');
+        if (!nextState.parryModeActive) {
+          setIsManualInputMode(false);
+        }
         setElapsedThisRound(0);
         setIsResolving(false);
       }, nextDelay);
@@ -372,13 +538,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       currentRoundTimeLimit,
       bossClearedLevels,
       highestBossLevelCleared,
+      recordBossVictory,
+      addXp,
+      unlockAchievement,
     ]
   );
 
   // Handle timeout when round time elapses
   const handleTimeout = useCallback(() => {
     if (isResolving || battleState.status !== 'fighting') return;
-    // Answering with a dummy non-matching value after round time triggers timeout penalty
     handleAnswerSubmit(-999999);
   }, [isResolving, battleState.status, handleAnswerSubmit]);
 
@@ -390,7 +558,6 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     }
 
     if (battleState.isTimeFrozen) {
-      // While time freeze is active, don't run the tick countdown
       return;
     }
 
@@ -421,19 +588,30 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     handleTimeout,
   ]);
 
-  // Victory Handler: persist rewards (coins, level cleared, XP) to global store once
+  // Victory Handler fallback: persist rewards to global store once if battleState entered victory externally
   useEffect(() => {
     if (screen === 'battle' && battleState.status === 'victory' && !victoryRecordedRef.current) {
       victoryRecordedRef.current = true;
       playBossVictory();
 
-      const totalTime = Math.round(battleState.totalTimeSeconds);
+      const totalTime = Math.max(1, Math.round(battleState.totalTimeSeconds));
       const shieldsRemaining = battleState.shields;
       const xpEarned = battleState.earnedXp;
       const coinsEarned = coinsForLevel(battleState.level);
 
       if (typeof recordBossVictory === 'function') {
-        recordBossVictory(battleState.level, totalTime, shieldsRemaining, xpEarned, coinsEarned);
+        recordBossVictory(
+          battleState.level,
+          totalTime,
+          shieldsRemaining,
+          xpEarned,
+          coinsEarned,
+          {
+            evaluateSPlus: true,
+            bossClass: battleState.bossClass,
+            lastStandMultiplier: battleState.lastStandBonusCoinsMultiplier || 1,
+          }
+        );
       } else {
         addXp(xpEarned, 'Vitória no Boss Rush');
         unlockAchievement('boss_slayer');
@@ -449,23 +627,20 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     battleState.totalTimeSeconds,
     battleState.shields,
     battleState.earnedXp,
+    battleState.bossClass,
+    battleState.lastStandBonusCoinsMultiplier,
     recordBossVictory,
     addXp,
     unlockAchievement,
   ]);
 
-  // Keyboard controls: 1, 2, 3, 4 for multiple choice options & Space to dispel fog
+  // Keyboard controls: 1, 2, 3, 4 for multiple choice options, Space to dispel fog, P to toggle Parry
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        screen !== 'battle' ||
-        isResolving ||
-        battleState.status !== 'fighting'
-      ) {
+      if (screen !== 'battle' || isResolving || battleState.status !== 'fighting') {
         return;
       }
 
-      // Atalho de Teclado: Barra de Espaço dissipa a névoa imediatamente
       if (
         (e.code === 'Space' || e.key === ' ') &&
         battleState.currentQuestion?.debuff === 'fog' &&
@@ -476,14 +651,23 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         return;
       }
 
-      if (isManualInputMode) {
+      if (
+        (e.key === 'p' || e.key === 'P') &&
+        battleState.playerClass === 'duelist' &&
+        document.activeElement?.tagName !== 'INPUT'
+      ) {
+        e.preventDefault();
+        handleToggleParry();
+        return;
+      }
+
+      if (isManualInputMode || battleState.parryModeActive) {
         return;
       }
 
       const keyIndex = parseInt(e.key, 10) - 1;
       if (keyIndex >= 0 && keyIndex < battleState.currentQuestion.options.length) {
         const option = battleState.currentQuestion.options[keyIndex];
-        // Cannot select eliminated option
         if (battleState.eliminatedOptions?.includes(option)) {
           return;
         }
@@ -494,7 +678,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [screen, isResolving, battleState, isManualInputMode, isFogDispelled, handleDispelFog, handleAnswerSubmit]);
+  }, [
+    screen,
+    isResolving,
+    battleState,
+    isManualInputMode,
+    isFogDispelled,
+    handleDispelFog,
+    handleToggleParry,
+    handleAnswerSubmit,
+  ]);
 
   // --------------------------------------------------------------------------
   // SCREEN 1: LEVEL SELECTION & ARSENAL FORGE (SHOP)
@@ -573,7 +766,70 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           </div>
         </div>
 
-        {/* Arsenal & Damage Forge (Shop) */}
+        {/* Seletor das 5 Classes Táticas do Jogador */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white border border-indigo-300 dark:border-indigo-500/30 shadow-xl flex flex-col gap-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 flex items-center justify-center shrink-0">
+                <Shield size={20} />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  Classes Táticas do Jogador (5 Estilos)
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-bold border border-indigo-500/30">
+                    {PLAYER_CLASSES[selectedPlayerClass]?.name}
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Escolha sua classe e habilidade especial antes de entrar na Arena
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {(Object.keys(PLAYER_CLASSES) as PlayerClassId[]).map((clsId) => {
+              const cls = PLAYER_CLASSES[clsId];
+              const isSelected = selectedPlayerClass === clsId;
+              return (
+                <button
+                  key={clsId}
+                  type="button"
+                  data-testid={`player-class-${clsId}`}
+                  onClick={() => setSelectedPlayerClass(clsId)}
+                  className={`p-3.5 rounded-2xl border-2 text-left flex flex-col justify-between gap-2 transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-indigo-950/90 text-white border-amber-400 ring-2 ring-amber-400/30 shadow-lg shadow-amber-500/15 scale-[1.01]'
+                      : 'bg-slate-50 dark:bg-slate-950/70 text-slate-900 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-indigo-400'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className="text-xs font-black">{cls.name}</span>
+                      {isSelected && (
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-amber-400 text-slate-950">
+                          Equipada
+                        </span>
+                      )}
+                    </div>
+                    <span className="inline-block mt-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
+                      {cls.badge}
+                    </span>
+                    <p
+                      className={`text-[11px] mt-1.5 leading-snug ${
+                        isSelected ? 'text-slate-200' : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {cls.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Arsenal & Damage Forge (Shop + Armas Míticas S+) */}
         <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white border border-amber-300 dark:border-amber-500/30 shadow-xl flex flex-col gap-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -596,7 +852,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <div className="text-right">
               <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Bônus Atual</span>
               <span className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">
-                +{currentBonus} DANO
+                +{currentBonus + weaponDef.damageBonus} DANO
               </span>
             </div>
           </div>
@@ -605,13 +861,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <div>
               <span className="text-slate-500 dark:text-slate-400 block font-medium">Golpe Crítico (&lt;3s):</span>
               <span className="text-sm font-black text-amber-700 dark:text-amber-300 font-mono mt-0.5 block">
-                {CRITICAL_DAMAGE_MIN + currentBonus} ~ {CRITICAL_DAMAGE_MAX + currentBonus} dano
+                {CRITICAL_DAMAGE_MIN + currentBonus + weaponDef.critDamageBonus} ~{' '}
+                {CRITICAL_DAMAGE_MAX + currentBonus + weaponDef.critDamageBonus} dano
               </span>
             </div>
             <div>
               <span className="text-slate-500 dark:text-slate-400 block font-medium">Golpe Padrão (&ge;3s):</span>
               <span className="text-sm font-black text-emerald-700 dark:text-emerald-400 font-mono mt-0.5 block">
-                {STANDARD_DAMAGE_MIN + currentBonus} ~ {STANDARD_DAMAGE_MAX + currentBonus} dano
+                {STANDARD_DAMAGE_MIN + currentBonus + weaponDef.damageBonus} ~{' '}
+                {STANDARD_DAMAGE_MAX + currentBonus + weaponDef.damageBonus} dano
               </span>
             </div>
           </div>
@@ -660,6 +918,90 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   ? `${t.boss_upgrade_btn || 'Melhorar Dano (+3)'} • ${nextCost} 🪙`
                   : `Moedas Insuficientes (${bossCoins}/${nextCost})`}
               </button>
+            </div>
+          </div>
+
+          {/* Armas Míticas Rank S+ Section */}
+          <div className="border-t border-slate-200 dark:border-slate-800/80 pt-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-300 flex items-center gap-1.5">
+                <Crown size={14} className="text-amber-500" />
+                Armas Míticas de Rank S+ ({bossSPlusLevels.length} Ranks S+ conquistados)
+              </span>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                Desbloqueie batendo a Sombra S+ (3/3 escudos) ou usando Fichas!
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {(Object.keys(BOSS_WEAPONS) as BossWeaponId[]).map((wId) => {
+                const wp = BOSS_WEAPONS[wId];
+                const isUnlocked = unlockedBossWeapons.includes(wId);
+                const isEquipped = equippedBossWeapon === wId;
+                const canUnlockWithTokens = !isUnlocked && bossTokens >= wp.tokenCost;
+
+                return (
+                  <div
+                    key={wId}
+                    data-testid={`weapon-card-${wId}`}
+                    className={`p-3 rounded-2xl border flex flex-col justify-between gap-2 transition-all ${
+                      isEquipped
+                        ? 'bg-amber-500/15 border-amber-400 ring-1 ring-amber-400/40'
+                        : isUnlocked
+                        ? 'bg-slate-50 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800'
+                        : 'bg-slate-100/70 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800/60 opacity-85'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="text-xs font-black text-slate-900 dark:text-white">
+                          {wp.name}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                          {wp.badge}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        {wp.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      {isUnlocked ? (
+                        <button
+                          type="button"
+                          onClick={() => equipBossWeapon(wId)}
+                          className={`w-full py-1.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                            isEquipped
+                              ? 'bg-amber-400 text-slate-950'
+                              : 'bg-slate-800 hover:bg-slate-700 text-white'
+                          }`}
+                        >
+                          {isEquipped ? '✓ Arma Equipada' : 'Equipar Arma'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={!canUnlockWithTokens}
+                          onClick={() => unlockBossWeaponWithTokens(wId)}
+                          className={`w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                            canUnlockWithTokens
+                              ? 'bg-amber-500/25 hover:bg-amber-500/40 text-amber-300 border border-amber-400/50 cursor-pointer'
+                              : 'bg-slate-200 dark:bg-slate-900 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                          }`}
+                        >
+                          <Ticket size={12} />
+                          <span>
+                            {canUnlockWithTokens
+                              ? `Desbloquear com ${wp.tokenCost} Fichas`
+                              : `Requer ${wp.sPlusRequired} Rank S+ ou ${wp.tokenCost} Fichas`}
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -778,13 +1120,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               {t.boss_levels_title || 'Selecione a Fase'}
             </h3>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Recorde: Nível {highestBossLevelCleared}
+              Recorde: Nível {highestBossLevelCleared} • S+: {bossSPlusLevels.length}
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {levelsArray.map((lvl) => {
               const isCleared = (bossClearedLevels && bossClearedLevels.includes(lvl)) || lvl <= highestBossLevelCleared;
+              const isSPlusCleared = bossSPlusLevels.includes(lvl);
+              const bestTime = bossBestTimeByLevel?.[lvl];
+              const sPlusTarget = getTargetSPlusTimeForLevel(lvl);
               const isCurrent = lvl === highestBossLevelCleared + 1;
               const isLocked = lvl > highestBossLevelCleared + 1;
               const hp = getBossHpForLevel(lvl);
@@ -809,6 +1154,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                         <span className="text-base font-black text-slate-900 dark:text-white">
                           Nível {lvl}
                         </span>
+                        {isSPlusCleared && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black flex items-center gap-1 shadow-xs">
+                            👑 S+
+                          </span>
+                        )}
                         {isCleared && (
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 dark:border-transparent dark:bg-emerald-500/20 dark:text-emerald-300 font-bold flex items-center gap-1">
                             <CheckCircle2 size={11} /> Vencido
@@ -830,6 +1180,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                       </p>
                       <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 mt-0.5">
                         <Heart size={12} className="text-red-500 fill-red-500" /> {hp} HP
+                      </span>
+                      <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono font-bold block mt-0.5">
+                        👻 {bestTime ? `Recorde: ${bestTime}s` : `Alvo S+: ≤${sPlusTarget}s`}
                       </span>
                     </div>
 
@@ -863,7 +1216,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                       }`}
                     >
                       <Swords size={14} />
-                      {isCleared ? 'Repetir Batalha' : 'Batalhar Agora!'}
+                      {isCleared ? 'Repetir Batalha (S+)' : 'Batalhar Agora!'}
                     </button>
                   )}
                 </div>
@@ -880,7 +1233,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   // --------------------------------------------------------------------------
   if (battleState.status === 'victory') {
     const isFlawless = battleState.shields >= 3;
-    const coinsEarned = coinsForLevel(battleState.level);
+    const coinsEarned = victorySummary?.totalCoinsAwarded ?? coinsForLevel(battleState.level);
 
     return (
       <div className="flex flex-col gap-6 max-w-xl mx-auto pb-24 md:pb-12 select-none">
@@ -900,7 +1253,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               CHEFE DERROTADO!
             </h2>
             <p className="text-sm text-slate-300 max-w-md mt-1 font-medium">
-              Você dominou as equações e aniquilou Lord Mathgoth com precisão matemática implacável!
+              Você dominou as equações e aniquilou {battleState.bossIdentity.name} com precisão matemática implacável!
             </p>
           </div>
 
@@ -925,10 +1278,37 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <div className="p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex flex-col items-center justify-center">
               <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">Tempo</span>
               <span className="text-xl sm:text-2xl font-black text-cyan-300 font-mono mt-1">
-                {Math.round(battleState.totalTimeSeconds)}s
+                {Math.max(1, Math.round(battleState.totalTimeSeconds))}s
               </span>
             </div>
           </div>
+
+          {/* RANK S+ GHOST PACE VICTORY BANNER */}
+          {victorySummary?.isSPlus && (
+            <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-purple-600/30 via-amber-500/25 to-cyan-500/30 border-2 border-amber-300 text-white flex flex-col gap-2 shadow-xl shadow-amber-500/25 z-10">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase tracking-widest text-amber-300 flex items-center gap-1.5">
+                  👑 RANK S+ SUPREMO (SOMBRA DO RECORDE VENCIDA)!
+                </span>
+                <span className="text-xs font-mono font-black px-2 py-0.5 rounded-full bg-amber-400 text-slate-950">
+                  +1 Ficha S+ & 2x Moedas!
+                </span>
+              </div>
+              <p className="text-xs text-slate-200 text-left">
+                Você venceu dentro do tempo S+ com todos os 3 escudos intactos! Recebeu{' '}
+                <strong>+1 Ficha Extra de Rank S+</strong> e <strong>Dobro de Moedas</strong>!
+              </p>
+              {victorySummary.newlyUnlockedWeapon && (
+                <div className="p-2.5 rounded-xl bg-slate-950/80 border border-amber-400/60 text-amber-300 text-xs font-black flex items-center gap-2">
+                  <Swords size={16} className="text-amber-400 shrink-0" />
+                  <span>
+                    NOVA ARMA MÍTICA DESBLOQUEADA:{' '}
+                    {BOSS_WEAPONS[victorySummary.newlyUnlockedWeapon]?.name}!
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* First Clear Token Reward Banner */}
           {isFirstClearReward && (
@@ -1151,6 +1531,10 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   // --------------------------------------------------------------------------
   // SCREEN 4: ACTIVE COMBAT ARENA
   // --------------------------------------------------------------------------
+  const activePlayerClassSpec = PLAYER_CLASSES[battleState.playerClass || 'duelist'];
+  const activeBossClassSpec = BOSS_CLASSES[battleState.bossClass || 'illusionist'];
+  const activeWeaponSpec = BOSS_WEAPONS[battleState.equippedWeapon || 'starter_blade'];
+
   return (
     <div
       className={`flex flex-col gap-3 max-w-xl mx-auto pb-12 md:pb-6 select-none transition-transform duration-100 ${
@@ -1158,7 +1542,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       }`}
     >
       {/* Top Header Navigation */}
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between px-1 flex-wrap gap-2">
         <button
           type="button"
           onClick={() => {
@@ -1170,7 +1554,20 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           <ChevronLeft size={16} /> Níveis & Arsenal
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Ghost Pace S+ Live Indicator */}
+          <span
+            data-testid="ghost-pace-badge"
+            className={`text-[11px] font-black px-2.5 py-0.5 rounded-full border font-mono flex items-center gap-1 ${
+              isOnSPlusPace
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                : 'bg-slate-900 text-slate-400 border-slate-700'
+            }`}
+            title="Ritmo da Sombra S+ (Vença dentro da meta com 3/3 escudos para ganhar Rank S+)"
+          >
+            👻 S+: {totalLiveElapsedSeconds.toFixed(1)}s / {ghostTargetSeconds.toFixed(0)}s
+          </span>
+
           <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
             Nível {battleState.level}
           </span>
@@ -1182,7 +1579,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
       {/* Main Arena Combat Card */}
       <div
-        className={`relative p-5 sm:p-6 rounded-3xl bg-slate-950 text-white border-2 transition-all duration-300 shadow-2xl flex flex-col items-center gap-4 overflow-hidden ${
+        className={`relative p-5 sm:p-6 rounded-3xl bg-slate-950 text-white border-2 transition-all duration-300 shadow-2xl flex flex-col items-center gap-3.5 overflow-hidden ${
           isRageMode
             ? 'border-red-600/90 shadow-red-600/30 ring-2 ring-red-500/20'
             : flashColor === 'gold'
@@ -1201,6 +1598,34 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           }`}
         />
 
+        {/* BOSS CLASS / ARENA LAW BANNER (#7) */}
+        <div
+          data-testid="boss-class-law-banner"
+          className="w-full py-1.5 px-3 rounded-xl bg-indigo-950/80 border border-indigo-500/40 flex items-center justify-between gap-2 text-[11px] font-bold text-indigo-200 z-10 shadow-sm flex-wrap"
+        >
+          <span className="flex items-center gap-1.5">
+            <strong className="text-indigo-300 uppercase tracking-wider">
+              ⚖️ {activeBossClassSpec.lawTitle} ({activeBossClassSpec.name}):
+            </strong>
+          </span>
+          <span className="text-right text-[10px] sm:text-[11px] text-amber-300 font-mono font-black">
+            {activeBossClassSpec.badge}
+          </span>
+        </div>
+
+        {/* CORE ENGINEER LAST STAND BANNER (#8) */}
+        {battleState.isLastStandActive && (
+          <div
+            data-testid="last-stand-banner"
+            className="w-full py-2 px-3 rounded-xl bg-cyan-950/90 border-2 border-cyan-400 flex items-center justify-center gap-2 text-xs font-black text-cyan-200 uppercase tracking-wider animate-pulse z-10 shadow-lg shadow-cyan-500/30"
+          >
+            <Zap size={18} className="text-cyan-300 fill-cyan-300 shrink-0" />
+            <span className="text-center">
+              ⚙️ PROTOCOLO ÚLTIMO SUSPIRO ({battleState.lastStandStep}/3) — DESARME O NÚCLEO PARA 2x MOEDAS!
+            </span>
+          </div>
+        )}
+
         {/* Phase Banners */}
         {isPhase3 ? (
           <div className="w-full py-2 px-3 rounded-xl bg-red-600/30 border border-red-500/80 flex items-center justify-center gap-2 text-xs font-black text-red-200 uppercase tracking-wider animate-pulse z-10 shadow-lg shadow-red-900/50">
@@ -1217,9 +1642,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         ) : null}
 
         {/* BOSS SECTION */}
-        <div className="w-full flex flex-col items-center gap-2.5 z-10 pt-2 sm:pt-3">
+        <div className="w-full flex flex-col items-center gap-2.5 z-10 pt-1">
           {/* Boss Identity & Avatar */}
-          <div className="relative flex flex-col items-center mt-3 sm:mt-4">
+          <div className="relative flex flex-col items-center mt-2">
             {/* Floating Damage Text */}
             <div className="absolute -top-12 sm:-top-14 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
               {floatingTexts.map((ft) => (
@@ -1228,31 +1653,33 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   className={`animate-bounce font-black font-mono tracking-tight text-xl sm:text-2xl px-3.5 py-1 rounded-full drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] ${
                     ft.type === 'critical'
                       ? 'bg-gradient-to-r from-amber-500 to-red-500 text-white border border-yellow-300 ring-2 ring-yellow-400/50 scale-110'
-                    : ft.type === 'shield_loss'
-                    ? 'bg-red-600 text-white border border-red-300'
-                    : ft.type === 'correction'
-                    ? 'bg-emerald-500 text-slate-950 border-2 border-emerald-300 font-black shadow-lg shadow-emerald-500/50'
-                    : 'bg-emerald-500 text-slate-950 font-extrabold'
-                }`}
-              >
-                {ft.text}
-              </div>
-            ))}
-          </div>
+                      : ft.type === 'shield_loss'
+                      ? 'bg-red-600 text-white border border-red-300'
+                      : ft.type === 'correction'
+                      ? 'bg-emerald-500 text-slate-950 border-2 border-emerald-300 font-black shadow-lg shadow-emerald-500/50'
+                      : 'bg-emerald-500 text-slate-950 font-extrabold'
+                  }`}
+                >
+                  {ft.text}
+                </div>
+              ))}
+            </div>
 
-          {/* Avatar Circle */}
-          <div
-            className={`relative w-18 h-18 sm:w-20 sm:h-20 rounded-3xl p-1 flex items-center justify-center shadow-2xl transition-all duration-300 ${
-              isBossRecoiling ? 'scale-90 rotate-6 bg-red-500' : 'scale-100'
-            } ${
-              isPhase3
-                ? 'bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 shadow-red-600/70 animate-pulse ring-4 ring-red-500/40'
-                : isPhase2
-                ? 'bg-gradient-to-tr from-amber-600 via-yellow-500 to-orange-500 shadow-amber-600/50 animate-pulse'
-                : 'bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-600 shadow-purple-900/50'
-            }`}
-          >
-            <div className="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center overflow-hidden relative">
+            {/* Avatar Circle */}
+            <div
+              className={`relative w-18 h-18 sm:w-20 sm:h-20 rounded-3xl p-1 flex items-center justify-center shadow-2xl transition-all duration-300 ${
+                isBossRecoiling ? 'scale-90 rotate-6 bg-red-500' : 'scale-100'
+              } ${
+                battleState.isBossStaggered
+                  ? 'bg-gradient-to-tr from-cyan-500 via-sky-400 to-emerald-400 shadow-cyan-500/60 ring-4 ring-cyan-400/50'
+                  : isPhase3
+                  ? 'bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 shadow-red-600/70 animate-pulse ring-4 ring-red-500/40'
+                  : isPhase2
+                  ? 'bg-gradient-to-tr from-amber-600 via-yellow-500 to-orange-500 shadow-amber-600/50 animate-pulse'
+                  : 'bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-600 shadow-purple-900/50'
+              }`}
+            >
+              <div className="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center overflow-hidden relative">
                 {battleState.bossIdentity.avatarIcon === 'flame' ? (
                   <Flame size={42} className={isPhase3 ? 'text-red-400 fill-red-400/50' : 'text-amber-400'} />
                 ) : battleState.bossIdentity.avatarIcon === 'crown' ? (
@@ -1272,18 +1699,22 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             </div>
 
             <div className="mt-2 text-center">
-              <h3 className="text-base sm:text-lg font-black text-white flex items-center justify-center gap-1.5">
+              <h3 className="text-base sm:text-lg font-black text-white flex items-center justify-center gap-1.5 flex-wrap">
                 {battleState.bossIdentity.name}
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                    isPhase3
+                    battleState.isBossStaggered
+                      ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400 font-black animate-pulse'
+                      : isPhase3
                       ? 'bg-red-500/30 text-red-200 border border-red-500/60 font-black animate-pulse'
                       : isPhase2
                       ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                       : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                   }`}
                 >
-                  {isPhase3
+                  {battleState.isBossStaggered
+                    ? '💫 ATORDOADO (STAGGER 2x)'
+                    : isPhase3
                     ? 'FASE 3 • FÚRIA (ENRAGE)'
                     : isPhase2
                     ? 'FASE 2 • SOBRECARGA'
@@ -1291,12 +1722,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 </span>
               </h3>
               <p className="text-[11px] text-slate-400 font-semibold">
-                {battleState.bossIdentity.title}
+                {battleState.bossIdentity.title} • {activeBossClassSpec.name} ({activeBossClassSpec.badge})
               </p>
             </div>
           </div>
 
-          {/* Boss HP Bar */}
+          {/* Boss HP Bar with Ghost Pace Marker (#9) */}
           <div className="w-full flex flex-col gap-1.5 px-2">
             <div className="flex items-center justify-between text-xs font-black">
               <span className="flex items-center gap-1 text-slate-300 uppercase tracking-wider">
@@ -1310,7 +1741,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </span>
             </div>
 
-            <div className="w-full h-4 rounded-full bg-slate-900 border border-slate-800 p-0.5 overflow-hidden shadow-inner">
+            <div className="relative w-full h-4 rounded-full bg-slate-900 border border-slate-800 p-0.5 overflow-hidden shadow-inner">
               <div
                 className={`h-full rounded-full transition-all duration-500 ease-out ${
                   battleState.bossHp <= battleState.bossMaxHp * 0.25
@@ -1323,8 +1754,163 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   width: `${Math.max(0, Math.min(100, (battleState.bossHp / battleState.bossMaxHp) * 100))}%`,
                 }}
               />
+              {/* Ghost Pace Marker on Boss HP bar */}
+              <div
+                className="absolute top-0 bottom-0 w-1 bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.9)] z-20 pointer-events-none transition-all duration-150"
+                style={{ left: `${ghostHpFractionRemaining}%` }}
+                title="👻 Sombra S+: Mantenha o HP do chefe abaixo desta marca para conquistar Rank S+!"
+              />
             </div>
+
+            {/* BREAKER STAGGER SEALS HUD (#5) */}
+            {battleState.playerClass === 'breaker' && (
+              <div
+                data-testid="breaker-stagger-hud"
+                className="flex items-center justify-between px-2 py-1 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] font-bold"
+              >
+                <span className="text-cyan-300 flex items-center gap-1">
+                  🔨 Selos de Postura (Stagger):
+                </span>
+                {battleState.isBossStaggered ? (
+                  <span className="text-amber-300 font-black animate-pulse">
+                    💥 POSTURA QUEBRADA! 2x DANO VERDADEIRO & 2x TEMPO!
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    {[0, 1, 2].map((sealIdx) => {
+                      const sealFilled = sealIdx < (battleState.staggerSeals ?? 0);
+                      return (
+                        <span
+                          key={`seal_${sealIdx}`}
+                          className={`px-2 py-0.5 rounded-md font-mono text-xs border ${
+                            sealFilled
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                              : 'bg-slate-800 text-slate-600 border-slate-700'
+                          }`}
+                        >
+                          ◈
+                        </span>
+                      );
+                    })}
+                    <span className="text-[10px] text-slate-400 font-mono ml-1">
+                      ({battleState.staggerSeals ?? 0}/3)
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* PLAYER CLASS TACTICAL BAR (#1, #2, #3, #6) */}
+        <div
+          data-testid="player-class-tactical-bar"
+          className="w-full p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col gap-2 z-10"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-[11px] font-black text-cyan-300 flex items-center gap-1.5 flex-wrap">
+              <span>{activePlayerClassSpec.name}</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-cyan-200 border border-slate-700">
+                {activePlayerClassSpec.badge}
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700">
+                {activeWeaponSpec.name}
+              </span>
+            </span>
+
+            {/* #1 DUELIST PARRY BUTTON */}
+            {battleState.playerClass === 'duelist' && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-slate-400">
+                  Combo Parry: <strong className="text-cyan-300">{battleState.parrySuccessStreak ?? 0}/3</strong> (+1 🛡️)
+                </span>
+                <button
+                  type="button"
+                  data-testid="duelist-parry-toggle"
+                  disabled={isResolving}
+                  onClick={handleToggleParry}
+                  className={`py-1 px-2.5 rounded-xl font-black text-[11px] flex items-center gap-1 transition-all cursor-pointer border ${
+                    battleState.parryModeActive
+                      ? 'bg-amber-500 text-slate-950 border-yellow-300 shadow-lg shadow-amber-500/30 scale-105'
+                      : 'bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border-amber-500/40'
+                  }`}
+                >
+                  ⚔️ {battleState.parryModeActive ? 'PARRY 2x ATIVO!' : 'Ativar Parry 2x [P]'}
+                </button>
+              </div>
+            )}
+
+            {/* #2 CHANNELER RICOCHET [ANS] STATUS */}
+            {battleState.playerClass === 'channeler' && (
+              <span className="text-[11px] font-mono font-bold text-purple-300 bg-purple-950/60 px-2.5 py-0.5 rounded-full border border-purple-500/40">
+                🔮 {battleState.lastCorrectAnswer !== null && battleState.lastCorrectAnswer !== undefined
+                  ? `[Ans] = ${battleState.lastCorrectAnswer} (+50% Dano Ricochete)`
+                  : 'Acerte a 1ª rodada para energizar [Ans]'}
+              </span>
+            )}
+
+            {/* #3 CHRONOS CRYSTAL BANK */}
+            {battleState.playerClass === 'chronos' && (
+              <span
+                data-testid="chronos-bank-badge"
+                className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-500/40"
+              >
+                ⏳ Reserva Cronos: +{(battleState.chronosBankedSeconds ?? 0).toFixed(1)}s / 6.0s (+{Math.floor((battleState.chronosBankedSeconds ?? 0) * 3)} Dano)
+              </span>
+            )}
+          </div>
+
+          {/* #6 BERSERKER SHIELD BETTING CONTROLS (2 OR 3 SHIELDS) */}
+          {battleState.playerClass === 'berserker' && (
+            <div
+              data-testid="berserker-bet-controls"
+              className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-800/80 flex-wrap"
+            >
+              <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider">
+                🩸 Aposta Tudo ou Nada (Se errar 1, perde todos os apostados):
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={isResolving}
+                  onClick={() => handleSetShieldBet(0)}
+                  className={`px-2 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer ${
+                    (battleState.shieldBet ?? 0) === 0
+                      ? 'bg-slate-700 text-white border-slate-500'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                  }`}
+                >
+                  Sem Aposta (1x)
+                </button>
+                <button
+                  type="button"
+                  data-testid="berserker-bet-2"
+                  disabled={isResolving || battleState.shields < 2}
+                  onClick={() => handleSetShieldBet(2)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                    battleState.shieldBet === 2
+                      ? 'bg-rose-600 text-white border-rose-300 shadow-md shadow-rose-600/30'
+                      : 'bg-rose-950/50 text-rose-300 border-rose-500/40 hover:bg-rose-900/60'
+                  }`}
+                >
+                  🩸 Apostar 2🛡️ (2.5x Dano)
+                </button>
+                <button
+                  type="button"
+                  data-testid="berserker-bet-3"
+                  disabled={isResolving || battleState.shields < 3}
+                  onClick={() => handleSetShieldBet(3)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                    battleState.shieldBet === 3
+                      ? 'bg-gradient-to-r from-red-600 to-amber-500 text-slate-950 border-yellow-300 shadow-lg shadow-red-600/40'
+                      : 'bg-red-950/60 text-amber-300 border-amber-500/40 hover:bg-red-900/60'
+                  }`}
+                >
+                  🔥 Apostar 3🛡️ (3.5x Dano!)
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* IN-COMBAT CONSUMABLES HUD */}
@@ -1382,16 +1968,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
 
             {isCriticalWindow ? (
               <span className="flex items-center gap-1 text-[11px] font-black text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/30 animate-pulse">
-                <Zap size={12} className="fill-yellow-400" /> BÔNUS CRÍTICO ATIVO (30-35 DANO)!
+                <Zap size={12} className="fill-yellow-400" /> BÔNUS CRÍTICO ATIVO!
               </span>
             ) : (
               <span className="text-[11px] font-semibold text-slate-400">
-                Golpe Padrão (15-20 dano)
+                Golpe Padrão
               </span>
             )}
           </div>
 
-          {/* Dynamic Countdown Bar with Critical 3s Threshold Marker */}
+          {/* Dynamic Countdown Bar with Critical Threshold Marker */}
           <div className="relative w-full h-2.5 rounded-full bg-slate-900 border border-slate-800 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-75 ease-linear ${
@@ -1423,6 +2009,18 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <span className="text-xs font-bold text-slate-400">
               {battleState.currentQuestion.title}
             </span>
+
+            {battleState.currentQuestion.isRicochetAns && (
+              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-purple-500/25 text-purple-200 border border-purple-400/50">
+                🔮 Ricochete [Ans] (+50% Dano)
+              </span>
+            )}
+
+            {battleState.currentQuestion.isOperatorOverload && (
+              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/25 text-cyan-200 border border-cyan-400/50">
+                ⚡ Sobrecarga de Sinais (Dano = Resultado)
+              </span>
+            )}
 
             {/* Cognitive Debuff Badges */}
             {battleState.currentQuestion.debuff === 'fog' && (
@@ -1498,13 +2096,6 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 ? 'border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.25)] cursor-pointer hover:border-amber-400'
                 : 'border-slate-800/80 shadow-inner'
             }`}
-            title={
-              battleState.currentQuestion.debuff === 'fog'
-                ? isFogDispelled
-                  ? 'Névoa dissipada!'
-                  : 'Névoa ativa: passe o mouse, toque ou aperte Espaço para focar'
-                : undefined
-            }
           >
             <span
               className={`text-2xl sm:text-3xl font-black font-mono tracking-wide text-white transition-all duration-300 ${
@@ -1516,7 +2107,6 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               {battleState.currentQuestion.displayExpression}
             </span>
 
-            {/* Hint Flutuante quando a névoa estiver ativa */}
             {battleState.currentQuestion.debuff === 'fog' && !isFogDispelled && (
               <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40 rounded-2xl pointer-events-none">
                 <span className="text-[10px] sm:text-xs font-bold text-amber-200 bg-amber-950/90 border border-amber-500/70 px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1.5 animate-bounce">
@@ -1527,8 +2117,19 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             )}
           </div>
 
-          {/* 4 MULTIPLE CHOICE OPTIONS */}
-          {!isManualInputMode ? (
+          {/* ILLUSIONIST TRAP DIDACTIC WARNING BANNER (#4) */}
+          {isResolving && lastRoundResult?.triggeredTrap && battleState.currentQuestion.trapExplanation && (
+            <div
+              data-testid="illusionist-trap-warning"
+              className="w-full py-2 px-3.5 rounded-xl bg-purple-950/90 border border-purple-400 text-purple-200 text-xs font-bold flex items-center justify-center gap-2 shadow-lg animate-in fade-in"
+            >
+              <span>🧛</span>
+              <span>{battleState.currentQuestion.trapExplanation}</span>
+            </div>
+          )}
+
+          {/* 4 MULTIPLE CHOICE OPTIONS OR PARRY / MANUAL INPUT */}
+          {!isManualInputMode && !battleState.parryModeActive ? (
             <div className="w-full flex flex-col gap-2.5 mt-1">
               {/* Dual Reinforcement Correction Banner anchored right above options */}
               {isResolving && lastRoundResult && !lastRoundResult.isCorrect && (
@@ -1549,6 +2150,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   const isSelected = selectedOption === option;
                   const isCorrect = option === battleState.currentQuestion.correctAnswer;
                   const isEliminated = battleState.eliminatedOptions?.includes(option);
+                  const operatorExpr = battleState.currentQuestion.operatorExpressions?.[option];
 
                   let optionStyle =
                     'bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-white hover:border-slate-500';
@@ -1558,15 +2160,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                       'bg-slate-900/40 border-slate-800/60 text-slate-600 line-through opacity-25 cursor-not-allowed';
                   } else if (isResolving && lastRoundResult) {
                     if (isCorrect) {
-                      // Correct option is ALWAYS highlighted in vibrant emerald green with ring and glow
                       optionStyle =
                         'bg-emerald-950/90 border-emerald-500 text-emerald-200 ring-2 ring-emerald-500/60 shadow-[0_0_20px_rgba(16,185,129,0.35)] scale-[1.02] font-black';
                     } else if (isSelected && !lastRoundResult.isCorrect) {
-                      // Player's incorrect selection is highlighted in red (rose)
                       optionStyle =
                         'bg-rose-950/80 border-rose-500 text-rose-300 ring-2 ring-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.3)] font-bold';
                     } else {
-                      // Other non-matching options fade into background
                       optionStyle = 'bg-slate-900/40 border-slate-800 text-slate-600 opacity-40';
                     }
                   } else if (isSelected) {
@@ -1583,17 +2182,30 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                         setSelectedOption(option);
                         handleAnswerSubmit(option);
                       }}
-                      className={`relative py-3.5 px-4 rounded-2xl font-mono text-lg font-black transition-all duration-200 flex items-center justify-center gap-1.5 border shadow-md disabled:cursor-not-allowed cursor-pointer ${optionStyle}`}
+                      className={`relative py-3.5 px-4 rounded-2xl font-mono text-lg font-black transition-all duration-200 flex flex-col items-center justify-center gap-0.5 border shadow-md disabled:cursor-not-allowed cursor-pointer ${optionStyle}`}
                     >
                       <span className="absolute top-1.5 left-2 text-[10px] font-sans font-bold text-slate-400">
                         [{idx + 1}]
                       </span>
-                      <span>{option}</span>
-                      {isResolving && lastRoundResult && isCorrect && (
-                        <CheckCircle2 size={16} className="text-emerald-400 shrink-0 ml-1" />
-                      )}
-                      {isResolving && lastRoundResult && isSelected && !lastRoundResult.isCorrect && (
-                        <XCircle size={16} className="text-rose-400 shrink-0 ml-1" />
+                      {operatorExpr ? (
+                        <>
+                          <span className="text-sm sm:text-base text-cyan-300 font-black">
+                            {operatorExpr}
+                          </span>
+                          <span className="text-[11px] font-sans font-bold text-amber-300">
+                            = {option} Dano
+                          </span>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <span>{option}</span>
+                          {isResolving && lastRoundResult && isCorrect && (
+                            <CheckCircle2 size={16} className="text-emerald-400 shrink-0 ml-1" />
+                          )}
+                          {isResolving && lastRoundResult && isSelected && !lastRoundResult.isCorrect && (
+                            <XCircle size={16} className="text-rose-400 shrink-0 ml-1" />
+                          )}
+                        </div>
                       )}
                     </button>
                   );
@@ -1601,9 +2213,13 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </div>
             </div>
           ) : (
-            /* MANUAL NUMERIC INPUT MODE */
+            /* MANUAL NUMERIC INPUT MODE / DUELIST PARRY 2x MODE */
             <div className="w-full flex flex-col gap-2.5 mt-1">
-              {/* Dual Reinforcement Correction Banner in manual mode */}
+              {battleState.parryModeActive && (
+                <div className="w-full py-1.5 px-3 rounded-xl bg-amber-500/20 border border-amber-400/60 text-amber-200 text-xs font-black flex items-center justify-center gap-2">
+                  <span>⚔️ MODO PARRY ATIVO: Digite o valor exato sem ver opções para 2x DANO!</span>
+                </div>
+              )}
               {isResolving && lastRoundResult && !lastRoundResult.isCorrect && (
                 <div className="w-full py-2 px-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/70 text-emerald-300 text-xs sm:text-sm font-mono font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.25)] animate-in fade-in zoom-in-95">
                   <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
@@ -1631,16 +2247,20 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                   value={manualInput}
                   disabled={isResolving}
                   onChange={(e) => setManualInput(e.target.value)}
-                  placeholder="Digite sua resposta..."
+                  placeholder={battleState.parryModeActive ? '⚔️ Parry 2x: Digite o resultado...' : 'Digite sua resposta...'}
                   aria-label="Digite sua resposta"
-                  className="flex-1 py-3 px-4 rounded-2xl bg-slate-950 border border-slate-700 font-mono text-lg font-black text-white focus:outline-none focus:border-amber-400 text-center"
+                  className={`flex-1 py-3 px-4 rounded-2xl bg-slate-950 border font-mono text-lg font-black text-white focus:outline-none text-center ${
+                    battleState.parryModeActive
+                      ? 'border-amber-400 ring-2 ring-amber-400/30'
+                      : 'border-slate-700 focus:border-amber-400'
+                  }`}
                 />
                 <button
                   type="submit"
                   disabled={isResolving || !manualInput.trim()}
                   className="py-3 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-slate-950 font-black text-sm flex items-center gap-1 transition-all cursor-pointer"
                 >
-                  <Swords size={16} /> Atacar
+                  <Swords size={16} /> {battleState.parryModeActive ? 'Parry 2x!' : 'Atacar'}
                 </button>
               </form>
             </div>
@@ -1649,10 +2269,20 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           {/* Toggle between 4 options and manual input */}
           <button
             type="button"
-            onClick={() => setIsManualInputMode((prev) => !prev)}
+            onClick={() => {
+              if (battleState.playerClass === 'duelist') {
+                handleToggleParry();
+              } else {
+                setIsManualInputMode((prev) => !prev);
+              }
+            }}
             className="text-[11px] font-bold text-slate-400 hover:text-slate-200 transition-colors mt-0.5 cursor-pointer"
           >
-            {isManualInputMode ? '← Voltar para 4 Opções' : 'Prefere digitar? Clique aqui'}
+            {isManualInputMode || battleState.parryModeActive
+              ? '← Voltar para 4 Opções'
+              : battleState.playerClass === 'duelist'
+              ? '⚔️ Ativar Modo Parry 2x (Digitação Direta [P])'
+              : 'Prefere digitar? Clique aqui'}
           </button>
         </div>
 
@@ -1664,13 +2294,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         >
           {/* Player Info */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 p-0.5 flex items-center justify-center font-black text-sm text-slate-950 shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 p-0.5 flex items-center justify-center font-black text-lg text-white shadow-md">
               <Sparkles size={20} className="text-white" />
             </div>
             <div>
-              <span className="text-xs font-bold text-white block">Guerreiro Matemático</span>
+              <span className="text-xs font-bold text-white block">
+                {activePlayerClassSpec.name}
+              </span>
               <span className="text-[11px] font-black text-cyan-400 block font-mono">
-                Nível {playerLevel}
+                Nível {playerLevel} • {activeWeaponSpec.badge}
               </span>
             </div>
           </div>
@@ -1678,23 +2310,26 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           {/* 3 Player Shields */}
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
-              Escudos de Proteção
+              Escudos de Proteção {(battleState.shieldBet ?? 0) > 0 ? `(Aposta: ${battleState.shieldBet}🛡️)` : ''}
             </span>
             <div className="flex items-center gap-1.5">
               {[0, 1, 2].map((idx) => {
                 const isIntact = idx < battleState.shields;
+                const isBetAtRisk = isIntact && idx >= battleState.shields - (battleState.shieldBet ?? 0);
                 return (
                   <div
                     key={`shield_${idx}`}
                     className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                      isIntact
+                      isBetAtRisk
+                        ? 'bg-rose-500/30 border border-rose-400 text-rose-300 shadow-md shadow-rose-500/30 animate-pulse'
+                        : isIntact
                         ? 'bg-cyan-500/20 border border-cyan-400 text-cyan-300 shadow-md shadow-cyan-500/20'
                         : 'bg-slate-800/50 border border-slate-700 text-slate-600'
                     }`}
                     title={isIntact ? `Escudo #${idx + 1} Intacto` : `Escudo #${idx + 1} Rompido`}
                   >
                     {isIntact ? (
-                      <Shield size={18} className="fill-cyan-400/30" />
+                      <Shield size={18} className={isBetAtRisk ? 'fill-rose-400/40' : 'fill-cyan-400/30'} />
                     ) : (
                       <ShieldAlert size={18} className="text-red-400/60" />
                     )}

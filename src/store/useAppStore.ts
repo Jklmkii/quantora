@@ -37,10 +37,30 @@ import {
   BASE_VICTORY_XP,
   ORACLE_COST,
   TIME_FREEZE_COST,
+  evaluateBossRankSPlus,
+  BOSS_WEAPONS,
+  type PlayerClassId,
+  type BossClassId,
+  type BossWeaponId,
 } from '../core/quiz/bossEngine';
 
 export type ActiveTab = 'hub' | 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings';
 export type QuizSubmode = 'survival' | 'blitz' | 'boss_rush' | 'daily' | 'spaced';
+
+export interface BossRpgVictoryMeta {
+  evaluateSPlus?: boolean;
+  bossClass?: BossClassId;
+  lastStandMultiplier?: number;
+}
+
+export interface BossVictorySummary {
+  isFirstClear: boolean;
+  tokensAwarded: number;
+  isSPlus?: boolean;
+  sPlusTokensAwarded?: number;
+  totalCoinsAwarded?: number;
+  newlyUnlockedWeapon?: BossWeaponId | null;
+}
 
 interface AppState {
   // Navigation
@@ -78,13 +98,24 @@ interface AppState {
   damageUpgradeLevel: number;
   bossOracleCharges: number;
   bossTimeFreezeCharges: number;
+  selectedPlayerClass: PlayerClassId;
+  lastBossClass: BossClassId | null;
+  bossBestTimeByLevel: Record<number, number>;
+  bossSPlusLevels: number[];
+  unlockedBossWeapons: BossWeaponId[];
+  equippedBossWeapon: BossWeaponId;
+  setSelectedPlayerClass: (classId: PlayerClassId) => void;
+  setLastBossClass: (bossClass: BossClassId) => void;
+  equipBossWeapon: (weaponId: BossWeaponId) => boolean;
+  unlockBossWeaponWithTokens: (weaponId: BossWeaponId) => boolean;
   recordBossVictory: (
     levelOrTime: number,
     arg2?: number,
     arg3?: number,
     arg4?: number,
-    arg5?: number
-  ) => { isFirstClear: boolean; tokensAwarded: number };
+    arg5?: number,
+    rpgMeta?: BossRpgVictoryMeta
+  ) => BossVictorySummary;
   purchaseDamageUpgrade: () => boolean;
   purchaseDamageUpgradeWithToken: () => boolean;
   buyBossConsumable: (type: 'oracle' | 'timeFreeze') => boolean;
@@ -170,6 +201,12 @@ const DEFAULT_PROFILE: UserProfile = {
     damageUpgradeLevel: 0,
     bossOracleCharges: 0,
     bossTimeFreezeCharges: 0,
+    selectedPlayerClass: 'duelist',
+    lastBossClass: null,
+    bossBestTimeByLevel: {},
+    bossSPlusLevels: [],
+    unlockedBossWeapons: ['starter_blade'],
+    equippedBossWeapon: 'starter_blade',
   },
 };
 
@@ -424,16 +461,125 @@ export const useAppStore = create<AppState>()(
       damageUpgradeLevel: 0,
       bossOracleCharges: 0,
       bossTimeFreezeCharges: 0,
+      selectedPlayerClass: 'duelist',
+      lastBossClass: null,
+      bossBestTimeByLevel: {},
+      bossSPlusLevels: [],
+      unlockedBossWeapons: ['starter_blade'],
+      equippedBossWeapon: 'starter_blade',
 
-      recordBossVictory: (arg1, arg2, arg3, arg4, arg5) => {
+      setSelectedPlayerClass: (classId) => {
+        set((state) => {
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          return {
+            selectedPlayerClass: classId,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                selectedPlayerClass: classId,
+              },
+            },
+          };
+        });
+      },
+
+      setLastBossClass: (bossClass) => {
+        set((state) => {
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          return {
+            lastBossClass: bossClass,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                lastBossClass: bossClass,
+              },
+            },
+          };
+        });
+      },
+
+      equipBossWeapon: (weaponId) => {
+        let equipped = false;
+        set((state) => {
+          const unlocked = Array.isArray(state.unlockedBossWeapons)
+            ? state.unlockedBossWeapons
+            : ['starter_blade'];
+          if (!unlocked.includes(weaponId)) {
+            return {};
+          }
+          equipped = true;
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          return {
+            equippedBossWeapon: weaponId,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                equippedBossWeapon: weaponId,
+              },
+            },
+          };
+        });
+        return equipped;
+      },
+
+      unlockBossWeaponWithTokens: (weaponId) => {
+        let unlockedNow = false;
+        set((state) => {
+          const weaponDef = BOSS_WEAPONS[weaponId];
+          if (!weaponDef) return {};
+          const currentUnlocked: BossWeaponId[] = Array.isArray(state.unlockedBossWeapons)
+            ? state.unlockedBossWeapons
+            : ['starter_blade'];
+          if (currentUnlocked.includes(weaponId)) {
+            return { equippedBossWeapon: weaponId };
+          }
+          const currentTokens = state.bossTokens || 0;
+          if (currentTokens < weaponDef.tokenCost) {
+            return {};
+          }
+          unlockedNow = true;
+          const nextTokens = currentTokens - weaponDef.tokenCost;
+          const nextUnlocked: BossWeaponId[] = [...currentUnlocked, weaponId];
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          return {
+            bossTokens: nextTokens,
+            unlockedBossWeapons: nextUnlocked,
+            equippedBossWeapon: weaponId,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                bossTokens: nextTokens,
+                unlockedBossWeapons: nextUnlocked,
+                equippedBossWeapon: weaponId,
+              },
+            },
+          };
+        });
+        return unlockedNow;
+      },
+
+      recordBossVictory: (arg1, arg2, arg3, arg4, arg5, rpgMeta) => {
         let isFirstClear = false;
         let tokensAwarded = 0;
+        let isSPlus = false;
+        let sPlusTokensAwarded = 0;
+        let totalCoinsAwarded = 0;
+        let newlyUnlockedWeapon: BossWeaponId | null = null;
+
         set((state) => {
           const prevProf = state.profile || DEFAULT_PROFILE;
           const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
 
           let level = 1;
-          let _timeSeconds = 0;
+          let timeSeconds = 0;
           let shieldsRemaining = 3;
           let xpEarned = BASE_VICTORY_XP;
           let coinsEarned: number | undefined;
@@ -441,13 +587,13 @@ export const useAppStore = create<AppState>()(
           if (arg4 !== undefined) {
             // Full signature: (level, timeSeconds, shieldsRemaining, xpEarned, coinsEarned)
             level = Math.max(1, Math.round(arg1));
-            _timeSeconds = arg2 ?? 0;
+            timeSeconds = arg2 ?? 0;
             shieldsRemaining = arg3 ?? 3;
             xpEarned = arg4;
             coinsEarned = arg5;
           } else if (arg3 !== undefined) {
             // Legacy signature: (timeSeconds, shieldsRemaining, xpEarned)
-            _timeSeconds = arg1;
+            timeSeconds = arg1;
             shieldsRemaining = arg2 ?? 3;
             xpEarned = arg3;
             level = 1;
@@ -460,24 +606,81 @@ export const useAppStore = create<AppState>()(
             level = Math.max(1, Math.round(arg1));
           }
 
-          void _timeSeconds;
-          const actualCoins = coinsEarned !== undefined ? coinsEarned : coinsForLevel(level);
+          const baseCoins = coinsEarned !== undefined ? coinsEarned : coinsForLevel(level);
           const isFlawless = shieldsRemaining >= 3;
 
           const prevCleared = Array.isArray(state.bossClearedLevels)
             ? state.bossClearedLevels
             : (Array.isArray(prevStats.bossClearedLevels) ? prevStats.bossClearedLevels : []);
           isFirstClear = !prevCleared.includes(level);
-          tokensAwarded = isFirstClear ? 1 : 0;
+          const firstClearTokens = isFirstClear ? 1 : 0;
           const nextCleared = isFirstClear ? [...prevCleared, level].sort((a, b) => a - b) : prevCleared;
+
+          // Best Time & S+ Evaluation (when rpgMeta.evaluateSPlus is enabled)
+          const prevBestMap = { ...(state.bossBestTimeByLevel || prevStats.bossBestTimeByLevel || {}) };
+          const prevBestForLevel = prevBestMap[level];
+          if (timeSeconds > 0 && (prevBestForLevel === undefined || timeSeconds < prevBestForLevel)) {
+            prevBestMap[level] = timeSeconds;
+          }
+
+          const prevSPlusLevels = Array.isArray(state.bossSPlusLevels)
+            ? state.bossSPlusLevels
+            : (Array.isArray(prevStats.bossSPlusLevels) ? prevStats.bossSPlusLevels : []);
+
+          let nextSPlusLevels = prevSPlusLevels;
+          let nextUnlockedWeapons: BossWeaponId[] = Array.isArray(state.unlockedBossWeapons)
+            ? [...state.unlockedBossWeapons]
+            : ['starter_blade'];
+
+          let coinMultiplier = 1.0;
+          if (rpgMeta?.evaluateSPlus) {
+            const equippedWeaponDef =
+              BOSS_WEAPONS[state.equippedBossWeapon || 'starter_blade'] || BOSS_WEAPONS.starter_blade;
+            coinMultiplier *= equippedWeaponDef.coinMultiplier;
+            if (rpgMeta.lastStandMultiplier && rpgMeta.lastStandMultiplier > 1) {
+              coinMultiplier *= rpgMeta.lastStandMultiplier;
+            }
+
+            const sPlusEval = evaluateBossRankSPlus(
+              level,
+              timeSeconds,
+              shieldsRemaining,
+              3,
+              prevBestForLevel
+            );
+            isSPlus = sPlusEval.isSPlus;
+            if (isSPlus) {
+              sPlusTokensAwarded = 1;
+              coinMultiplier *= 2.0; // +100% Bonus Coins on Rank S+!
+              if (!prevSPlusLevels.includes(level)) {
+                nextSPlusLevels = [...prevSPlusLevels, level].sort((a, b) => a - b);
+              }
+              const sPlusCount = nextSPlusLevels.length;
+              const weaponProgression: { count: number; id: BossWeaponId }[] = [
+                { count: 1, id: 'quantum_blade' },
+                { count: 2, id: 'euler_staff' },
+                { count: 3, id: 'gauss_cannon' },
+              ];
+              for (const wp of weaponProgression) {
+                if (sPlusCount >= wp.count && !nextUnlockedWeapons.includes(wp.id)) {
+                  nextUnlockedWeapons.push(wp.id);
+                  newlyUnlockedWeapon = wp.id;
+                }
+              }
+            }
+          }
+
+          totalCoinsAwarded = Math.round(baseCoins * coinMultiplier);
+          tokensAwarded = firstClearTokens + sPlusTokensAwarded;
           const nextTokens = (state.bossTokens || 0) + tokensAwarded;
+          const nextLastBossClass = rpgMeta?.bossClass ?? state.lastBossClass ?? null;
 
           const newHighestLevel = Math.max(
             state.highestBossLevelCleared || 0,
             prevStats.highestBossLevelCleared || 0,
             level
           );
-          const newBossCoins = (state.bossCoins || 0) + actualCoins;
+          const newBossCoins = (state.bossCoins || 0) + totalCoinsAwarded;
 
           const newStats = {
             ...prevStats,
@@ -487,6 +690,10 @@ export const useAppStore = create<AppState>()(
             bossCoins: newBossCoins,
             bossTokens: nextTokens,
             bossClearedLevels: nextCleared,
+            lastBossClass: nextLastBossClass,
+            bossBestTimeByLevel: prevBestMap,
+            bossSPlusLevels: nextSPlusLevels,
+            unlockedBossWeapons: nextUnlockedWeapons,
           };
 
           const newTotalXp = (prevProf.totalXp || 0) + Math.max(0, xpEarned);
@@ -510,6 +717,10 @@ export const useAppStore = create<AppState>()(
             bossCoins: newBossCoins,
             bossTokens: nextTokens,
             bossClearedLevels: nextCleared,
+            lastBossClass: nextLastBossClass,
+            bossBestTimeByLevel: prevBestMap,
+            bossSPlusLevels: nextSPlusLevels,
+            unlockedBossWeapons: nextUnlockedWeapons,
             profile: {
               ...candidate,
               totalXp: newTotalXp + bonusXp,
@@ -518,7 +729,14 @@ export const useAppStore = create<AppState>()(
             toastQueue: newlyUnlockedDefs.length > 0 ? [...state.toastQueue, ...newlyUnlockedDefs] : state.toastQueue,
           };
         });
-        return { isFirstClear, tokensAwarded };
+        return {
+          isFirstClear,
+          tokensAwarded,
+          isSPlus,
+          sPlusTokensAwarded,
+          totalCoinsAwarded,
+          newlyUnlockedWeapon,
+        };
       },
 
       purchaseDamageUpgrade: () => {
@@ -738,6 +956,12 @@ export const useAppStore = create<AppState>()(
           damageUpgradeLevel: 0,
           bossOracleCharges: 0,
           bossTimeFreezeCharges: 0,
+          selectedPlayerClass: 'duelist',
+          lastBossClass: null,
+          bossBestTimeByLevel: {},
+          bossSPlusLevels: [],
+          unlockedBossWeapons: ['starter_blade'],
+          equippedBossWeapon: 'starter_blade',
           profile: {
             ...state.profile,
             stats: {
@@ -749,6 +973,12 @@ export const useAppStore = create<AppState>()(
               damageUpgradeLevel: 0,
               bossOracleCharges: 0,
               bossTimeFreezeCharges: 0,
+              selectedPlayerClass: 'duelist',
+              lastBossClass: null,
+              bossBestTimeByLevel: {},
+              bossSPlusLevels: [],
+              unlockedBossWeapons: ['starter_blade'],
+              equippedBossWeapon: 'starter_blade',
             },
           },
         }));
