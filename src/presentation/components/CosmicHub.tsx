@@ -450,6 +450,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
             onClick={onOpenProfile}
             className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl cosmic-glass border border-slate-300/80 dark:border-slate-700/60 hover:border-cyan-400/50 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-md"
             title="Perfil do Jogador"
+            aria-label="Perfil do Jogador"
           >
             <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
               <Trophy size={13} className="text-amber-500 dark:text-amber-400" />
