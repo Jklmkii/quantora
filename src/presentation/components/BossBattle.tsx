@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Skull,
   Flame,
   Zap,
   Shield,
@@ -50,9 +49,15 @@ import {
   BOSS_WEAPONS,
   getTargetSPlusTimeForLevel,
   toggleParryModeInBattle,
+  rollBossClassForLevel,
   type BossWeaponId,
 } from '../../core/quiz/bossEngine';
 import type { BossBattleState, BossRoundResult } from '../../core/quiz/bossEngine';
+import { getBossClassStyles } from '../../core/quiz/bossClassThemes';
+import {
+  BossClassAvatar,
+  BossClassMiniIcon,
+} from './BossClassVisuals';
 import { hapticBossHit, hapticBossDamageTaken } from '../../core/platform/haptics';
 import {
   playBossHitCritical,
@@ -1293,10 +1298,22 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs font-bold text-amber-600 dark:text-amber-400 truncate max-w-[140px] mt-0.5">
-                        {bossMeta.name}
-                      </p>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <BossClassMiniIcon
+                          bossClass={rollBossClassForLevel(lvl)}
+                          size={22}
+                          className="rounded-lg p-0.5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 shadow-xs shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-amber-600 dark:text-amber-400 truncate max-w-[130px]">
+                            {bossMeta.name}
+                          </p>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block truncate max-w-[130px]">
+                            {BOSS_CLASSES[rollBossClassForLevel(lvl)]?.name}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 mt-1">
                         <Heart size={12} className="text-red-500 fill-red-500" /> {hp} HP
                       </span>
                       <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono font-bold block mt-0.5">
@@ -1359,8 +1376,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           {/* Victory Radial Aura */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-64 bg-gradient-to-b from-amber-500/20 to-transparent blur-3xl pointer-events-none" />
 
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-400 p-0.5 shadow-xl shadow-amber-500/40 flex items-center justify-center animate-bounce">
-            <Trophy size={44} className="text-slate-950 fill-slate-950" />
+          <div className="flex items-center justify-center gap-3 z-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-400 p-0.5 shadow-xl shadow-amber-500/40 flex items-center justify-center animate-bounce">
+              <Trophy size={36} className="text-slate-950 fill-slate-950" />
+            </div>
+            <BossClassAvatar
+              bossClass={battleState.bossClass || 'illusionist'}
+              size="md"
+              className="shrink-0"
+            />
           </div>
 
           <div className="flex flex-col gap-1 z-10">
@@ -1564,8 +1588,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           {/* Defeat Radial Aura */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-64 bg-gradient-to-b from-red-600/20 to-transparent blur-3xl pointer-events-none" />
 
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-red-700 to-rose-500 p-0.5 shadow-xl shadow-red-600/40 flex items-center justify-center">
-            <ShieldX size={44} className="text-white" />
+          <div className="flex items-center justify-center gap-3 z-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-700 to-rose-500 p-0.5 shadow-xl shadow-red-600/40 flex items-center justify-center">
+              <ShieldX size={36} className="text-white" />
+            </div>
+            <BossClassAvatar
+              bossClass={battleState.bossClass || 'illusionist'}
+              size="md"
+              isEnraged
+              className="shrink-0"
+            />
           </div>
 
           <div className="flex flex-col gap-1 z-10">
@@ -1652,6 +1684,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const activePlayerClassSpec = PLAYER_CLASSES[battleState.playerClass || 'duelist'];
   const activeBossClassSpec = BOSS_CLASSES[battleState.bossClass || 'illusionist'];
   const activeWeaponSpec = BOSS_WEAPONS[battleState.equippedWeapon || 'starter_blade'];
+  const activeBossStyles = getBossClassStyles(
+    battleState.bossClass || 'illusionist',
+    isPhase3 ? 3 : isPhase2 ? 2 : 1,
+    battleState.isBossStaggered
+  );
 
   return (
     <div
@@ -1695,7 +1732,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         </div>
       </div>
 
-      {/* Main Arena Combat Card */}
+      {/* Main Arena Combat Card with Class Themed Borders & Aura */}
       <div
         className={`relative p-5 sm:p-6 rounded-3xl bg-slate-950 text-white border-2 transition-all duration-300 shadow-2xl flex flex-col items-center gap-3.5 overflow-hidden ${
           isRageMode
@@ -1706,24 +1743,27 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             ? 'border-emerald-500 shadow-emerald-500/20'
             : flashColor === 'red'
             ? 'border-red-500 shadow-red-500/20'
-            : 'border-slate-800 shadow-indigo-950/40'
+            : `${activeBossStyles.borderClass} ${activeBossStyles.glowShadow}`
         }`}
       >
-        {/* Arena Radial Glow */}
+        {/* Arena Radial Glow Customized to Boss Class Aura */}
         <div
           className={`absolute top-0 left-1/2 -translate-x-1/2 w-96 h-56 pointer-events-none blur-3xl transition-colors duration-500 ${
-            isRageMode ? 'bg-gradient-to-b from-red-600/25 to-transparent' : 'bg-gradient-to-b from-purple-600/20 to-transparent'
+            isRageMode
+              ? 'bg-gradient-to-b from-red-600/35 to-transparent'
+              : 'bg-gradient-to-b from-' + activeBossClassSpec.themeColor + '-500/25 to-transparent'
           }`}
         />
 
-        {/* BOSS CLASS / ARENA LAW BANNER (#7) */}
+        {/* BOSS CLASS / ARENA LAW BANNER WITH EMBLEM */}
         <div
           data-testid="boss-class-law-banner"
-          className="w-full py-1.5 px-3 rounded-xl bg-indigo-950/80 border border-indigo-500/40 flex items-center justify-between gap-2 text-[11px] font-bold text-indigo-200 z-10 shadow-sm flex-wrap"
+          className={`w-full py-2 px-3 rounded-xl bg-gradient-to-r ${activeBossStyles.bannerGradient} border border-slate-700/60 flex items-center justify-between gap-2 text-[11px] font-bold text-slate-200 z-10 shadow-md flex-wrap`}
         >
-          <span className="flex items-center gap-1.5">
-            <strong className="text-indigo-300 uppercase tracking-wider">
-              ⚖️ {activeBossClassSpec.lawTitle} ({activeBossClassSpec.name}):
+          <span className="flex items-center gap-2">
+            <BossClassMiniIcon bossClass={battleState.bossClass || 'illusionist'} size={22} className="shrink-0" />
+            <strong className="text-white uppercase tracking-wider">
+              {activeBossClassSpec.lawTitle} ({activeBossClassSpec.name})
             </strong>
           </span>
           <span className="text-right text-[10px] sm:text-[11px] text-amber-300 font-mono font-black">
@@ -1783,40 +1823,17 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               ))}
             </div>
 
-            {/* Avatar Circle */}
-            <div
-              className={`relative w-18 h-18 sm:w-20 sm:h-20 rounded-3xl p-1 flex items-center justify-center shadow-2xl transition-all duration-300 ${
-                isBossRecoiling ? 'scale-90 rotate-6 bg-red-500' : 'scale-100'
-              } ${
-                battleState.isBossStaggered
-                  ? 'bg-gradient-to-tr from-cyan-500 via-sky-400 to-emerald-400 shadow-cyan-500/60 ring-4 ring-cyan-400/50'
-                  : isPhase3
-                  ? 'bg-gradient-to-tr from-red-600 via-rose-600 to-amber-500 shadow-red-600/70 animate-pulse ring-4 ring-red-500/40'
-                  : isPhase2
-                  ? 'bg-gradient-to-tr from-amber-600 via-yellow-500 to-orange-500 shadow-amber-600/50 animate-pulse'
-                  : 'bg-gradient-to-tr from-indigo-700 via-purple-600 to-pink-600 shadow-purple-900/50'
-              }`}
-            >
-              <div className="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center overflow-hidden relative">
-                {battleState.bossIdentity.avatarIcon === 'flame' ? (
-                  <Flame size={42} className={isPhase3 ? 'text-red-400 fill-red-400/50' : 'text-amber-400'} />
-                ) : battleState.bossIdentity.avatarIcon === 'crown' ? (
-                  <Crown size={42} className={isPhase3 ? 'text-red-400' : 'text-amber-300'} />
-                ) : battleState.bossIdentity.avatarIcon === 'zap' ? (
-                  <Zap size={42} className={isPhase3 ? 'text-red-400' : 'text-cyan-300'} />
-                ) : (
-                  <Skull size={42} className={isPhase3 ? 'text-red-400' : 'text-purple-300'} />
-                )}
-                {isRageMode && (
-                  <Flame
-                    size={20}
-                    className="absolute -top-1 -right-1 text-amber-400 fill-amber-400 animate-bounce"
-                  />
-                )}
-              </div>
-            </div>
+            {/* Dedicated Vector Avatar for Current Boss Class */}
+            <BossClassAvatar
+              bossClass={battleState.bossClass || 'illusionist'}
+              phase={isPhase3 ? 3 : isPhase2 ? 2 : 1}
+              isEnraged={isRageMode}
+              isRecoiling={isBossRecoiling}
+              isStaggered={battleState.isBossStaggered}
+              size="lg"
+            />
 
-            <div className="mt-2 text-center">
+            <div className="mt-3 text-center flex flex-col items-center gap-0.5">
               <h3 className="text-base sm:text-lg font-black text-white flex items-center justify-center gap-1.5 flex-wrap">
                 {battleState.bossIdentity.name}
                 <span
@@ -1839,8 +1856,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                     : `FASE 1 • NÍVEL ${battleState.level}`}
                 </span>
               </h3>
-              <p className="text-[11px] text-slate-400 font-semibold">
-                {battleState.bossIdentity.title} • {activeBossClassSpec.name} ({activeBossClassSpec.badge})
+              <p className="text-[11px] text-slate-300 font-semibold flex items-center justify-center gap-1.5 flex-wrap">
+                <span className="text-amber-400 font-bold">{battleState.bossIdentity.title}</span> •{' '}
+                <span className="text-slate-200 font-medium">{activeBossClassSpec.name}</span>
+                <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-md bg-slate-900 border border-slate-700/80 text-amber-300">
+                  {activeBossClassSpec.badge}
+                </span>
+              </p>
+              <p className="text-[10px] italic text-slate-400 max-w-sm mt-0.5 text-center">
+                "{activeBossClassSpec.quote}"
               </p>
             </div>
           </div>

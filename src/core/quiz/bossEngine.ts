@@ -208,6 +208,12 @@ export interface BossClassDef {
   badge: string;
   description: string;
   hpMultiplier: number;
+  themeColor: 'rose' | 'amber' | 'yellow' | 'cyan' | 'orange' | 'emerald' | 'lime' | 'purple' | 'sky';
+  auraGradient: string;
+  borderGlow: string;
+  accentGlow: string;
+  emblemTitle: string;
+  quote: string;
 }
 
 export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
@@ -219,6 +225,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Planta 1 Alternativa Armadilha baseada em erro clássico de cálculo. Clicar nela cura o Chefe em +15 HP!',
     hpMultiplier: 1.0,
+    themeColor: 'rose',
+    auraGradient: 'from-rose-950 via-red-900 to-black',
+    borderGlow: 'border-rose-500/60 shadow-rose-950/80',
+    accentGlow: 'text-rose-400 drop-shadow-[0_0_12px_rgba(244,63,94,0.7)]',
+    emblemTitle: 'Asas Carmesins do Engano',
+    quote: 'A verdade é apenas uma ilusão esperando seu primeiro erro.',
   },
   parity_lord: {
     id: 'parity_lord',
@@ -228,6 +240,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Todas as respostas corretas desta arena são números PARES! O Chefe possui +15% de HP máximo.',
     hpMultiplier: 1.15,
+    themeColor: 'amber',
+    auraGradient: 'from-amber-600 via-indigo-950 to-violet-950',
+    borderGlow: 'border-amber-400/60 shadow-amber-950/80',
+    accentGlow: 'text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.7)]',
+    emblemTitle: 'Balança Imperial Cósmica',
+    quote: 'No cosmos dos números, o ímpar é pecado e o par é lei.',
   },
   speed_executioner: {
     id: 'speed_executioner',
@@ -237,6 +255,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Golpes normais lentos causam apenas 50% do dano, mas Golpes Críticos causam +75% de dano bônus!',
     hpMultiplier: 1.0,
+    themeColor: 'yellow',
+    auraGradient: 'from-amber-500 via-orange-600 to-yellow-500',
+    borderGlow: 'border-yellow-400/70 shadow-yellow-950/80',
+    accentGlow: 'text-yellow-300 drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]',
+    emblemTitle: 'Lâminas Cinéticas do Trovão',
+    quote: 'Hesite por um segundo e a guilhotina do cálculo descerá.',
   },
   glass_colossus: {
     id: 'glass_colossus',
@@ -246,6 +270,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'O Chefe tem -25% de HP máximo, mas qualquer erro do jogador destrói +1 escudo adicional!',
     hpMultiplier: 0.75,
+    themeColor: 'cyan',
+    auraGradient: 'from-cyan-400 via-sky-800 to-teal-950',
+    borderGlow: 'border-cyan-300/70 shadow-cyan-950/80',
+    accentGlow: 'text-cyan-200 drop-shadow-[0_0_12px_rgba(103,232,249,0.8)]',
+    emblemTitle: 'Prisma Lapidado de Diamante',
+    quote: 'Sou transparente como a verdade e letal como o cristal quebrado.',
   },
   core_engineer: {
     id: 'core_engineer',
@@ -255,6 +285,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Quando o HP chega a 0, ativa 3 mini-contas de desarme rápido! Desarmar concede 2x Moedas; errar revive o Chefe com 15% HP.',
     hpMultiplier: 1.0,
+    themeColor: 'orange',
+    auraGradient: 'from-orange-600 via-amber-700 to-stone-950',
+    borderGlow: 'border-orange-500/70 shadow-orange-950/80',
+    accentGlow: 'text-orange-400 drop-shadow-[0_0_12px_rgba(249,115,22,0.8)]',
+    emblemTitle: 'Reator Termonuclear Steampunk',
+    quote: 'Minha máquina nunca falha; ela apenas aumenta a temperatura.',
   },
   operator_architect: {
     id: 'operator_architect',
@@ -264,6 +300,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Invoca expressões de Sobrecarga de Operadores (a [?] b [?] c) onde o Dano Causado escala com o valor numérico da expressão!',
     hpMultiplier: 1.05,
+    themeColor: 'emerald',
+    auraGradient: 'from-emerald-500 via-teal-900 to-slate-950',
+    borderGlow: 'border-emerald-400/70 shadow-emerald-950/80',
+    accentGlow: 'text-emerald-300 drop-shadow-[0_0_12px_rgba(52,211,153,0.8)]',
+    emblemTitle: 'Matriz Geométrica de Operadores',
+    quote: 'Eu desenho a realidade com +, -, × e ÷. Você é apenas uma variável.',
   },
   fraction_hydra: {
     id: 'fraction_hydra',
@@ -273,6 +315,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Perguntas de frações e divisões. Ao sofrer um Crítico, bifurca sua cabeça e a próxima rodada tem 6 opções (em vez de 4), concedendo +40% de dano ao jogador se acertar!',
     hpMultiplier: 1.1,
+    themeColor: 'lime',
+    auraGradient: 'from-lime-500 via-emerald-800 to-teal-950',
+    borderGlow: 'border-lime-400/70 shadow-lime-950/80',
+    accentGlow: 'text-lime-300 drop-shadow-[0_0_12px_rgba(163,230,53,0.8)]',
+    emblemTitle: 'Presas Abissais da Hidra',
+    quote: 'Corte uma fração e duas novas raízes brotarão do pântano!',
   },
   cipher_sphinx: {
     id: 'cipher_sphinx',
@@ -282,6 +330,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Substitui um número da equação por uma incógnita rúnica [?]. Descobrir o termo oculto em menos de 3.5s dobra a janela de Crítico na rodada seguinte!',
     hpMultiplier: 1.0,
+    themeColor: 'amber',
+    auraGradient: 'from-yellow-500 via-blue-900 to-amber-950',
+    borderGlow: 'border-yellow-400/70 shadow-amber-950/80',
+    accentGlow: 'text-yellow-200 drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]',
+    emblemTitle: 'Máscara Sagrada do Enigma [?]',
+    quote: 'Decifra-me com a razão ou serei tua ruína aritmética.',
   },
   negative_wraith: {
     id: 'negative_wraith',
@@ -291,6 +345,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'Desafios com o conjunto dos Inteiros (Z) e jogos de sinais. Errar congela o cronômetro por 1s no início da próxima rodada.',
     hpMultiplier: 0.9,
+    themeColor: 'purple',
+    auraGradient: 'from-purple-600 via-indigo-950 to-slate-950',
+    borderGlow: 'border-purple-400/70 shadow-purple-950/80',
+    accentGlow: 'text-purple-300 drop-shadow-[0_0_12px_rgba(192,132,252,0.8)]',
+    emblemTitle: 'Crânio Espectral do Zero Absoluto',
+    quote: 'Abaixo do zero jaz o silêncio eterno de onde nada retorna.',
   },
   time_weaver: {
     id: 'time_weaver',
@@ -300,6 +360,12 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
     description:
       'O tempo oscila a cada rodada: rodadas ímpares são hiper-rápidas (8s-10s) com dano crítico dobrado; rodadas pares são estendidas (24s) com contas compostas.',
     hpMultiplier: 1.0,
+    themeColor: 'sky',
+    auraGradient: 'from-sky-400 via-indigo-700 to-blue-950',
+    borderGlow: 'border-sky-300/70 shadow-sky-950/80',
+    accentGlow: 'text-sky-300 drop-shadow-[0_0_12px_rgba(56,189,248,0.8)]',
+    emblemTitle: 'Astrolábio do Fluxo Quântico',
+    quote: 'O tempo não corre; ele tece o fim da tua jornada.',
   },
 };
 
@@ -327,15 +393,8 @@ export function rollBossClassForLevel(
 ): BossClassId {
   let pool = ALL_BOSS_CLASS_IDS;
   if (level <= 1) {
-    // Nível 1 (Lord Mathgoth) preserva os 100 HP canônicos sem distorções de Colosso/Paridade/Hidra/Negativos
-    pool = pool.filter(
-      (id) =>
-        id !== 'glass_colossus' &&
-        id !== 'parity_lord' &&
-        id !== 'fraction_hydra' &&
-        id !== 'negative_wraith' &&
-        id !== 'time_weaver'
-    );
+    // Nível 1 (Lord Mathgoth) preserva estritamente os 100 HP canônicos sem multiplicadores de HP
+    pool = pool.filter((id) => BOSS_CLASSES[id].hpMultiplier === 1.0);
   }
   const candidates = previousBossClass
     ? pool.filter((id) => id !== previousBossClass)
