@@ -39,7 +39,16 @@ export type BossPhase = 1 | 2 | 3;
 
 export type BossDebuffType = 'none' | 'fog' | 'mirror' | 'time_siphon';
 
-export type PlayerClassId = 'duelist' | 'channeler' | 'chronos' | 'breaker' | 'berserker';
+export type PlayerClassId =
+  | 'duelist'
+  | 'channeler'
+  | 'chronos'
+  | 'breaker'
+  | 'berserker'
+  | 'alchemist'
+  | 'geomancer'
+  | 'gambit'
+  | 'paladin';
 
 export type BossClassId =
   | 'illusionist'
@@ -47,7 +56,11 @@ export type BossClassId =
   | 'speed_executioner'
   | 'glass_colossus'
   | 'core_engineer'
-  | 'operator_architect';
+  | 'operator_architect'
+  | 'fraction_hydra'
+  | 'cipher_sphinx'
+  | 'negative_wraith'
+  | 'time_weaver';
 
 export type BossWeaponId = 'starter_blade' | 'quantum_blade' | 'euler_staff' | 'gauss_cannon';
 
@@ -57,7 +70,9 @@ export interface PlayerClassDef {
   subtitle: string;
   badge: string;
   description: string;
-  accentColor: 'amber' | 'purple' | 'cyan' | 'emerald' | 'rose';
+  accentColor: 'amber' | 'purple' | 'cyan' | 'emerald' | 'rose' | 'teal' | 'indigo';
+  unlockRequirementPt?: string;
+  unlockRequirementEn?: string;
 }
 
 export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
@@ -69,6 +84,8 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     description:
       'Pode ativar o Modo Parry (digitação sem opções) para causar 2x Dano! A cada 3 Parries certos, regenera +1 Escudo.',
     accentColor: 'amber',
+    unlockRequirementPt: 'Classe Inicial',
+    unlockRequirementEn: 'Starter Class',
   },
   channeler: {
     id: 'channeler',
@@ -78,6 +95,8 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     description:
       'A resposta correta da rodada anterior é canalizada como [Ans] na próxima equação, concedendo +50% de Dano de Sinergia!',
     accentColor: 'purple',
+    unlockRequirementPt: 'Classe Inicial',
+    unlockRequirementEn: 'Starter Class',
   },
   chronos: {
     id: 'chronos',
@@ -87,6 +106,8 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     description:
       'Estoca 50% dos segundos que sobram (até +6s). Causa +3 de dano por segundo estocado e queima a reserva para impedir perda de escudo por timeout!',
     accentColor: 'cyan',
+    unlockRequirementPt: 'Classe Inicial',
+    unlockRequirementEn: 'Starter Class',
   },
   breaker: {
     id: 'breaker',
@@ -96,6 +117,8 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     description:
       'Aplica 3 Selos de Postura no Chefe. Acertar 3 Críticos seguidos deixa o Chefe ATORDADO: zero debuffs, 2x tempo e 2x Dano Verdadeiro!',
     accentColor: 'emerald',
+    unlockRequirementPt: 'Classe Inicial',
+    unlockRequirementEn: 'Starter Class',
   },
   berserker: {
     id: 'berserker',
@@ -105,8 +128,66 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     description:
       'Aposte 2 Escudos (+150% Dano) ou 3 Escudos (+250% Dano) antes de responder. Se errar 1 conta durante a aposta, perde todos os escudos apostados na hora!',
     accentColor: 'rose',
+    unlockRequirementPt: 'Classe Inicial',
+    unlockRequirementEn: 'Starter Class',
+  },
+  geomancer: {
+    id: 'geomancer',
+    name: 'Geômetra Rúnico',
+    subtitle: 'Tríade Pitagórica',
+    badge: '📐 Tríade Pitagórica (Impacto Métrico)',
+    description:
+      'Acertos consecutivos registram catetos mágicos. No 3º acerto consecutivo, conjura a Hipotenusa de Impacto (raiz da soma dos quadrados) somando até +40 de dano explosivo!',
+    accentColor: 'teal',
+    unlockRequirementPt: 'Vença o Nível 3 da Torre',
+    unlockRequirementEn: 'Clear Tower Level 3',
+  },
+  alchemist: {
+    id: 'alchemist',
+    name: 'Alquimista dos Primos',
+    subtitle: 'Transmutação de Fatores',
+    badge: '🧪 Primos & Fatores (Transmutação)',
+    description:
+      'Respostas primas ou com fatores ímpares acumulam Cargas de Elixir (até 3). Com 3 cargas, o próximo golpe vira Dano Verdadeiro Crítico e concede +10 Moedas bônus!',
+    accentColor: 'emerald',
+    unlockRequirementPt: 'Vença o Nível 5 da Torre',
+    unlockRequirementEn: 'Clear Tower Level 5',
+  },
+  gambit: {
+    id: 'gambit',
+    name: 'Mestre do Gambito',
+    subtitle: 'Sacrifício do Relógio',
+    badge: '♟️ Sacrifício do Relógio (2.5x Dano)',
+    description:
+      'Ative o Gambito Matemático (tecla [G] ou botão) para cortar o tempo da rodada pela metade em troca de 2.5x de Dano e imunidade a debuffs cognitivos!',
+    accentColor: 'amber',
+    unlockRequirementPt: 'Conquiste pelo menos 1 Rank S+',
+    unlockRequirementEn: 'Earn at least 1 Rank S+',
+  },
+  paladin: {
+    id: 'paladin',
+    name: 'Bastião Axiomático',
+    subtitle: 'Escudo da Verdade',
+    badge: '🛡️ 4 Escudos & Dano Passivo',
+    description:
+      'Começa a batalha com 4 Escudos. Manter todos intactos por 3 rodadas consecutivas desperta a Aura de Retribuição: causa 12 de dano automático contínuo a cada rodada!',
+    accentColor: 'indigo',
+    unlockRequirementPt: 'Vença o Nível 8 da Torre',
+    unlockRequirementEn: 'Clear Tower Level 8',
   },
 };
+
+export const ALL_PLAYER_CLASS_IDS: PlayerClassId[] = [
+  'duelist',
+  'channeler',
+  'chronos',
+  'breaker',
+  'berserker',
+  'geomancer',
+  'alchemist',
+  'gambit',
+  'paladin',
+];
 
 export interface BossClassDef {
   id: BossClassId;
@@ -172,6 +253,42 @@ export const BOSS_CLASSES: Record<BossClassId, BossClassDef> = {
       'Invoca expressões de Sobrecarga de Operadores (a [?] b [?] c) onde o Dano Causado escala com o valor numérico da expressão!',
     hpMultiplier: 1.05,
   },
+  fraction_hydra: {
+    id: 'fraction_hydra',
+    name: 'Hidra Fracionária',
+    lawTitle: 'Lei da Divisão Infinita',
+    badge: '🐍 6 Alternativas no Crítico (+10% HP)',
+    description:
+      'Perguntas de frações e divisões. Ao sofrer um Crítico, bifurca sua cabeça e a próxima rodada tem 6 opções (em vez de 4), concedendo +40% de dano ao jogador se acertar!',
+    hpMultiplier: 1.1,
+  },
+  cipher_sphinx: {
+    id: 'cipher_sphinx',
+    name: 'Esfinge Algébrica',
+    lawTitle: 'Lei do Termo Oculto',
+    badge: '🧩 Termo Oculto [?] & Pista Algébrica',
+    description:
+      'Substitui um número da equação por uma incógnita rúnica [?]. Descobrir o termo oculto em menos de 3.5s dobra a janela de Crítico na rodada seguinte!',
+    hpMultiplier: 1.0,
+  },
+  negative_wraith: {
+    id: 'negative_wraith',
+    name: 'Espectro dos Negativos',
+    lawTitle: 'Lei do Zero Absoluto',
+    badge: '❄️ Números Negativos & Jogo de Sinais',
+    description:
+      'Desafios com o conjunto dos Inteiros (Z) e jogos de sinais. Errar congela o cronômetro por 1s no início da próxima rodada.',
+    hpMultiplier: 0.9,
+  },
+  time_weaver: {
+    id: 'time_weaver',
+    name: 'Tecelão Cronológico',
+    lawTitle: 'Lei do Pêndulo Temporal',
+    badge: '⏳ Tempo Oscilante (8s vs 24s)',
+    description:
+      'O tempo oscila a cada rodada: rodadas ímpares são hiper-rápidas (8s-10s) com dano crítico dobrado; rodadas pares são estendidas (24s) com contas compostas.',
+    hpMultiplier: 1.0,
+  },
 };
 
 export const ALL_BOSS_CLASS_IDS: BossClassId[] = [
@@ -181,6 +298,10 @@ export const ALL_BOSS_CLASS_IDS: BossClassId[] = [
   'glass_colossus',
   'core_engineer',
   'operator_architect',
+  'fraction_hydra',
+  'cipher_sphinx',
+  'negative_wraith',
+  'time_weaver',
 ];
 
 /**
@@ -194,8 +315,15 @@ export function rollBossClassForLevel(
 ): BossClassId {
   let pool = ALL_BOSS_CLASS_IDS;
   if (level <= 1) {
-    // Nível 1 (Lord Mathgoth) preserva os 100 HP canônicos sem distorções de Colosso/Paridade
-    pool = pool.filter((id) => id !== 'glass_colossus' && id !== 'parity_lord');
+    // Nível 1 (Lord Mathgoth) preserva os 100 HP canônicos sem distorções de Colosso/Paridade/Hidra/Negativos
+    pool = pool.filter(
+      (id) =>
+        id !== 'glass_colossus' &&
+        id !== 'parity_lord' &&
+        id !== 'fraction_hydra' &&
+        id !== 'negative_wraith' &&
+        id !== 'time_weaver'
+    );
   }
   const candidates = previousBossClass
     ? pool.filter((id) => id !== previousBossClass)
@@ -581,7 +709,10 @@ export type BossQuestionCategory =
   | 'mixed'
   | 'operator_overload'
   | 'ricochet'
-  | 'last_stand';
+  | 'last_stand'
+  | 'fraction_division'
+  | 'cipher_unknown'
+  | 'negative_integers';
 
 export interface BossQuestion {
   id: string;
@@ -607,6 +738,10 @@ export interface BossQuestion {
   operatorExpressions?: Record<number, string>;
   isLastStandMiniQuestion?: boolean;
   lastStandStepNumber?: number;
+  isCipherQuestion?: boolean;
+  isNegativeQuestion?: boolean;
+  isFractionQuestion?: boolean;
+  isHydraSplitQuestion?: boolean;
 }
 
 export type DamageReason = 'critical' | 'standard' | 'timeout' | 'wrong';
@@ -643,6 +778,14 @@ export interface BossRoundResult {
   lastStandActivated?: boolean;
   lastStandStepCleared?: number;
   lastStandFailedRevive?: boolean;
+  alchemistTransmuted?: boolean;
+  alchemistCoinsBonus?: number;
+  geomancerHypotenuseHit?: boolean;
+  geomancerBonusDamage?: number;
+  gambitActiveTriggered?: boolean;
+  paladinRetributionDamage?: number;
+  hydraSplitTriggered?: boolean;
+  cipherBonusUnlocked?: boolean;
 }
 
 export interface BossRpgConfig {
@@ -695,6 +838,12 @@ export interface BossBattleState {
   lastStandStep?: number;
   lastStandCompleted?: boolean;
   lastStandBonusCoinsMultiplier?: number;
+  alchemistCharges?: number;
+  geomancerCatheti?: number[];
+  gambitActive?: boolean;
+  paladinIntactRounds?: number;
+  isHydraSplit?: boolean;
+  cipherQuickBonusActive?: boolean;
 }
 
 function getRandomInt(min: number, max: number): number {
@@ -1527,6 +1676,249 @@ export function attachIllusionistTrap(question: BossQuestion): BossQuestion {
 }
 
 /**
+ * Checks if an integer >= 2 is prime.
+ */
+export function isPrimeNumber(n: number): boolean {
+  const val = Math.abs(Math.round(n));
+  if (val < 2) return false;
+  if (val === 2 || val === 3) return true;
+  if (val % 2 === 0 || val % 3 === 0) return false;
+  for (let i = 5; i * i <= val; i += 6) {
+    if (val % i === 0 || val % (i + 2) === 0) return false;
+  }
+  return true;
+}
+
+/**
+ * Generates 6 options for Hydra Split mode.
+ */
+export function generateHydra6Options(correctAnswer: number, candidateDivergences: number[]): number[] {
+  const unique = new Set<number>();
+  unique.add(correctAnswer);
+
+  for (const div of candidateDivergences) {
+    if (unique.size >= 6) break;
+    if (div !== correctAnswer && Number.isFinite(div)) {
+      unique.add(div);
+    }
+  }
+
+  const offsets = [1, -1, 2, -2, 3, -3, 5, -5, 10, -10, 4, -4];
+  for (const off of offsets) {
+    if (unique.size >= 6) break;
+    const cand = correctAnswer + off;
+    if (cand >= 0) unique.add(cand);
+  }
+
+  return shuffleArray(Array.from(unique).slice(0, 6));
+}
+
+/**
+ * Generates a Fraction / Division question for fraction_hydra.
+ */
+export function generateFractionQuestion(
+  safeLevel: number = 1,
+  timeLimitSeconds: number = 18,
+  isHydraSplit: boolean = false
+): BossQuestion {
+  const id = `boss_q_hydra_${generateSecureId()}`;
+  const divisor = getRandomInt(2, Math.min(9, 3 + safeLevel));
+  const quotient = getRandomInt(3, Math.min(15, 5 + safeLevel));
+  const dividend = divisor * quotient;
+  const isCompound = safeLevel >= 3 && Math.random() < 0.5;
+
+  let displayExpression = `${dividend} ÷ ${divisor}`;
+  let prompt = `Simplifique e calcule a divisão:`;
+  let correctAnswer = quotient;
+  let explanation = [`${dividend} dividido por ${divisor} é igual a ${quotient}.`];
+
+  if (isCompound) {
+    const extraAdd = getRandomInt(2, 8);
+    correctAnswer = quotient + extraAdd;
+    displayExpression = `(${dividend} ÷ ${divisor}) + ${extraAdd}`;
+    prompt = `Resolva a operação fracionária combinada:`;
+    explanation = [
+      `Primeiro resolva a divisão entre parênteses: ${dividend} ÷ ${divisor} = ${quotient}`,
+      `Em seguida some ${extraAdd}: ${quotient} + ${extraAdd} = ${correctAnswer}`,
+    ];
+  }
+
+  const options = isHydraSplit
+    ? generateHydra6Options(correctAnswer, [
+        correctAnswer + 1,
+        correctAnswer - 1,
+        quotient,
+        correctAnswer + 2,
+        correctAnswer - 2,
+      ])
+    : generateOptions(correctAnswer, [
+        correctAnswer + 1,
+        correctAnswer - 1,
+        quotient,
+        correctAnswer + 2,
+      ]);
+
+  return {
+    id,
+    category: 'fraction_division',
+    categoryLabel: isHydraSplit ? '🐍 Hidra Bifurcada (6 Opções)' : 'Hidra Fracionária',
+    title: isHydraSplit ? 'Ataque Duplo da Hidra' : 'Divisão Algébrica',
+    prompt,
+    displayExpression,
+    correctAnswer,
+    formattedCorrectAnswer: correctAnswer.toString(),
+    options,
+    explanation,
+    timeLimitSeconds,
+    isFractionQuestion: true,
+    isHydraSplitQuestion: isHydraSplit,
+  };
+}
+
+/**
+ * Generates a Hidden Unknown question for cipher_sphinx.
+ */
+export function generateCipherQuestion(
+  safeLevel: number = 1,
+  timeLimitSeconds: number = 18
+): BossQuestion {
+  const id = `boss_q_cipher_${generateSecureId()}`;
+  const opType = getRandomInt(1, safeLevel >= 3 ? 3 : 2);
+
+  let displayExpression = '';
+  let correctAnswer = 0;
+  let explanation: string[] = [];
+
+  if (opType === 1) {
+    const a = getRandomInt(10, 25 + safeLevel * 3);
+    const hidden = getRandomInt(5, 20 + safeLevel * 2);
+    const total = a + hidden;
+    correctAnswer = hidden;
+    displayExpression = `${a} + [?] = ${total}`;
+    explanation = [
+      `Equação do Enigma: ${a} + [?] = ${total}`,
+      `Isole o termo oculto subtraindo ${a}: [?] = ${total} - ${a} = ${hidden}`,
+    ];
+  } else if (opType === 2) {
+    const total = getRandomInt(20, 45 + safeLevel * 3);
+    const hidden = getRandomInt(5, 18 + safeLevel * 2);
+    const result = total - hidden;
+    correctAnswer = hidden;
+    displayExpression = `${total} - [?] = ${result}`;
+    explanation = [
+      `Equação do Enigma: ${total} - [?] = ${result}`,
+      `Isole o termo oculto: [?] = ${total} - ${result} = ${hidden}`,
+    ];
+  } else {
+    const a = getRandomInt(3, 8);
+    const hidden = getRandomInt(4, 12);
+    const product = a * hidden;
+    correctAnswer = hidden;
+    displayExpression = `${a} × [?] = ${product}`;
+    explanation = [
+      `Enigma da Esfinge: ${a} × [?] = ${product}`,
+      `Divida pelo coeficiente ${a}: [?] = ${product} ÷ ${a} = ${hidden}`,
+    ];
+  }
+
+  const options = generateOptions(correctAnswer, [
+    correctAnswer + 1,
+    correctAnswer - 1,
+    correctAnswer + 3,
+    Math.max(1, correctAnswer - 3),
+  ]);
+
+  return {
+    id,
+    category: 'cipher_unknown',
+    categoryLabel: 'Esfinge dos Enigmas',
+    title: 'Incógnita Oculta [?]',
+    prompt: 'Descubra qual número deve ocupar o lugar de [?] na equação:',
+    displayExpression,
+    correctAnswer,
+    formattedCorrectAnswer: `[?] = ${correctAnswer}`,
+    options,
+    explanation,
+    timeLimitSeconds,
+    isCipherQuestion: true,
+  };
+}
+
+/**
+ * Generates a Negative Numbers question for negative_wraith.
+ */
+export function generateNegativeNumbersQuestion(
+  _safeLevel: number = 1,
+  timeLimitSeconds: number = 18
+): BossQuestion {
+  const id = `boss_q_neg_${generateSecureId()}`;
+  const subType = getRandomInt(1, 3);
+
+  let displayExpression = '';
+  let correctAnswer = 0;
+  let explanation: string[] = [];
+
+  if (subType === 1) {
+    const a = getRandomInt(5, 18);
+    const b = getRandomInt(3, 22);
+    correctAnswer = -a + b;
+    displayExpression = `(-${a}) + ${b}`;
+    explanation = [
+      `Operação com sinal: (-${a}) + ${b}`,
+      `Subtraia os valores absolutos e conserve o sinal do maior: ${correctAnswer}`,
+    ];
+  } else if (subType === 2) {
+    const a = getRandomInt(6, 16);
+    const b = getRandomInt(4, 14);
+    correctAnswer = a + b;
+    displayExpression = `${a} - (-${b})`;
+    explanation = [
+      `Jogo de sinais: menos com menos vira mais: -(-${b}) = +${b}`,
+      `${a} + ${b} = ${correctAnswer}`,
+    ];
+  } else {
+    const isDoubleNeg = Math.random() < 0.5;
+    const a = getRandomInt(2, 6);
+    const b = getRandomInt(3, 8);
+    if (isDoubleNeg) {
+      correctAnswer = a * b;
+      displayExpression = `(-${a}) × (-${b})`;
+      explanation = [
+        `Multiplicação de dois negativos resulta em positivo: (-${a}) × (-${b}) = +${correctAnswer}`,
+      ];
+    } else {
+      correctAnswer = -(a * b);
+      displayExpression = `(-${a}) × ${b}`;
+      explanation = [
+        `Multiplicação com um negativo resulta em negativo: (-${a}) × ${b} = ${correctAnswer}`,
+      ];
+    }
+  }
+
+  const options = generateOptions(correctAnswer, [
+    -correctAnswer,
+    correctAnswer + 2,
+    correctAnswer - 2,
+    correctAnswer + 1,
+  ]);
+
+  return {
+    id,
+    category: 'negative_integers',
+    categoryLabel: 'Espectro dos Negativos',
+    title: 'Aritmética com Jogo de Sinais',
+    prompt: 'Calcule o resultado exato respeitando as regras de sinais:',
+    displayExpression,
+    correctAnswer,
+    formattedCorrectAnswer: correctAnswer.toString(),
+    options,
+    explanation,
+    timeLimitSeconds,
+    isNegativeQuestion: true,
+  };
+}
+
+/**
  * Thematic Question Generator for Boss Battle.
  * Dynamically scales category tracks, operand ranges, and round timers based on the boss level.
  * Difficulty reaches an asymptotic cap at level 15 (DIFFICULTY_CAP_LEVEL), while boss HP keeps scaling.
@@ -1541,6 +1933,8 @@ export function generateBossQuestion(
     bossClass?: BossClassId;
     lastCorrectAnswer?: number | null;
     isBossStaggered?: boolean;
+    isHydraSplit?: boolean;
+    cipherQuickBonusActive?: boolean;
   }
 ): BossQuestion {
   const safeLevel = getEffectiveDifficultyLevel(level);
@@ -1557,7 +1951,16 @@ export function generateBossQuestion(
     timeLimitSeconds = timeLimitSeconds * 2;
   }
 
-  // Check if Channeler Ricochet [Ans] should trigger (when playerClass is 'channeler' and previous round was correct)
+  // Time Weaver Law: round time oscillates
+  if (rpgContext?.bossClass === 'time_weaver') {
+    if (round % 2 === 1) {
+      timeLimitSeconds = Math.max(9, Math.min(10, Math.round(timeLimitSeconds * 0.55)));
+    } else {
+      timeLimitSeconds = Math.max(22, Math.round(timeLimitSeconds * 1.35));
+    }
+  }
+
+  // Check if Channeler Ricochet [Ans] should trigger
   if (
     rpgContext?.playerClass === 'channeler' &&
     typeof rpgContext.lastCorrectAnswer === 'number' &&
@@ -1571,7 +1974,22 @@ export function generateBossQuestion(
     return ricochetQ;
   }
 
-  // Check if Operator Overload question should trigger (for 'operator_architect' boss or mid-battle special round)
+  // Check if Fraction Hydra Question triggers
+  if (rpgContext?.bossClass === 'fraction_hydra') {
+    return generateFractionQuestion(safeLevel, timeLimitSeconds, Boolean(rpgContext.isHydraSplit));
+  }
+
+  // Check if Cipher Sphinx Question triggers
+  if (rpgContext?.bossClass === 'cipher_sphinx' && (round % 2 === 1 || Math.random() < 0.65)) {
+    return generateCipherQuestion(safeLevel, timeLimitSeconds);
+  }
+
+  // Check if Negative Wraith Question triggers
+  if (rpgContext?.bossClass === 'negative_wraith') {
+    return generateNegativeNumbersQuestion(safeLevel, timeLimitSeconds);
+  }
+
+  // Check if Operator Overload question should trigger (for 'operator_architect' boss)
   if (
     rpgContext?.bossClass === 'operator_architect' &&
     (round % 2 === 1 || Math.random() < 0.6)
@@ -1670,8 +2088,21 @@ export function setBerserkerShieldBet(
 }
 
 /**
+ * Toggles Gambit Mode (sacrifices 50% time limit for 2.5x damage and guaranteed critical hit).
+ */
+export function toggleGambitModeInBattle(
+  state: BossBattleState,
+  active?: boolean
+): BossBattleState {
+  return {
+    ...state,
+    gambitActive: active !== undefined ? active : !state.gambitActive,
+  };
+}
+
+/**
  * Creates a fresh initial Boss Battle state for a given level and upgrade tier.
- * Shields always reset to full (PLAYER_INITIAL_SHIELDS = 3).
+ * Shields always reset to full (PLAYER_INITIAL_SHIELDS = 3, or 4 for Paladin).
  * When `rpgConfig` is supplied, activates Player Class, non-repeating Boss Class (Arena Law), and Mythic Weapons.
  */
 export function createInitialBossBattleState(
@@ -1695,6 +2126,7 @@ export function createInitialBossBattleState(
   const applyHpMod = rpgConfig?.enableArenaModifiers ?? rpgModeActive;
   const hpMultiplier = applyHpMod ? (BOSS_CLASSES[bossClass]?.hpMultiplier ?? 1.0) : 1.0;
   const finalHp = Math.max(50, Math.round(baseHp * hpMultiplier));
+  const initialShields = playerClass === 'paladin' ? 4 : PLAYER_INITIAL_SHIELDS;
 
   const firstQuestion = generateBossQuestion(
     1,
@@ -1706,6 +2138,8 @@ export function createInitialBossBattleState(
           bossClass,
           lastCorrectAnswer: null,
           isBossStaggered: false,
+          isHydraSplit: false,
+          cipherQuickBonusActive: false,
         }
       : undefined
   );
@@ -1716,8 +2150,8 @@ export function createInitialBossBattleState(
     bossHp: finalHp,
     bossMaxHp: finalHp,
     damageUpgradeLevel: safeUpgrade,
-    shields: PLAYER_INITIAL_SHIELDS,
-    maxShields: PLAYER_INITIAL_SHIELDS,
+    shields: initialShields,
+    maxShields: initialShields,
     round: 1,
     currentQuestion: firstQuestion,
     history: [],
@@ -1750,6 +2184,12 @@ export function createInitialBossBattleState(
     lastStandStep: 0,
     lastStandCompleted: false,
     lastStandBonusCoinsMultiplier: 1,
+    alchemistCharges: 0,
+    geomancerCatheti: [],
+    gambitActive: false,
+    paladinIntactRounds: 0,
+    isHydraSplit: false,
+    cipherQuickBonusActive: false,
   };
 }
 
@@ -1805,8 +2245,11 @@ export function processRound(
   const currentPhase = state.phase ?? getBossPhase(state.bossHp, state.bossMaxHp);
   const upgradeLevel = damageUpgradeLevel ?? state.damageUpgradeLevel ?? 0;
   const isCorrect = checkAnswerCorrectness(userAnswer, state.currentQuestion.correctAnswer);
-  const timeLimit =
+  const baseTimeLimit =
     state.currentQuestion.timeLimitSeconds ?? getRoundTimeLimitForLevel(safeLevel, currentPhase);
+  const timeLimit = state.gambitActive
+    ? Math.max(3, Math.round(baseTimeLimit * 0.5))
+    : baseTimeLimit;
 
   const weaponDef = BOSS_WEAPONS[state.equippedWeapon || 'starter_blade'] || BOSS_WEAPONS.starter_blade;
   const baseCriticalThreshold = getCriticalTimeThresholdForLevel(safeLevel, currentPhase, timeLimit);
@@ -1840,12 +2283,25 @@ export function processRound(
   let shieldRegenerated = false;
   let staggerTriggered = false;
   let lastStandStepCleared: number | undefined = undefined;
+  let alchemistTransmuted = false;
+  let alchemistCoinsBonus = 0;
+  let geomancerHypotenuseHit = false;
+  let geomancerBonusDamage = 0;
+  let gambitActiveTriggered = false;
+  let paladinRetributionDamage = 0;
+  let hydraSplitTriggered = false;
+  let cipherBonusUnlocked = false;
 
   let nextParryStreak = state.parrySuccessStreak || 0;
   let nextChronosBanked = state.chronosBankedSeconds || 0;
   let nextStaggerSeals = state.staggerSeals || 0;
   let nextIsBossStaggered = false;
   let nextLastCorrectAnswer: number | null = state.lastCorrectAnswer ?? null;
+  let nextAlchemistCharges = state.alchemistCharges || 0;
+  let nextGeomancerCatheti = [...(state.geomancerCatheti || [])];
+  let nextPaladinIntactRounds = state.paladinIntactRounds || 0;
+  let nextIsHydraSplit = false;
+  let nextCipherQuickBonus = false;
 
   // 1. Handle Last Stand Mode (Core Engineer Boss Class at 0 HP)
   if (state.isLastStandActive) {
@@ -2057,12 +2513,94 @@ export function processRound(
       }
     }
 
+    // Alchemist (#11: Primes generate charge, at 3 charges -> True Critical + 15 damage + 10 coins!)
+    if (state.playerClass === 'alchemist') {
+      const ansNum = Math.abs(Number(state.currentQuestion.correctAnswer));
+      if (isPrimeNumber(ansNum)) {
+        nextAlchemistCharges += 1;
+      }
+      if (nextAlchemistCharges >= 3) {
+        nextAlchemistCharges = 0;
+        alchemistTransmuted = true;
+        alchemistCoinsBonus = 10;
+        damageResult.damage = Math.round(damageResult.damage * 1.6) + 15;
+        damageResult.isCritical = true;
+      }
+    }
+
+    // Geomancer (#12: Collects catheti, on 3rd consecutive hit triggers Hypotenuse strike!)
+    if (state.playerClass === 'geomancer') {
+      const cathetus = Math.abs(Number(state.currentQuestion.correctAnswer));
+      nextGeomancerCatheti.push(cathetus);
+      if (nextGeomancerCatheti.length >= 3) {
+        const c1 = nextGeomancerCatheti[0];
+        const c2 = nextGeomancerCatheti[1];
+        const hypBonus = Math.min(45, Math.max(20, Math.round(Math.sqrt(c1 * c1 + c2 * c2) * 0.6)));
+        damageResult.damage += hypBonus;
+        damageResult.isCritical = true;
+        geomancerHypotenuseHit = true;
+        geomancerBonusDamage = hypBonus;
+        nextGeomancerCatheti = [];
+      }
+    }
+
+    // Gambit (#13: Sacrifices 50% time limit for 2.5x damage and guaranteed critical hit)
+    if (state.gambitActive) {
+      damageResult.damage = Math.round(damageResult.damage * 2.5);
+      damageResult.isCritical = true;
+      gambitActiveTriggered = true;
+    }
+
+    // Fraction Hydra (#14: Decapitate split hydra for +40% damage, or critical causes split on next round)
+    if (state.rpgModeActive && state.bossClass === 'fraction_hydra') {
+      if (state.isHydraSplit) {
+        damageResult.damage = Math.round(damageResult.damage * 1.4);
+        nextIsHydraSplit = false;
+      } else if (damageResult.isCritical) {
+        nextIsHydraSplit = true;
+        hydraSplitTriggered = true;
+      }
+    }
+
+    // Cipher Sphinx (#15: Solving hidden unknown within 3.5s unlocks +25% quick bonus)
+    if (state.rpgModeActive && state.bossClass === 'cipher_sphinx') {
+      if (state.currentQuestion.isCipherQuestion || state.currentQuestion.category === 'cipher_unknown') {
+        if (responseTimeSeconds < 3.5) {
+          damageResult.damage = Math.round(damageResult.damage * 1.25);
+          nextCipherQuickBonus = true;
+          cipherBonusUnlocked = true;
+        }
+      }
+      if (state.cipherQuickBonusActive) {
+        damageResult.damage = Math.round(damageResult.damage * 1.15);
+      }
+    }
+
+    // Negative Wraith (#16: Non-critical damage reduced by 15%)
+    if (state.rpgModeActive && state.bossClass === 'negative_wraith' && !damageResult.isCritical) {
+      damageResult.damage = Math.max(5, Math.round(damageResult.damage * 0.85));
+    }
+
+    // Time Weaver (#17: Critical hit in fast round deals +35% damage)
+    if (state.rpgModeActive && state.bossClass === 'time_weaver' && state.round % 2 === 1 && damageResult.isCritical) {
+      damageResult.damage = Math.round(damageResult.damage * 1.35);
+    }
+
     nextLastCorrectAnswer = state.currentQuestion.correctAnswer;
   } else {
     // Miss or Timeout
     nextParryStreak = 0;
     nextStaggerSeals = 0;
+    nextGeomancerCatheti = [];
     nextLastCorrectAnswer = null;
+
+    if (state.gambitActive) {
+      damageResult.shieldDamage = Math.max(2, damageResult.shieldDamage);
+    }
+
+    if (state.rpgModeActive && state.bossClass === 'fraction_hydra') {
+      nextIsHydraSplit = false;
+    }
 
     // Chronos Auto-Save on Timeout (#3: burns banked seconds to prevent shield loss!)
     if (
@@ -2119,6 +2657,19 @@ export function processRound(
     newShields = Math.min(state.maxShields, newShields + 1);
   }
 
+  // Paladin (#18: Aura of Retribution - 3 consecutive rounds without shield damage -> 12 holy damage)
+  if (state.playerClass === 'paladin') {
+    if (damageResult.shieldDamage === 0) {
+      nextPaladinIntactRounds += 1;
+      if (nextPaladinIntactRounds >= 3) {
+        paladinRetributionDamage = 12;
+        newBossHp = Math.max(0, newBossHp - 12);
+      }
+    } else {
+      nextPaladinIntactRounds = 0;
+    }
+  }
+
   // Check if Core Engineer triggers Last Stand instead of dying immediately (#8)
   if (
     newBossHp <= 0 &&
@@ -2148,6 +2699,14 @@ export function processRound(
       shieldRegenerated,
       staggerTriggered,
       lastStandActivated: true,
+      alchemistTransmuted,
+      alchemistCoinsBonus,
+      geomancerHypotenuseHit,
+      geomancerBonusDamage,
+      gambitActiveTriggered,
+      paladinRetributionDamage,
+      hydraSplitTriggered,
+      cipherBonusUnlocked,
     };
 
     return {
@@ -2159,7 +2718,7 @@ export function processRound(
         currentQuestion: firstMiniQ,
         history: [...state.history, roundResult],
         status: 'fighting',
-        totalDamageDealt: state.totalDamageDealt + damageResult.damage,
+        totalDamageDealt: state.totalDamageDealt + damageResult.damage + paladinRetributionDamage,
         criticalHitsCount: state.criticalHitsCount + (damageResult.isCritical ? 1 : 0),
         standardHitsCount:
           state.standardHitsCount + (damageResult.reason === 'standard' ? 1 : 0),
@@ -2174,6 +2733,12 @@ export function processRound(
         lastStandStep: 1,
         eliminatedOptions: [],
         isTimeFrozen: false,
+        alchemistCharges: nextAlchemistCharges,
+        geomancerCatheti: nextGeomancerCatheti,
+        gambitActive: false,
+        paladinIntactRounds: nextPaladinIntactRounds,
+        isHydraSplit: nextIsHydraSplit,
+        cipherQuickBonusActive: nextCipherQuickBonus,
       },
       roundResult,
     };
@@ -2211,6 +2776,14 @@ export function processRound(
     parryHit,
     shieldRegenerated,
     staggerTriggered,
+    alchemistTransmuted,
+    alchemistCoinsBonus,
+    geomancerHypotenuseHit,
+    geomancerBonusDamage,
+    gambitActiveTriggered,
+    paladinRetributionDamage,
+    hydraSplitTriggered,
+    cipherBonusUnlocked,
   };
 
   const nextPhase = getBossPhase(newBossHp, state.bossMaxHp);
@@ -2226,6 +2799,8 @@ export function processRound(
                 bossClass: state.bossClass,
                 lastCorrectAnswer: nextLastCorrectAnswer,
                 isBossStaggered: nextIsBossStaggered,
+                isHydraSplit: nextIsHydraSplit,
+                cipherQuickBonusActive: nextCipherQuickBonus,
               }
             : undefined
         )
@@ -2242,7 +2817,7 @@ export function processRound(
     currentQuestion: nextQuestion,
     history: [...state.history, roundResult],
     status,
-    totalDamageDealt: state.totalDamageDealt + damageResult.damage,
+    totalDamageDealt: state.totalDamageDealt + damageResult.damage + paladinRetributionDamage,
     criticalHitsCount: state.criticalHitsCount + (damageResult.isCritical ? 1 : 0),
     standardHitsCount: state.standardHitsCount + (damageResult.reason === 'standard' ? 1 : 0),
     errorsCount: state.errorsCount + (damageResult.reason === 'wrong' ? 1 : 0),
@@ -2258,6 +2833,12 @@ export function processRound(
     staggerSeals: nextStaggerSeals,
     isBossStaggered: nextIsBossStaggered,
     shieldBet: 0,
+    alchemistCharges: nextAlchemistCharges,
+    geomancerCatheti: nextGeomancerCatheti,
+    gambitActive: false,
+    paladinIntactRounds: nextPaladinIntactRounds,
+    isHydraSplit: nextIsHydraSplit,
+    cipherQuickBonusActive: nextCipherQuickBonus,
   };
 
   return { nextState, roundResult };

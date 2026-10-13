@@ -179,14 +179,29 @@ export interface AchievementDef {
   descriptionEn?: string;
 }
 
-export type PlayerClassId = 'duelist' | 'channeler' | 'chronos' | 'breaker' | 'berserker';
+export type PlayerClassId =
+  | 'duelist'
+  | 'channeler'
+  | 'chronos'
+  | 'breaker'
+  | 'berserker'
+  | 'alchemist'
+  | 'geomancer'
+  | 'gambit'
+  | 'paladin';
+
 export type BossClassId =
   | 'illusionist'
   | 'parity_lord'
   | 'speed_executioner'
   | 'glass_colossus'
   | 'core_engineer'
-  | 'operator_architect';
+  | 'operator_architect'
+  | 'fraction_hydra'
+  | 'cipher_sphinx'
+  | 'negative_wraith'
+  | 'time_weaver';
+
 export type BossWeaponId = 'starter_blade' | 'quantum_blade' | 'euler_staff' | 'gauss_cannon';
 
 export interface UserProfileStats {
@@ -216,6 +231,7 @@ export interface UserProfileStats {
   bossSPlusLevels?: number[];
   unlockedBossWeapons?: BossWeaponId[];
   equippedBossWeapon?: BossWeaponId;
+  debugUnlockAllClasses?: boolean;
   spacedBox5Count?: number;
   spacedCleanCount?: number;
   rare67Hits?: number;
@@ -254,6 +270,7 @@ export interface BossRushStats {
   bossSPlusLevels?: number[];
   unlockedBossWeapons?: BossWeaponId[];
   equippedBossWeapon?: BossWeaponId;
+  debugUnlockAllClasses?: boolean;
 }
 
 export interface UserProfile {

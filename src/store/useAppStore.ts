@@ -104,10 +104,12 @@ interface AppState {
   bossSPlusLevels: number[];
   unlockedBossWeapons: BossWeaponId[];
   equippedBossWeapon: BossWeaponId;
+  debugUnlockAllClasses: boolean;
   setSelectedPlayerClass: (classId: PlayerClassId) => void;
   setLastBossClass: (bossClass: BossClassId) => void;
   equipBossWeapon: (weaponId: BossWeaponId) => boolean;
   unlockBossWeaponWithTokens: (weaponId: BossWeaponId) => boolean;
+  toggleDebugUnlockAllClasses: () => void;
   recordBossVictory: (
     levelOrTime: number,
     arg2?: number,
@@ -207,6 +209,7 @@ const DEFAULT_PROFILE: UserProfile = {
     bossSPlusLevels: [],
     unlockedBossWeapons: ['starter_blade'],
     equippedBossWeapon: 'starter_blade',
+    debugUnlockAllClasses: false,
   },
 };
 
@@ -467,6 +470,25 @@ export const useAppStore = create<AppState>()(
       bossSPlusLevels: [],
       unlockedBossWeapons: ['starter_blade'],
       equippedBossWeapon: 'starter_blade',
+      debugUnlockAllClasses: false,
+
+      toggleDebugUnlockAllClasses: () => {
+        set((state) => {
+          const nextVal = !state.debugUnlockAllClasses;
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          return {
+            debugUnlockAllClasses: nextVal,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                debugUnlockAllClasses: nextVal,
+              },
+            },
+          };
+        });
+      },
 
       setSelectedPlayerClass: (classId) => {
         set((state) => {
@@ -1550,3 +1572,72 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+
+export function isPlayerClassUnlocked(
+  classId: PlayerClassId,
+  context: {
+    highestBossLevelCleared?: number;
+    bossSPlusLevels?: number[];
+    bossesDefeated?: number;
+    debugUnlockAllClasses?: boolean;
+  }
+): { isUnlocked: boolean; requirementTextPt: string; requirementTextEn: string } {
+  if (context.debugUnlockAllClasses) {
+    return {
+      isUnlocked: true,
+      requirementTextPt: 'Desbloqueado (Modo Debug)',
+      requirementTextEn: 'Unlocked (Debug Mode)',
+    };
+  }
+
+  switch (classId) {
+    case 'duelist':
+    case 'channeler':
+    case 'chronos':
+    case 'breaker':
+    case 'berserker':
+      return {
+        isUnlocked: true,
+        requirementTextPt: 'Classe Inicial',
+        requirementTextEn: 'Starter Class',
+      };
+    case 'geomancer': {
+      const highest = context.highestBossLevelCleared ?? 0;
+      const isUnlocked = highest >= 3;
+      return {
+        isUnlocked,
+        requirementTextPt: 'Vença o Nível 3 da Torre',
+        requirementTextEn: 'Clear Tower Level 3',
+      };
+    }
+    case 'alchemist': {
+      const highest = context.highestBossLevelCleared ?? 0;
+      const isUnlocked = highest >= 5;
+      return {
+        isUnlocked,
+        requirementTextPt: 'Vença o Nível 5 da Torre',
+        requirementTextEn: 'Clear Tower Level 5',
+      };
+    }
+    case 'gambit': {
+      const sPlusCount = context.bossSPlusLevels?.length ?? 0;
+      const isUnlocked = sPlusCount >= 1;
+      return {
+        isUnlocked,
+        requirementTextPt: 'Conquiste pelo menos 1 Rank S+',
+        requirementTextEn: 'Earn at least 1 Rank S+',
+      };
+    }
+    case 'paladin': {
+      const highest = context.highestBossLevelCleared ?? 0;
+      const isUnlocked = highest >= 8 || (context.bossesDefeated ?? 0) >= 8;
+      return {
+        isUnlocked,
+        requirementTextPt: 'Vença o Nível 8 da Torre',
+        requirementTextEn: 'Clear Tower Level 8',
+      };
+    }
+    default:
+      return { isUnlocked: true, requirementTextPt: 'Liberado', requirementTextEn: 'Unlocked' };
+  }
+}

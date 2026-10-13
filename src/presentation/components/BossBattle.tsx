@@ -50,6 +50,7 @@ import {
   getTargetSPlusTimeForLevel,
   toggleParryModeInBattle,
   setBerserkerShieldBet,
+  toggleGambitModeInBattle,
   type PlayerClassId,
   type BossWeaponId,
 } from '../../core/quiz/bossEngine';
@@ -63,7 +64,7 @@ import {
   playBossShieldBreak,
   playComboTick,
 } from '../../core/platform/audio';
-import { useAppStore, type BossVictorySummary } from '../../store/useAppStore';
+import { useAppStore, isPlayerClassUnlocked, type BossVictorySummary } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '../../core/i18n/translations';
 
@@ -112,6 +113,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     addXp,
     unlockAchievement,
     language,
+    debugUnlockAllClasses,
+    toggleDebugUnlockAllClasses,
+    bossesDefeated,
   } = useAppStore(
     useShallow((s) => ({
       totalXp: s.profile?.totalXp || 0,
@@ -141,6 +145,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       addXp: s.addXp,
       unlockAchievement: s.unlockAchievement,
       language: s.settings.language || 'pt',
+      debugUnlockAllClasses: s.debugUnlockAllClasses ?? s.profile?.stats?.debugUnlockAllClasses ?? false,
+      toggleDebugUnlockAllClasses: s.toggleDebugUnlockAllClasses,
+      bossesDefeated: s.profile?.stats?.bossesDefeated ?? 0,
     }))
   );
 
@@ -325,6 +332,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     },
     [isResolving, battleState.status]
   );
+
+  const handleToggleGambit = useCallback(() => {
+    if (isResolving || battleState.status !== 'fighting') return;
+    setBattleState((prev) => (prev ? toggleGambitModeInBattle(prev) : prev));
+    playComboTick();
+  }, [isResolving, battleState.status]);
 
   // Consumable Action Handlers
   const handleUseOracle = useCallback(() => {
@@ -661,6 +674,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         return;
       }
 
+      if (
+        (e.key === 'g' || e.key === 'G') &&
+        battleState.playerClass === 'gambit' &&
+        document.activeElement?.tagName !== 'INPUT'
+      ) {
+        e.preventDefault();
+        handleToggleGambit();
+        return;
+      }
+
       if (isManualInputMode || battleState.parryModeActive) {
         return;
       }
@@ -686,6 +709,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     isFogDispelled,
     handleDispelFog,
     handleToggleParry,
+    handleToggleGambit,
     handleAnswerSubmit,
   ]);
 
@@ -766,7 +790,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           </div>
         </div>
 
-        {/* Seletor das 5 Classes Táticas do Jogador */}
+        {/* Seletor das 9 Classes Táticas do Jogador */}
         <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white border border-indigo-300 dark:border-indigo-500/30 shadow-xl flex flex-col gap-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2.5">
@@ -775,7 +799,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  Classes Táticas do Jogador (5 Estilos)
+                  Classes Táticas do Jogador (9 Estilos)
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-bold border border-indigo-500/30">
                     {PLAYER_CLASSES[selectedPlayerClass]?.name}
                   </span>
@@ -785,30 +809,67 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 </p>
               </div>
             </div>
+
+            <button
+              type="button"
+              data-testid="debug-toggle-classes"
+              onClick={toggleDebugUnlockAllClasses}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5 ${
+                debugUnlockAllClasses
+                  ? 'bg-amber-500/20 border-amber-400 text-amber-600 dark:text-amber-300 shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Alternar desbloqueio de debug para testar todas as classes"
+            >
+              {debugUnlockAllClasses ? '🔓 Debug: Todas as Classes Liberadas' : '🔒 Requisitos Ativos (Debug Desligado)'}
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {(Object.keys(PLAYER_CLASSES) as PlayerClassId[]).map((clsId) => {
               const cls = PLAYER_CLASSES[clsId];
+              const unlockStatus = isPlayerClassUnlocked(clsId, {
+                highestBossLevelCleared,
+                bossSPlusLevels,
+                bossesDefeated,
+                debugUnlockAllClasses,
+              });
+              const isUnlocked = unlockStatus.isUnlocked;
+              const reqText =
+                language === 'en' ? unlockStatus.requirementTextEn : unlockStatus.requirementTextPt;
               const isSelected = selectedPlayerClass === clsId;
+
               return (
                 <button
                   key={clsId}
                   type="button"
                   data-testid={`player-class-${clsId}`}
-                  onClick={() => setSelectedPlayerClass(clsId)}
-                  className={`p-3.5 rounded-2xl border-2 text-left flex flex-col justify-between gap-2 transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-indigo-950/90 text-white border-amber-400 ring-2 ring-amber-400/30 shadow-lg shadow-amber-500/15 scale-[1.01]'
-                      : 'bg-slate-50 dark:bg-slate-950/70 text-slate-900 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-indigo-400'
+                  disabled={!isUnlocked}
+                  onClick={() => {
+                    if (isUnlocked) setSelectedPlayerClass(clsId);
+                  }}
+                  className={`p-3.5 rounded-2xl border-2 text-left flex flex-col justify-between gap-2 transition-all ${
+                    !isUnlocked
+                      ? 'opacity-60 bg-slate-100 dark:bg-slate-950/40 border-dashed border-slate-300 dark:border-slate-800 cursor-not-allowed'
+                      : isSelected
+                      ? 'bg-indigo-950/90 text-white border-amber-400 ring-2 ring-amber-400/30 shadow-lg shadow-amber-500/15 scale-[1.01] cursor-pointer'
+                      : 'bg-slate-50 dark:bg-slate-950/70 text-slate-900 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-indigo-400 cursor-pointer'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between gap-1.5">
-                      <span className="text-xs font-black">{cls.name}</span>
-                      {isSelected && (
+                      <span className="text-xs font-black flex items-center gap-1.5">
+                        {!isUnlocked && <Lock size={12} className="text-slate-400" />}
+                        {cls.name}
+                      </span>
+                      {isSelected && isUnlocked && (
                         <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-amber-400 text-slate-950">
                           Equipada
+                        </span>
+                      )}
+                      {!isUnlocked && (
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/30">
+                          Bloqueada
                         </span>
                       )}
                     </div>
@@ -822,6 +883,12 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                     >
                       {cls.description}
                     </p>
+                    {!isUnlocked && (
+                      <p className="text-[10px] font-semibold text-rose-500 dark:text-rose-400 mt-2 flex items-center gap-1">
+                        <Lock size={11} className="shrink-0" />
+                        {reqText}
+                      </p>
+                    )}
                   </div>
                 </button>
               );
@@ -1858,6 +1925,60 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 ⏳ Reserva Cronos: +{(battleState.chronosBankedSeconds ?? 0).toFixed(1)}s / 6.0s (+{Math.floor((battleState.chronosBankedSeconds ?? 0) * 3)} Dano)
               </span>
             )}
+
+            {/* #11 ALCHEMIST CHARGES */}
+            {battleState.playerClass === 'alchemist' && (
+              <span
+                data-testid="alchemist-charges-badge"
+                className="text-[11px] font-mono font-bold text-amber-300 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-500/40"
+              >
+                ⚗️ Cargas Primas: {battleState.alchemistCharges ?? 0}/3{' '}
+                {battleState.alchemistCharges === 2 ? '(Próxima = Transmutação!)' : ''}
+              </span>
+            )}
+
+            {/* #12 GEOMANCER PYTHAGOREAN CATHETI */}
+            {battleState.playerClass === 'geomancer' && (
+              <span
+                data-testid="geomancer-catheti-badge"
+                className="text-[11px] font-mono font-bold text-teal-300 bg-teal-950/60 px-2.5 py-0.5 rounded-full border border-teal-500/40"
+              >
+                📐 Catetos Pitagóricos: {battleState.geomancerCatheti?.length ?? 0}/2{' '}
+                {(battleState.geomancerCatheti?.length ?? 0) === 2 ? '⚡ (Próximo = Hipotenusa!)' : ''}
+              </span>
+            )}
+
+            {/* #13 GAMBIT MODE TOGGLE */}
+            {battleState.playerClass === 'gambit' && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-slate-400">
+                  Sacrifício: <strong className="text-red-400">-50% Tempo</strong>
+                </span>
+                <button
+                  type="button"
+                  data-testid="gambit-toggle"
+                  disabled={isResolving}
+                  onClick={handleToggleGambit}
+                  className={`py-1 px-2.5 rounded-xl font-black text-[11px] flex items-center gap-1 transition-all cursor-pointer border ${
+                    battleState.gambitActive
+                      ? 'bg-red-600 text-white border-red-300 shadow-lg shadow-red-600/30 scale-105'
+                      : 'bg-red-950/40 hover:bg-red-900/50 text-red-300 border-red-500/40'
+                  }`}
+                >
+                  🎲 {battleState.gambitActive ? 'GAMBIT 2.5x ATIVO!' : 'Ativar Gambit 2.5x [G]'}
+                </button>
+              </div>
+            )}
+
+            {/* #18 PALADIN AURA OF RETRIBUTION */}
+            {battleState.playerClass === 'paladin' && (
+              <span
+                data-testid="paladin-intact-badge"
+                className="text-[11px] font-mono font-bold text-yellow-300 bg-yellow-950/60 px-2.5 py-0.5 rounded-full border border-yellow-500/40"
+              >
+                🛡️ Retribuição: {battleState.paladinIntactRounds ?? 0}/3 Rodadas Intactas (+12 Dano Divino)
+              </span>
+            )}
           </div>
 
           {/* #6 BERSERKER SHIELD BETTING CONTROLS (2 OR 3 SHIELDS) */}
@@ -2145,7 +2266,13 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                 </div>
               )}
 
-              <div className="w-full grid grid-cols-2 gap-3">
+              <div
+                className={`w-full grid ${
+                  battleState.currentQuestion.options.length > 4
+                    ? 'grid-cols-2 sm:grid-cols-3'
+                    : 'grid-cols-2'
+                } gap-3`}
+              >
                 {battleState.currentQuestion.options.map((option, idx) => {
                   const isSelected = selectedOption === option;
                   const isCorrect = option === battleState.currentQuestion.correctAnswer;

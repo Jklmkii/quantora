@@ -11,11 +11,14 @@ import {
   attachIllusionistTrap,
   toggleParryModeInBattle,
   setBerserkerShieldBet,
+  toggleGambitModeInBattle,
   createInitialBossBattleState,
   processRound,
   generateBossQuestion,
+  generateCipherQuestion,
+  generateNegativeNumbersQuestion,
 } from '../core/quiz/bossEngine';
-import { useAppStore } from '../store/useAppStore';
+import { useAppStore, isPlayerClassUnlocked } from '../store/useAppStore';
 
 describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank S+ e Armas Míticas)', () => {
   beforeEach(() => {
@@ -414,6 +417,246 @@ describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank 
 
       store.equipBossWeapon('starter_blade');
       expect(useAppStore.getState().equippedBossWeapon).toBe('starter_blade');
+    });
+  });
+
+  describe('10. Novas Classes de Jogadores (Alquimista, Geomante, Gambito, Paladino)', () => {
+    it('Alquimista acumula Cargas Primas e ativa Transmutação na 3ª carga (1.6x + 15 dano, +10 moedas)', () => {
+      let state = createInitialBossBattleState(1, 0, 0, 0, {
+        playerClass: 'alchemist',
+        bossClass: 'illusionist',
+      });
+      state = { ...state, bossHp: 1000, bossMaxHp: 1000 };
+
+      // Carga 1 com resposta prima (ex: 7)
+      state.currentQuestion = { ...state.currentQuestion, correctAnswer: 7 };
+      let res = processRound(state, 7, 5.0, 20);
+      expect(res.nextState.alchemistCharges).toBe(1);
+
+      // Carga 2 com resposta prima (ex: 11)
+      state = { ...res.nextState, currentQuestion: { ...res.nextState.currentQuestion, correctAnswer: 11 } };
+      res = processRound(state, 11, 5.0, 20);
+      expect(res.nextState.alchemistCharges).toBe(2);
+
+      // Carga 3 com resposta prima (ex: 13) -> Dispara Transmutação!
+      state = { ...res.nextState, currentQuestion: { ...res.nextState.currentQuestion, correctAnswer: 13 } };
+      res = processRound(state, 13, 5.0, 20);
+      expect(res.roundResult.alchemistTransmuted).toBe(true);
+      expect(res.roundResult.alchemistCoinsBonus).toBe(10);
+      expect(res.roundResult.damageResult.isCritical).toBe(true);
+      // Dano: Math.round(30 crit base * 1.6) + 15 = 48 + 15 = 63
+      expect(res.roundResult.damageResult.damage).toBe(63);
+      expect(res.nextState.alchemistCharges).toBe(0);
+    });
+
+    it('Geomante acumula catetos e no 3º acerto consecutivo desfere o Golpe da Hipotenusa', () => {
+      let state = createInitialBossBattleState(1, 0, 0, 0, {
+        playerClass: 'geomancer',
+        bossClass: 'illusionist',
+      });
+      state = { ...state, bossHp: 1000, bossMaxHp: 1000 };
+
+      // 1º acerto: registra cateto 3
+      state.currentQuestion = { ...state.currentQuestion, correctAnswer: 3 };
+      let res = processRound(state, 3, 5.0, 20);
+      expect(res.nextState.geomancerCatheti).toEqual([3]);
+
+      // 2º acerto: registra cateto 4
+      state = { ...res.nextState, currentQuestion: { ...res.nextState.currentQuestion, correctAnswer: 4 } };
+      res = processRound(state, 4, 5.0, 20);
+      expect(res.nextState.geomancerCatheti).toEqual([3, 4]);
+
+      // 3º acerto: sqrt(3^2 + 4^2) = 5 -> bonus = min(45, max(20, round(5 * 0.6))) = 20
+      state = { ...res.nextState, currentQuestion: { ...res.nextState.currentQuestion, correctAnswer: 10 } };
+      res = processRound(state, 10, 5.0, 20);
+      expect(res.roundResult.geomancerHypotenuseHit).toBe(true);
+      expect(res.roundResult.geomancerBonusDamage).toBe(20);
+      expect(res.roundResult.damageResult.damage).toBe(50); // 30 crit base + 20 hyp bonus
+      expect(res.nextState.geomancerCatheti).toEqual([]);
+    });
+
+    it('Gambito reduz tempo limite em 50%, dá 2.5x dano no acerto e perde 2 escudos no erro', () => {
+      let state = createInitialBossBattleState(1, 0, 0, 0, {
+        playerClass: 'gambit',
+        bossClass: 'illusionist',
+      });
+      state = toggleGambitModeInBattle(state, true);
+      expect(state.gambitActive).toBe(true);
+
+      // Acerto com Gambit ativo
+      const correctAns = state.currentQuestion.correctAnswer;
+      const hitRes = processRound(state, correctAns, 4.0, 20);
+      expect(hitRes.roundResult.gambitActiveTriggered).toBe(true);
+      expect(hitRes.roundResult.damageResult.isCritical).toBe(true);
+      expect(hitRes.roundResult.damageResult.damage).toBe(50); // 20 * 2.5
+      expect(hitRes.nextState.gambitActive).toBe(false);
+
+      // Erro com Gambit ativo: perde 2 escudos em vez de 1
+      let freshState = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'gambit' });
+      freshState = toggleGambitModeInBattle(freshState, true);
+      const wrongRes = processRound(freshState, correctAns + 999, 4.0, 20);
+      expect(wrongRes.roundResult.damageResult.shieldDamage).toBe(2);
+      expect(wrongRes.nextState.shields).toBe(1); // 3 - 2 = 1
+    });
+
+    it('Paladino inicia com 4 escudos e desfere 12 de dano de retribuição após 3 rodadas sem dano', () => {
+      let state = createInitialBossBattleState(1, 0, 0, 0, {
+        playerClass: 'paladin',
+        bossClass: 'illusionist',
+      });
+      expect(state.maxShields).toBe(4);
+      expect(state.shields).toBe(4);
+      state = { ...state, bossHp: 200, bossMaxHp: 200 };
+
+      // Rodada 1 sem sofrer dano
+      let res = processRound(state, state.currentQuestion.correctAnswer, 5.0, 10);
+      expect(res.nextState.paladinIntactRounds).toBe(1);
+
+      // Rodada 2 sem sofrer dano
+      res = processRound(res.nextState, res.nextState.currentQuestion.correctAnswer, 5.0, 10);
+      expect(res.nextState.paladinIntactRounds).toBe(2);
+
+      // Rodada 3 sem sofrer dano -> Ativa Aura de Retribuição (+12 de dano sagrado)
+      res = processRound(res.nextState, res.nextState.currentQuestion.correctAnswer, 5.0, 10);
+      expect(res.roundResult.paladinRetributionDamage).toBe(12);
+      expect(res.nextState.paladinIntactRounds).toBe(3);
+    });
+  });
+
+  describe('11. Novos Chefes e Leis da Arena (Hidra Fracionária, Esfinge, Wraith, Tecelão)', () => {
+    it('Hidra Fracionária se bifurca em 6 opções após golpe crítico e concede +40% dano ao ser decapitada', () => {
+      let state = createInitialBossBattleState(1, 0, 0, 0, {
+        bossClass: 'fraction_hydra',
+        playerClass: 'duelist',
+      });
+      state = { ...state, bossHp: 500, bossMaxHp: 500 };
+
+      // Acerto crítico contra a Hidra faz com que ela se bifurque na próxima rodada
+      const res1 = processRound(state, state.currentQuestion.correctAnswer, 1.0, 20);
+      expect(res1.roundResult.damageResult.isCritical).toBe(true);
+      expect(res1.roundResult.hydraSplitTriggered).toBe(true);
+      expect(res1.nextState.isHydraSplit).toBe(true);
+      expect(res1.nextState.currentQuestion.options.length).toBe(6);
+      expect(res1.nextState.currentQuestion.isHydraSplitQuestion).toBe(true);
+
+      // Acerto durante a bifurcação concede +40% de bônus e fecha a bifurcação
+      const splitAns = res1.nextState.currentQuestion.correctAnswer;
+      const res2 = processRound(res1.nextState, splitAns, 5.0, 20);
+      expect(res2.roundResult.damageResult.damage).toBe(42); // 30 crit base * 1.4
+      expect(res2.nextState.isHydraSplit).toBe(false);
+    });
+
+    it('Esfinge dos Enigmas gera incógnita [?] e acerto em < 3.5s ativa bônus rápido de +25%', () => {
+      const q = generateCipherQuestion(2, 16);
+      expect(q.isCipherQuestion).toBe(true);
+      expect(q.displayExpression).toContain('[?]');
+
+      const state = {
+        ...createInitialBossBattleState(1, 0, 0, 0, { bossClass: 'cipher_sphinx' }),
+        currentQuestion: q,
+      };
+
+      const res = processRound(state, q.correctAnswer, 2.5, 20);
+      expect(res.roundResult.cipherBonusUnlocked).toBe(true);
+      expect(res.roundResult.damageResult.damage).toBe(38); // Math.round(30 * 1.25) = 38
+      expect(res.nextState.cipherQuickBonusActive).toBe(true);
+    });
+
+    it('Wraith Negativo gera questões com inteiros negativos e reduz dano não-crítico em 15%', () => {
+      const q = generateNegativeNumbersQuestion(2, 16);
+      expect(q.isNegativeQuestion).toBe(true);
+
+      const state = {
+        ...createInitialBossBattleState(1, 0, 0, 0, { bossClass: 'negative_wraith' }),
+        currentQuestion: q,
+      };
+
+      // Acerto padrão (não-crítico) com resposta após a janela crítica
+      const res = processRound(state, q.correctAnswer, 9.0, 20);
+      expect(res.roundResult.damageResult.isCritical).toBe(false);
+      expect(res.roundResult.damageResult.damage).toBe(17); // round(20 * 0.85) = 17
+    });
+
+    it('Tecelão do Tempo oscila o cronômetro e concede +35% de dano em críticos na rodada rápida', () => {
+      const q1 = generateBossQuestion(1, 1, 1, { bossClass: 'time_weaver' });
+      const q2 = generateBossQuestion(2, 1, 1, { bossClass: 'time_weaver' });
+
+      // Rodada 1 é ímpar (rápida), rodada 2 é par (lenta, >= 22s)
+      expect(q1.timeLimitSeconds).toBeLessThan(q2.timeLimitSeconds);
+      expect(q1.timeLimitSeconds).toBeLessThanOrEqual(16);
+      expect(q2.timeLimitSeconds).toBeGreaterThanOrEqual(22);
+
+      const state = {
+        ...createInitialBossBattleState(1, 0, 0, 0, { bossClass: 'time_weaver' }),
+        round: 1,
+        currentQuestion: q1,
+      };
+
+      const res = processRound(state, q1.correctAnswer, 1.0, 20);
+      expect(res.roundResult.damageResult.isCritical).toBe(true);
+      expect(res.roundResult.damageResult.damage).toBe(41); // round(30 * 1.35) = 41
+    });
+  });
+
+  describe('12. Desbloqueio e Debug de Classes (Bypass Toggle)', () => {
+    it('bloqueia classes avançadas quando requisitos não são cumpridos', () => {
+      const lockedGeomancer = isPlayerClassUnlocked('geomancer', {
+        highestBossLevelCleared: 1,
+        debugUnlockAllClasses: false,
+      });
+      expect(lockedGeomancer.isUnlocked).toBe(false);
+
+      const lockedAlchemist = isPlayerClassUnlocked('alchemist', {
+        highestBossLevelCleared: 4,
+        debugUnlockAllClasses: false,
+      });
+      expect(lockedAlchemist.isUnlocked).toBe(false);
+
+      const lockedGambit = isPlayerClassUnlocked('gambit', {
+        bossSPlusLevels: [],
+        debugUnlockAllClasses: false,
+      });
+      expect(lockedGambit.isUnlocked).toBe(false);
+
+      const lockedPaladin = isPlayerClassUnlocked('paladin', {
+        highestBossLevelCleared: 6,
+        bossesDefeated: 5,
+        debugUnlockAllClasses: false,
+      });
+      expect(lockedPaladin.isUnlocked).toBe(false);
+    });
+
+    it('desbloqueia classes avançadas quando os requisitos de progressão são atingidos', () => {
+      expect(isPlayerClassUnlocked('geomancer', { highestBossLevelCleared: 3 }).isUnlocked).toBe(true);
+      expect(isPlayerClassUnlocked('alchemist', { highestBossLevelCleared: 5 }).isUnlocked).toBe(true);
+      expect(isPlayerClassUnlocked('gambit', { bossSPlusLevels: [1] }).isUnlocked).toBe(true);
+      expect(isPlayerClassUnlocked('paladin', { highestBossLevelCleared: 8 }).isUnlocked).toBe(true);
+    });
+
+    it('o toggle de debug desbloqueia imediatamente todas as 9 classes sem requisitos', () => {
+      const debugContext = {
+        highestBossLevelCleared: 0,
+        bossSPlusLevels: [],
+        bossesDefeated: 0,
+        debugUnlockAllClasses: true,
+      };
+
+      expect(isPlayerClassUnlocked('duelist', debugContext).isUnlocked).toBe(true);
+      expect(isPlayerClassUnlocked('geomancer', debugContext).isUnlocked).toBe(true);
+      expect(isPlayerClassUnlocked('alchemist', debugContext).isUnlocked).toBe(true);
+      expect(isPlayerClassUnlocked('gambit', debugContext).isUnlocked).toBe(true);
+      expect(isPlayerClassUnlocked('paladin', debugContext).isUnlocked).toBe(true);
+    });
+
+    it('toggleDebugUnlockAllClasses altera o estado na Zustand store', () => {
+      const store = useAppStore.getState();
+      expect(store.debugUnlockAllClasses).toBe(false);
+
+      store.toggleDebugUnlockAllClasses();
+      expect(useAppStore.getState().debugUnlockAllClasses).toBe(true);
+
+      store.toggleDebugUnlockAllClasses();
+      expect(useAppStore.getState().debugUnlockAllClasses).toBe(false);
     });
   });
 });
