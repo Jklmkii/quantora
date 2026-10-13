@@ -138,8 +138,8 @@ export const translations = {
     unlocked_badge: 'Conquistada',
     locked_badge: 'Bloqueada',
 
-    // Boss Battle & Economia de Níveis
-    boss_battle_title: 'Batalha de Chefes',
+    // Boss Rush & Economia de Níveis
+    boss_battle_title: 'Boss Rush',
     boss_levels_title: 'Selecione a Fase',
     boss_level_label: 'Nível',
     boss_coins: 'Moedas de Chefe',
@@ -377,8 +377,8 @@ export const translations = {
     hub_blitz_stats: 'Recorde Blitz',
     hub_blitz_unlock: 'Nível 3 de XP',
 
-    hub_boss_title: 'Boss Battle',
-    hub_boss_subtitle: 'Chain compaon toarn to Boss Battle',
+    hub_boss_title: 'Boss Rush',
+    hub_boss_subtitle: 'Enfrente chefes procedurais na torre infinita com poderes e forja',
     hub_boss_category: 'Boss Rush',
     hub_boss_badge: 'Níveis & Forja',
     hub_boss_stats_level: 'Nv. {level}',
@@ -594,8 +594,8 @@ export const translations = {
     unlocked_badge: 'Unlocked',
     locked_badge: 'Locked',
 
-    // Boss Battle & Level Economy
-    boss_battle_title: 'Boss Battle',
+    // Boss Rush & Level Economy
+    boss_battle_title: 'Boss Rush',
     boss_levels_title: 'Select Level',
     boss_level_label: 'Level',
     boss_coins: 'Boss Coins',
@@ -833,8 +833,8 @@ export const translations = {
     hub_blitz_stats: 'Blitz Record',
     hub_blitz_unlock: 'XP Level 3',
 
-    hub_boss_title: 'Boss Battle',
-    hub_boss_subtitle: 'Chain compaon toarn to Boss Battle',
+    hub_boss_title: 'Boss Rush',
+    hub_boss_subtitle: 'Face procedural bosses in the infinite tower with powers and forge',
     hub_boss_category: 'Boss Rush',
     hub_boss_badge: 'Levels & Forge',
     hub_boss_stats_level: 'Lvl. {level}',

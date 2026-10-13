@@ -801,7 +801,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-100 to-white">
-              {t.boss_battle_title || 'Batalha de Chefes'}
+              {t.boss_battle_title || 'Boss Rush'}
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 mt-1">
               Enfrente a torre procedural infinita. A vida dos chefes escala sem limites, com dificuldade aritmética calculável até o teto do nível {DIFFICULTY_CAP_LEVEL}!

@@ -184,7 +184,7 @@ export const CosmicLightning3D: React.FC<IconProps> = ({ className = '', size = 
 );
 
 /**
- * 3. CosmicSwords3D — Modo Batalha contra o Chefe (Boss Battle)
+ * 3. CosmicSwords3D — Modo Boss Rush
  * Espadas cruzadas de cristal translúcido com brilho neon magenta e gema central.
  */
 export const CosmicSwords3D: React.FC<IconProps> = ({ className = '', size = 80 }) => (

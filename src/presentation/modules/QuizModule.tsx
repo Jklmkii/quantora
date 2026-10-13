@@ -530,7 +530,7 @@ export const QuizModule: React.FC = () => {
   }
 
   // ==========================================
-  // SCREEN: BOSS BATTLE (Boss Rush)
+  // SCREEN: BOSS RUSH
   // ==========================================
   if (effectiveScreen === 'boss_rush') {
     return (
@@ -779,10 +779,10 @@ export const QuizModule: React.FC = () => {
             {/* Header do Card */}
             <div className="flex flex-col items-center gap-1 z-10">
               <span className="text-[10px] font-mono font-black uppercase tracking-widest text-purple-600 dark:text-purple-400/90">
-                Boss Rush
+                Torre Infinita
               </span>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-wide">
-                Boss Battle
+                Boss Rush
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">
                 {isBossUnlocked
