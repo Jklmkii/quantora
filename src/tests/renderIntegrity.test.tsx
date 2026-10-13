@@ -241,6 +241,7 @@ describe('Render Integrity — BlitzGame (Timer e Interatividade)', () => {
 describe('Render Integrity — BossBattle (HP do Chefe e Escudos)', () => {
   beforeEach(() => {
     resetStore();
+    useAppStore.getState().setSelectedPlayerClass('channeler');
     vi.useFakeTimers();
   });
 

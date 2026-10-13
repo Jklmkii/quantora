@@ -45,13 +45,11 @@ import {
   ORACLE_COST,
   TIME_FREEZE_COST,
   PLAYER_CLASSES,
+  ALL_PLAYER_CLASS_IDS,
   BOSS_CLASSES,
   BOSS_WEAPONS,
   getTargetSPlusTimeForLevel,
   toggleParryModeInBattle,
-  setBerserkerShieldBet,
-  toggleGambitModeInBattle,
-  type PlayerClassId,
   type BossWeaponId,
 } from '../../core/quiz/bossEngine';
 import type { BossBattleState, BossRoundResult } from '../../core/quiz/bossEngine';
@@ -100,7 +98,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     bossSPlusLevels,
     unlockedBossWeapons,
     equippedBossWeapon,
+    selectedGamblerBet,
     setSelectedPlayerClass,
+    setSelectedGamblerBet,
     setLastBossClass,
     equipBossWeapon,
     unlockBossWeaponWithTokens,
@@ -132,7 +132,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       bossSPlusLevels: s.bossSPlusLevels ?? s.profile?.stats?.bossSPlusLevels ?? [],
       unlockedBossWeapons: s.unlockedBossWeapons ?? s.profile?.stats?.unlockedBossWeapons ?? ['starter_blade'],
       equippedBossWeapon: s.equippedBossWeapon ?? s.profile?.stats?.equippedBossWeapon ?? 'starter_blade',
+      selectedGamblerBet: s.selectedGamblerBet ?? s.profile?.stats?.selectedGamblerBet ?? 2,
       setSelectedPlayerClass: s.setSelectedPlayerClass,
+      setSelectedGamblerBet: s.setSelectedGamblerBet,
       setLastBossClass: s.setLastBossClass,
       equipBossWeapon: s.equipBossWeapon,
       unlockBossWeaponWithTokens: s.unlockBossWeaponWithTokens,
@@ -168,6 +170,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         playerClass: selectedPlayerClass,
         previousBossClass: lastBossClass,
         equippedWeapon: equippedBossWeapon,
+        gamblerBet: selectedGamblerBet,
       }
     )
   );
@@ -182,7 +185,9 @@ export const BossBattle: React.FC<BossBattleProps> = ({
   const [lastRoundResult, setLastRoundResult] = useState<BossRoundResult | null>(null);
   const [showExplanation, setShowExplanation] = useState<boolean>(false);
   const [manualInput, setManualInput] = useState<string>('');
-  const [isManualInputMode, setIsManualInputMode] = useState<boolean>(false);
+  const [isManualInputMode, setIsManualInputMode] = useState<boolean>(
+    () => selectedPlayerClass === 'duelist'
+  );
   const [dispelledQuestionId, setDispelledQuestionId] = useState<string | null>(null);
   const [isFirstClearReward, setIsFirstClearReward] = useState<boolean>(false);
   const [victorySummary, setVictorySummary] = useState<BossVictorySummary | null>(null);
@@ -274,6 +279,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           playerClass: selectedPlayerClass,
           previousBossClass: lastBossClass,
           equippedWeapon: equippedBossWeapon,
+          gamblerBet: selectedGamblerBet,
         }
       );
       if (nextBattleState.bossClass && typeof setLastBossClass === 'function') {
@@ -284,7 +290,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       setIsResolving(false);
       setSelectedOption(null);
       setManualInput('');
-      setIsManualInputMode(false);
+      setIsManualInputMode(selectedPlayerClass === 'duelist');
       setLastRoundResult(null);
       setShowExplanation(false);
       setDispelledQuestionId(null);
@@ -296,6 +302,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       bossOracleCharges,
       bossTimeFreezeCharges,
       selectedPlayerClass,
+      selectedGamblerBet,
       lastBossClass,
       equippedBossWeapon,
       setLastBossClass,
@@ -321,21 +328,6 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       setIsManualInputMode(Boolean(next.parryModeActive));
       return next;
     });
-    playComboTick();
-  }, [isResolving, battleState.status]);
-
-  const handleSetShieldBet = useCallback(
-    (bet: 0 | 2 | 3) => {
-      if (isResolving || battleState.status !== 'fighting') return;
-      setBattleState((prev) => setBerserkerShieldBet(prev, bet));
-      playComboTick();
-    },
-    [isResolving, battleState.status]
-  );
-
-  const handleToggleGambit = useCallback(() => {
-    if (isResolving || battleState.status !== 'fighting') return;
-    setBattleState((prev) => (prev ? toggleGambitModeInBattle(prev) : prev));
     playComboTick();
   }, [isResolving, battleState.status]);
 
@@ -670,7 +662,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         document.activeElement?.tagName !== 'INPUT'
       ) {
         e.preventDefault();
-        handleToggleParry();
+        // Passiva travada: Duelista joga permanentemente com Parry 2x ativo
         return;
       }
 
@@ -680,7 +672,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
         document.activeElement?.tagName !== 'INPUT'
       ) {
         e.preventDefault();
-        handleToggleGambit();
+        // Passiva travada: Gambit opera permanentemente com corte de tempo e 2.5x dano
         return;
       }
 
@@ -709,7 +701,6 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     isFogDispelled,
     handleDispelFog,
     handleToggleParry,
-    handleToggleGambit,
     handleAnswerSubmit,
   ]);
 
@@ -826,7 +817,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {(Object.keys(PLAYER_CLASSES) as PlayerClassId[]).map((clsId) => {
+            {ALL_PLAYER_CLASS_IDS.map((clsId) => {
               const cls = PLAYER_CLASSES[clsId];
               const unlockStatus = isPlayerClassUnlocked(clsId, {
                 highestBossLevelCleared,
@@ -840,13 +831,18 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               const isSelected = selectedPlayerClass === clsId;
 
               return (
-                <button
+                <div
                   key={clsId}
-                  type="button"
+                  role="button"
+                  tabIndex={isUnlocked ? 0 : -1}
                   data-testid={`player-class-${clsId}`}
-                  disabled={!isUnlocked}
                   onClick={() => {
                     if (isUnlocked) setSelectedPlayerClass(clsId);
+                  }}
+                  onKeyDown={(e) => {
+                    if (isUnlocked && (e.key === 'Enter' || e.key === ' ')) {
+                      setSelectedPlayerClass(clsId);
+                    }
                   }}
                   className={`p-3.5 rounded-2xl border-2 text-left flex flex-col justify-between gap-2 transition-all ${
                     !isUnlocked
@@ -889,8 +885,63 @@ export const BossBattle: React.FC<BossBattleProps> = ({
                         {reqText}
                       </p>
                     )}
+
+                    {/* Seletor de Modo Pré-Batalha do Gambler */}
+                    {(clsId === 'gambler' || clsId === 'berserker') && isUnlocked && (
+                      <div
+                        className="mt-2.5 pt-2 border-t border-slate-700/60 flex flex-col gap-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider">
+                            Modo de Aposta Pré-Batalha:
+                          </span>
+                          <span className="text-[9px] font-mono text-slate-400">
+                            Fixo na Fase
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          <button
+                            type="button"
+                            data-testid="gambler-mode-0"
+                            onClick={() => setSelectedGamblerBet(0)}
+                            className={`px-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                              selectedGamblerBet === 0
+                                ? 'bg-slate-700 text-white border-slate-400 ring-1 ring-slate-400 shadow-sm'
+                                : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800'
+                            }`}
+                          >
+                            0🛡️ Seguro (1x)
+                          </button>
+                          <button
+                            type="button"
+                            data-testid="gambler-mode-2"
+                            onClick={() => setSelectedGamblerBet(2)}
+                            className={`px-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                              selectedGamblerBet === 2
+                                ? 'bg-rose-600 text-white border-rose-300 ring-1 ring-rose-300 shadow-sm shadow-rose-600/30'
+                                : 'bg-rose-950/50 text-rose-300 border-rose-800/60 hover:bg-rose-900/60'
+                            }`}
+                          >
+                            2🛡️ Temerário (2.5x)
+                          </button>
+                          <button
+                            type="button"
+                            data-testid="gambler-mode-3"
+                            onClick={() => setSelectedGamblerBet(3)}
+                            className={`px-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                              selectedGamblerBet === 3
+                                ? 'bg-gradient-to-r from-red-600 to-amber-500 text-slate-950 border-yellow-300 ring-1 ring-yellow-300 font-black shadow-md shadow-red-600/30'
+                                : 'bg-red-950/60 text-amber-300 border-amber-800/60 hover:bg-red-900/60'
+                            }`}
+                          >
+                            3🛡️ Tudo ou Nada (3.5x)
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -1885,25 +1936,18 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </span>
             </span>
 
-            {/* #1 DUELIST PARRY BUTTON */}
+            {/* #1 DUELIST PARRY STATUS (PASSIVA TRAVADA ON) */}
             {battleState.playerClass === 'duelist' && (
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono text-slate-400">
                   Combo Parry: <strong className="text-cyan-300">{battleState.parrySuccessStreak ?? 0}/3</strong> (+1 🛡️)
                 </span>
-                <button
-                  type="button"
-                  data-testid="duelist-parry-toggle"
-                  disabled={isResolving}
-                  onClick={handleToggleParry}
-                  className={`py-1 px-2.5 rounded-xl font-black text-[11px] flex items-center gap-1 transition-all cursor-pointer border ${
-                    battleState.parryModeActive
-                      ? 'bg-amber-500 text-slate-950 border-yellow-300 shadow-lg shadow-amber-500/30 scale-105'
-                      : 'bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border-amber-500/40'
-                  }`}
+                <span
+                  data-testid="duelist-parry-badge"
+                  className="py-1 px-2.5 rounded-xl font-black text-[11px] flex items-center gap-1 border bg-amber-500 text-slate-950 border-yellow-300 shadow-lg shadow-amber-500/30"
                 >
-                  ⚔️ {battleState.parryModeActive ? 'PARRY 2x ATIVO!' : 'Ativar Parry 2x [P]'}
-                </button>
+                  ⚔️ PARRY 2x FIXO ATIVO
+                </span>
               </div>
             )}
 
@@ -1948,25 +1992,18 @@ export const BossBattle: React.FC<BossBattleProps> = ({
               </span>
             )}
 
-            {/* #13 GAMBIT MODE TOGGLE */}
+            {/* #13 GAMBIT MODE STATUS (PASSIVA TRAVADA ON) */}
             {battleState.playerClass === 'gambit' && (
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono text-slate-400">
                   Sacrifício: <strong className="text-red-400">-50% Tempo</strong>
                 </span>
-                <button
-                  type="button"
-                  data-testid="gambit-toggle"
-                  disabled={isResolving}
-                  onClick={handleToggleGambit}
-                  className={`py-1 px-2.5 rounded-xl font-black text-[11px] flex items-center gap-1 transition-all cursor-pointer border ${
-                    battleState.gambitActive
-                      ? 'bg-red-600 text-white border-red-300 shadow-lg shadow-red-600/30 scale-105'
-                      : 'bg-red-950/40 hover:bg-red-900/50 text-red-300 border-red-500/40'
-                  }`}
+                <span
+                  data-testid="gambit-locked-badge"
+                  className="py-1 px-2.5 rounded-xl font-black text-[11px] flex items-center gap-1 border bg-red-600 text-white border-red-300 shadow-lg shadow-red-600/30"
                 >
-                  🎲 {battleState.gambitActive ? 'GAMBIT 2.5x ATIVO!' : 'Ativar Gambit 2.5x [G]'}
-                </button>
+                  🎲 GAMBIT 2.5x FIXO ATIVO
+                </span>
               </div>
             )}
 
@@ -1981,55 +2018,31 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             )}
           </div>
 
-          {/* #6 BERSERKER SHIELD BETTING CONTROLS (2 OR 3 SHIELDS) */}
-          {battleState.playerClass === 'berserker' && (
+          {/* #6 GAMBLER SHIELD BET HUD (MODO FIXO PRÉ-BATALHA) */}
+          {(battleState.playerClass === 'gambler' || battleState.playerClass === 'berserker') && (
             <div
-              data-testid="berserker-bet-controls"
+              data-testid="gambler-bet-controls"
               className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-800/80 flex-wrap"
             >
               <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider">
-                🩸 Aposta Tudo ou Nada (Se errar 1, perde todos os apostados):
+                🎲 Modo Apostador Fixo:
               </span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  disabled={isResolving}
-                  onClick={() => handleSetShieldBet(0)}
-                  className={`px-2 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer ${
-                    (battleState.shieldBet ?? 0) === 0
-                      ? 'bg-slate-700 text-white border-slate-500'
-                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
-                  }`}
-                >
-                  Sem Aposta (1x)
-                </button>
-                <button
-                  type="button"
-                  data-testid="berserker-bet-2"
-                  disabled={isResolving || battleState.shields < 2}
-                  onClick={() => handleSetShieldBet(2)}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                    battleState.shieldBet === 2
-                      ? 'bg-rose-600 text-white border-rose-300 shadow-md shadow-rose-600/30'
-                      : 'bg-rose-950/50 text-rose-300 border-rose-500/40 hover:bg-rose-900/60'
-                  }`}
-                >
-                  🩸 Apostar 2🛡️ (2.5x Dano)
-                </button>
-                <button
-                  type="button"
-                  data-testid="berserker-bet-3"
-                  disabled={isResolving || battleState.shields < 3}
-                  onClick={() => handleSetShieldBet(3)}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                    battleState.shieldBet === 3
-                      ? 'bg-gradient-to-r from-red-600 to-amber-500 text-slate-950 border-yellow-300 shadow-lg shadow-red-600/40'
-                      : 'bg-red-950/60 text-amber-300 border-amber-500/40 hover:bg-red-900/60'
-                  }`}
-                >
-                  🔥 Apostar 3🛡️ (3.5x Dano!)
-                </button>
-              </div>
+              <span
+                data-testid="gambler-fixed-bet-badge"
+                className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black border ${
+                  battleState.shieldBet === 3
+                    ? 'bg-gradient-to-r from-red-600 to-amber-500 text-slate-950 border-yellow-300 shadow-md shadow-red-600/30'
+                    : battleState.shieldBet === 2
+                    ? 'bg-rose-600 text-white border-rose-300 shadow-md shadow-rose-600/20'
+                    : 'bg-slate-700 text-white border-slate-500'
+                }`}
+              >
+                {battleState.shieldBet === 3
+                  ? '🔥 3🛡️ Tudo ou Nada (3.5x Dano)'
+                  : battleState.shieldBet === 2
+                  ? '🩸 2🛡️ Temerário (2.5x Dano)'
+                  : '🛡️ 0🛡️ Seguro (1x Dano)'}
+              </span>
             </div>
           )}
         </div>
@@ -2393,24 +2406,20 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             </div>
           )}
 
-          {/* Toggle between 4 options and manual input */}
-          <button
-            type="button"
-            onClick={() => {
-              if (battleState.playerClass === 'duelist') {
-                handleToggleParry();
-              } else {
+          {/* Toggle between 4 options and manual input (bloqueado para Duelista com Parry travado) */}
+          {battleState.playerClass !== 'duelist' && (
+            <button
+              type="button"
+              onClick={() => {
                 setIsManualInputMode((prev) => !prev);
-              }
-            }}
-            className="text-[11px] font-bold text-slate-400 hover:text-slate-200 transition-colors mt-0.5 cursor-pointer"
-          >
-            {isManualInputMode || battleState.parryModeActive
-              ? '← Voltar para 4 Opções'
-              : battleState.playerClass === 'duelist'
-              ? '⚔️ Ativar Modo Parry 2x (Digitação Direta [P])'
-              : 'Prefere digitar? Clique aqui'}
-          </button>
+              }}
+              className="text-[11px] font-bold text-slate-400 hover:text-slate-200 transition-colors mt-0.5 cursor-pointer"
+            >
+              {isManualInputMode
+                ? '← Voltar para 4 Opções'
+                : 'Prefere digitar? Clique aqui'}
+            </button>
+          )}
         </div>
 
         {/* PLAYER HUD */}

@@ -10,8 +10,6 @@ import {
   generateLastStandMiniQuestion,
   attachIllusionistTrap,
   toggleParryModeInBattle,
-  setBerserkerShieldBet,
-  toggleGambitModeInBattle,
   createInitialBossBattleState,
   processRound,
   generateBossQuestion,
@@ -26,14 +24,11 @@ describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank 
   });
 
   describe('1. Player Class #1: Duelista de Precisão (Parry 2x & Regeneração)', () => {
-    it('alterna o modo Parry com toggleParryModeInBattle', () => {
+    it('inicia com modo Parry travado ativo para a classe Duelista', () => {
       const state = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'duelist' });
-      expect(state.parryModeActive).toBe(false);
+      expect(state.parryModeActive).toBe(true);
 
-      const toggledOn = toggleParryModeInBattle(state);
-      expect(toggledOn.parryModeActive).toBe(true);
-
-      const toggledOff = toggleParryModeInBattle(toggledOn);
+      const toggledOff = toggleParryModeInBattle(state, false);
       expect(toggledOff.parryModeActive).toBe(false);
     });
 
@@ -195,24 +190,28 @@ describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank 
     });
   });
 
-  describe('6. Player Class #6: Berserker (Aposta de 2 ou 3 Escudos)', () => {
-    it('configura a aposta de escudos com setBerserkerShieldBet', () => {
-      const state = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'berserker' });
-      expect(state.shieldBet).toBe(0);
+  describe('6. Player Class #6: Gambler / Apostador (Aposta de 0, 2 ou 3 Escudos Pré-Batalha)', () => {
+    it('inicia com aposta pré-batalha selecionada e persiste entre rodadas', () => {
+      const stateDefault = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'gambler' });
+      expect(stateDefault.shieldBet).toBe(2);
 
-      const bet2 = setBerserkerShieldBet(state, 2);
-      expect(bet2.shieldBet).toBe(2);
+      const stateBet3 = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'gambler', gamblerBet: 3 });
+      expect(stateBet3.shieldBet).toBe(3);
 
-      const bet3 = setBerserkerShieldBet(state, 3);
-      expect(bet3.shieldBet).toBe(3);
+      const stateBet0 = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'gambler', gamblerBet: 0 });
+      expect(stateBet0.shieldBet).toBe(0);
+
+      // Persistência através de rodadas
+      const hit = processRound(stateBet3, stateBet3.currentQuestion.correctAnswer, 5.0, 20);
+      expect(hit.nextState.shieldBet).toBe(3);
     });
 
     it('aposta de 2 escudos multiplica dano por 2.5x e erro perde 2 escudos', () => {
-      let state = createInitialBossBattleState(1, 0, 0, 0, {
-        playerClass: 'berserker',
+      const state = createInitialBossBattleState(1, 0, 0, 0, {
+        playerClass: 'gambler',
         bossClass: 'illusionist',
+        gamblerBet: 2,
       });
-      state = setBerserkerShieldBet(state, 2);
 
       // Acerto: Dano crítico base de 30 * 2.5 = 75
       const hit = processRound(state, state.currentQuestion.correctAnswer, 5.0, 20);
@@ -226,11 +225,11 @@ describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank 
     });
 
     it('aposta de 3 escudos multiplica dano por 3.5x e erro causa derrota instantânea', () => {
-      let state = createInitialBossBattleState(1, 0, 0, 0, {
-        playerClass: 'berserker',
+      const state = createInitialBossBattleState(1, 0, 0, 0, {
+        playerClass: 'gambler',
         bossClass: 'illusionist',
+        gamblerBet: 3,
       });
-      state = setBerserkerShieldBet(state, 3);
 
       // Acerto: Dano crítico base de 30 * 3.5 = 105
       const hit = processRound(state, state.currentQuestion.correctAnswer, 5.0, 20);
@@ -475,12 +474,11 @@ describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank 
       expect(res.nextState.geomancerCatheti).toEqual([]);
     });
 
-    it('Gambito reduz tempo limite em 50%, dá 2.5x dano no acerto e perde 2 escudos no erro', () => {
-      let state = createInitialBossBattleState(1, 0, 0, 0, {
+    it('Gambito inicia ativo, reduz tempo em 50%, dá 2.5x dano e persiste ativo entre rodadas', () => {
+      const state = createInitialBossBattleState(1, 0, 0, 0, {
         playerClass: 'gambit',
         bossClass: 'illusionist',
       });
-      state = toggleGambitModeInBattle(state, true);
       expect(state.gambitActive).toBe(true);
 
       // Acerto com Gambit ativo
@@ -489,11 +487,10 @@ describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank 
       expect(hitRes.roundResult.gambitActiveTriggered).toBe(true);
       expect(hitRes.roundResult.damageResult.isCritical).toBe(true);
       expect(hitRes.roundResult.damageResult.damage).toBe(50); // 20 * 2.5
-      expect(hitRes.nextState.gambitActive).toBe(false);
+      expect(hitRes.nextState.gambitActive).toBe(true);
 
       // Erro com Gambit ativo: perde 2 escudos em vez de 1
-      let freshState = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'gambit' });
-      freshState = toggleGambitModeInBattle(freshState, true);
+      const freshState = createInitialBossBattleState(1, 0, 0, 0, { playerClass: 'gambit' });
       const wrongRes = processRound(freshState, correctAns + 999, 4.0, 20);
       expect(wrongRes.roundResult.damageResult.shieldDamage).toBe(2);
       expect(wrongRes.nextState.shields).toBe(1); // 3 - 2 = 1
@@ -539,10 +536,10 @@ describe('Boss Battle RPG Expansion (5 Classes de Player, 6 Leis da Arena, Rank 
       expect(res1.nextState.currentQuestion.options.length).toBe(6);
       expect(res1.nextState.currentQuestion.isHydraSplitQuestion).toBe(true);
 
-      // Acerto durante a bifurcação concede +40% de bônus e fecha a bifurcação
+      // Acerto durante a bifurcação concede +40% de bônus e fecha a bifurcação (com Parry 2x = 84)
       const splitAns = res1.nextState.currentQuestion.correctAnswer;
       const res2 = processRound(res1.nextState, splitAns, 5.0, 20);
-      expect(res2.roundResult.damageResult.damage).toBe(42); // 30 crit base * 1.4
+      expect(res2.roundResult.damageResult.damage).toBe(84); // (30 crit base * 1.4 hydra) * 2 parry
       expect(res2.nextState.isHydraSplit).toBe(false);
     });
 

@@ -184,11 +184,12 @@ export type PlayerClassId =
   | 'channeler'
   | 'chronos'
   | 'breaker'
-  | 'berserker'
+  | 'gambler'
   | 'alchemist'
   | 'geomancer'
   | 'gambit'
-  | 'paladin';
+  | 'paladin'
+  | 'berserker'; // Legacy alias
 
 export type BossClassId =
   | 'illusionist'
@@ -226,6 +227,7 @@ export interface UserProfileStats {
   bossOracleCharges?: number;
   bossTimeFreezeCharges?: number;
   selectedPlayerClass?: PlayerClassId;
+  selectedGamblerBet?: 0 | 2 | 3;
   lastBossClass?: BossClassId | null;
   bossBestTimeByLevel?: Record<number, number>;
   bossSPlusLevels?: number[];
@@ -265,6 +267,7 @@ export interface BossRushStats {
   bossOracleCharges?: number;
   bossTimeFreezeCharges?: number;
   selectedPlayerClass?: PlayerClassId;
+  selectedGamblerBet?: 0 | 2 | 3;
   lastBossClass?: BossClassId | null;
   bossBestTimeByLevel?: Record<number, number>;
   bossSPlusLevels?: number[];

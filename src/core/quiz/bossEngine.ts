@@ -44,6 +44,7 @@ export type PlayerClassId =
   | 'channeler'
   | 'chronos'
   | 'breaker'
+  | 'gambler'
   | 'berserker'
   | 'alchemist'
   | 'geomancer'
@@ -120,13 +121,24 @@ export const PLAYER_CLASSES: Record<PlayerClassId, PlayerClassDef> = {
     unlockRequirementPt: 'Classe Inicial',
     unlockRequirementEn: 'Starter Class',
   },
+  gambler: {
+    id: 'gambler',
+    name: 'Apostador do Tudo ou Nada',
+    subtitle: 'Aposta Arriscada de 2 ou 3 Escudos',
+    badge: '🎲 Aposta 2/3 Escudos',
+    description:
+      'Escolha seu modo antes da batalha: 0 Escudos (Seguro 1x), 2 Escudos (+150% Dano) ou 3 Escudos (+250% Dano). A aposta permanece fixa por toda a fase. Se errar, perde os escudos apostados!',
+    accentColor: 'rose',
+    unlockRequirementPt: 'Classe Inicial',
+    unlockRequirementEn: 'Starter Class',
+  },
   berserker: {
     id: 'berserker',
-    name: 'Berserker do Tudo ou Nada',
-    subtitle: 'Aposta Sangrenta de 2 ou 3 Escudos',
-    badge: '🩸 Aposta 2/3 Escudos',
+    name: 'Apostador do Tudo ou Nada',
+    subtitle: 'Aposta Arriscada de 2 ou 3 Escudos',
+    badge: '🎲 Aposta 2/3 Escudos',
     description:
-      'Aposte 2 Escudos (+150% Dano) ou 3 Escudos (+250% Dano) antes de responder. Se errar 1 conta durante a aposta, perde todos os escudos apostados na hora!',
+      'Escolha seu modo antes da batalha: 0 Escudos (Seguro 1x), 2 Escudos (+150% Dano) ou 3 Escudos (+250% Dano). A aposta permanece fixa por toda a fase. Se errar, perde os escudos apostados!',
     accentColor: 'rose',
     unlockRequirementPt: 'Classe Inicial',
     unlockRequirementEn: 'Starter Class',
@@ -182,7 +194,7 @@ export const ALL_PLAYER_CLASS_IDS: PlayerClassId[] = [
   'channeler',
   'chronos',
   'breaker',
-  'berserker',
+  'gambler',
   'geomancer',
   'alchemist',
   'gambit',
@@ -794,6 +806,7 @@ export interface BossRpgConfig {
   previousBossClass?: BossClassId | null;
   equippedWeapon?: BossWeaponId;
   enableArenaModifiers?: boolean;
+  gamblerBet?: 0 | 2 | 3;
 }
 
 export interface BossBattleState {
@@ -2074,7 +2087,7 @@ export function toggleParryModeInBattle(
 }
 
 /**
- * Sets the Berserker Shield Bet (`0`, `2`, or `3` shields at risk on the current question).
+ * Sets the Gambler / Berserker Shield Bet (`0`, `2`, or `3` shields at risk on the current question).
  */
 export function setBerserkerShieldBet(
   state: BossBattleState,
@@ -2086,6 +2099,8 @@ export function setBerserkerShieldBet(
     shieldBet: validBet,
   };
 }
+
+export const setGamblerShieldBet = setBerserkerShieldBet;
 
 /**
  * Toggles Gambit Mode (sacrifices 50% time limit for 2.5x damage and guaranteed critical hit).
@@ -2118,7 +2133,7 @@ export function createInitialBossBattleState(
   const identity = getBossIdentityForLevel(safeLevel);
 
   const rpgModeActive = Boolean(rpgConfig);
-  const playerClass: PlayerClassId = rpgConfig?.playerClass ?? 'duelist';
+  const playerClass: PlayerClassId | undefined = rpgConfig?.playerClass;
   const bossClass: BossClassId =
     rpgConfig?.bossClass ?? rollBossClassForLevel(safeLevel, rpgConfig?.previousBossClass);
   const equippedWeapon: BossWeaponId = rpgConfig?.equippedWeapon ?? 'starter_blade';
@@ -2173,20 +2188,23 @@ export function createInitialBossBattleState(
     playerClass,
     bossClass,
     equippedWeapon,
-    parryModeActive: false,
+    parryModeActive: playerClass === 'duelist',
     parrySuccessStreak: 0,
     lastCorrectAnswer: null,
     chronosBankedSeconds: 0,
     staggerSeals: 0,
     isBossStaggered: false,
-    shieldBet: 0,
+    shieldBet:
+      playerClass === 'gambler' || playerClass === 'berserker'
+        ? (rpgConfig?.gamblerBet ?? 2)
+        : 0,
     isLastStandActive: false,
     lastStandStep: 0,
     lastStandCompleted: false,
     lastStandBonusCoinsMultiplier: 1,
     alchemistCharges: 0,
     geomancerCatheti: [],
-    gambitActive: false,
+    gambitActive: playerClass === 'gambit',
     paladinIntactRounds: 0,
     isHydraSplit: false,
     cipherQuickBonusActive: false,
@@ -2723,19 +2741,23 @@ export function processRound(
         standardHitsCount:
           state.standardHitsCount + (damageResult.reason === 'standard' ? 1 : 0),
         totalTimeSeconds: state.totalTimeSeconds + responseTimeSeconds,
+        parryModeActive: state.playerClass === 'duelist' ? true : Boolean(state.parryModeActive),
         parrySuccessStreak: nextParryStreak,
         lastCorrectAnswer: nextLastCorrectAnswer,
         chronosBankedSeconds: nextChronosBanked,
         staggerSeals: nextStaggerSeals,
         isBossStaggered: false,
-        shieldBet: 0,
+        shieldBet:
+          state.playerClass === 'gambler' || state.playerClass === 'berserker'
+            ? (state.shieldBet ?? 2)
+            : 0,
         isLastStandActive: true,
         lastStandStep: 1,
         eliminatedOptions: [],
         isTimeFrozen: false,
         alchemistCharges: nextAlchemistCharges,
         geomancerCatheti: nextGeomancerCatheti,
-        gambitActive: false,
+        gambitActive: state.playerClass === 'gambit',
         paladinIntactRounds: nextPaladinIntactRounds,
         isHydraSplit: nextIsHydraSplit,
         cipherQuickBonusActive: nextCipherQuickBonus,
@@ -2827,15 +2849,19 @@ export function processRound(
     unlockedAchievements: [...new Set([...state.unlockedAchievements, ...achievements])],
     eliminatedOptions: [],
     isTimeFrozen: false,
+    parryModeActive: state.playerClass === 'duelist' ? true : Boolean(state.parryModeActive),
     parrySuccessStreak: nextParryStreak,
     lastCorrectAnswer: nextLastCorrectAnswer,
     chronosBankedSeconds: nextChronosBanked,
     staggerSeals: nextStaggerSeals,
     isBossStaggered: nextIsBossStaggered,
-    shieldBet: 0,
+    shieldBet:
+      state.playerClass === 'gambler' || state.playerClass === 'berserker'
+        ? (state.shieldBet ?? 2)
+        : 0,
     alchemistCharges: nextAlchemistCharges,
     geomancerCatheti: nextGeomancerCatheti,
-    gambitActive: false,
+    gambitActive: state.playerClass === 'gambit',
     paladinIntactRounds: nextPaladinIntactRounds,
     isHydraSplit: nextIsHydraSplit,
     cipherQuickBonusActive: nextCipherQuickBonus,

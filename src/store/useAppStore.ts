@@ -99,6 +99,7 @@ interface AppState {
   bossOracleCharges: number;
   bossTimeFreezeCharges: number;
   selectedPlayerClass: PlayerClassId;
+  selectedGamblerBet: 0 | 2 | 3;
   lastBossClass: BossClassId | null;
   bossBestTimeByLevel: Record<number, number>;
   bossSPlusLevels: number[];
@@ -106,6 +107,7 @@ interface AppState {
   equippedBossWeapon: BossWeaponId;
   debugUnlockAllClasses: boolean;
   setSelectedPlayerClass: (classId: PlayerClassId) => void;
+  setSelectedGamblerBet: (bet: 0 | 2 | 3) => void;
   setLastBossClass: (bossClass: BossClassId) => void;
   equipBossWeapon: (weaponId: BossWeaponId) => boolean;
   unlockBossWeaponWithTokens: (weaponId: BossWeaponId) => boolean;
@@ -204,6 +206,7 @@ const DEFAULT_PROFILE: UserProfile = {
     bossOracleCharges: 0,
     bossTimeFreezeCharges: 0,
     selectedPlayerClass: 'duelist',
+    selectedGamblerBet: 2,
     lastBossClass: null,
     bossBestTimeByLevel: {},
     bossSPlusLevels: [],
@@ -465,6 +468,7 @@ export const useAppStore = create<AppState>()(
       bossOracleCharges: 0,
       bossTimeFreezeCharges: 0,
       selectedPlayerClass: 'duelist',
+      selectedGamblerBet: 2,
       lastBossClass: null,
       bossBestTimeByLevel: {},
       bossSPlusLevels: [],
@@ -501,6 +505,24 @@ export const useAppStore = create<AppState>()(
               stats: {
                 ...prevStats,
                 selectedPlayerClass: classId,
+              },
+            },
+          };
+        });
+      },
+
+      setSelectedGamblerBet: (bet) => {
+        const validBet: 0 | 2 | 3 = bet === 0 || bet === 2 || bet === 3 ? bet : 2;
+        set((state) => {
+          const prevProf = state.profile || DEFAULT_PROFILE;
+          const prevStats = prevProf.stats || DEFAULT_PROFILE.stats;
+          return {
+            selectedGamblerBet: validBet,
+            profile: {
+              ...prevProf,
+              stats: {
+                ...prevStats,
+                selectedGamblerBet: validBet,
               },
             },
           };
@@ -979,6 +1001,7 @@ export const useAppStore = create<AppState>()(
           bossOracleCharges: 0,
           bossTimeFreezeCharges: 0,
           selectedPlayerClass: 'duelist',
+          selectedGamblerBet: 2,
           lastBossClass: null,
           bossBestTimeByLevel: {},
           bossSPlusLevels: [],
@@ -996,6 +1019,7 @@ export const useAppStore = create<AppState>()(
               bossOracleCharges: 0,
               bossTimeFreezeCharges: 0,
               selectedPlayerClass: 'duelist',
+              selectedGamblerBet: 2,
               lastBossClass: null,
               bossBestTimeByLevel: {},
               bossSPlusLevels: [],
@@ -1595,6 +1619,7 @@ export function isPlayerClassUnlocked(
     case 'channeler':
     case 'chronos':
     case 'breaker':
+    case 'gambler':
     case 'berserker':
       return {
         isUnlocked: true,
