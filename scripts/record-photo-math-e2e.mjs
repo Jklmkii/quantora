@@ -133,25 +133,39 @@ async function main() {
       } catch {}
     });
 
+    // Limpar frames antigos
+    if (fs.existsSync(FRAMES_DIR)) {
+      for (const file of fs.readdirSync(FRAMES_DIR)) {
+        try { fs.unlinkSync(path.join(FRAMES_DIR, file)); } catch {}
+      }
+    }
+
     console.log('\n[PASSO 1] Acessando aplicação no Cosmic Hub...');
     await page.goto(`http://127.0.0.1:${PORT}`, { waitUntil: 'networkidle0' });
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1000));
 
-    // Forçar modo escuro e estado consistente
+    // Forçar modo escuro, completar onboarding e desativar qualquer overlay
     await page.evaluate(() => {
       document.documentElement.classList.add('dark');
       if (window.__quantoraStore) {
-        window.__quantoraStore.getState().updateSettings({ theme: 'dark' });
+        const store = window.__quantoraStore.getState();
+        store.completeOnboarding();
+        store.updateSettings({
+          theme: 'dark',
+          hasCompletedOnboarding: true,
+        });
       }
     });
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 1200));
 
-    // MARCO 1: Cosmic Hub com card do Photo Math em destaque
+    // MARCO 1: Cosmic Hub com card do Photo Math em destaque (ZERO OVERLAYS)
     telemetry.step1 = await page.evaluate(() => {
       const cards = Array.from(document.querySelectorAll('button, div')).map((el) => el.textContent || '');
+      const hasOverlay = Boolean(document.querySelector('.backdrop-blur-md, .backdrop-blur-lg'));
       return {
         hasPhotoMathInHub: cards.some((txt) => txt.includes('Foto Scanner') || txt.includes('Photo Math')),
         activeTab: window.__quantoraStore?.getState().activeTab,
+        hasOverlay,
       };
     });
     console.log('[TELEMETRIA MARCO 1 — HUB CÓSMICO]', telemetry.step1);

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Sigma, Scale, ShieldCheck, ChevronRight, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sigma, Scale, ShieldCheck, ChevronRight, Check, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -11,6 +11,17 @@ export const OnboardingModal: React.FC = () => {
     }))
   );
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (hasCompletedOnboarding) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        completeOnboarding();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasCompletedOnboarding, completeOnboarding]);
 
   if (hasCompletedOnboarding) return null;
 
@@ -44,8 +55,24 @@ export const OnboardingModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in">
-      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 md:p-8 flex flex-col items-center text-center">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) completeOnboarding();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in"
+    >
+      <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 md:p-8 flex flex-col items-center text-center">
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={completeOnboarding}
+          className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          aria-label="Fechar introdução"
+          title="Fechar"
+        >
+          <X size={18} />
+        </button>
+
         {/* Slide Icon */}
         <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center mb-6 shadow-inner">
           {slides[currentSlide].icon}
