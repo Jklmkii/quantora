@@ -17,11 +17,11 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
-            }
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
+            }
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
             }
             if (id.includes('big.js')) {
               return 'vendor-math';
@@ -40,6 +40,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/templates/**', '**/.{idea,git,cache,output,temp}/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

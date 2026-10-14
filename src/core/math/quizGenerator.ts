@@ -241,6 +241,7 @@ export function generateQuizQuestion(
             `Alinhando as vírgulas: ${aStr} + ${bStr}`,
             `Resultado: ${correctStr}`,
           ],
+          operands: [aBig.toNumber(), bBig.toNumber()],
         };
       }
     }
@@ -332,7 +333,7 @@ export function generateQuizQuestion(
             `Alinhando as casas decimais: ${aStr} - ${bStr}`,
             `Resultado: ${correctStr}`,
           ],
-          operands: [aInt, bInt],
+          operands: [aBig.toNumber(), bBig.toNumber()],
         };
       }
     }
@@ -507,61 +508,101 @@ export function generateQuizQuestion(
     }
 
     case 'regra_simples': {
-      // Cenários variados e didáticos
-      const scenarios = [
-        {
-          template: (p1: number, v1: number, p2: number) =>
-            `Se ${p1} operários constroem um muro em ${v1} dias, quantos dias levarão ${p2} operários?`,
-          type: 'inverse' as const,
-          colA: 'Operários',
-          colB: 'Dias',
-          p1: 4,
-          v1: 6,
-          p2: 8, // (4*6)/8 = 3
-        },
-        {
-          template: (p1: number, v1: number, p2: number) =>
-            `Um carro a ${p1} km/h faz um trajeto em ${v1} horas. A ${p2} km/h, fará em quantas horas?`,
-          type: 'inverse' as const,
-          colA: 'Velocidade',
-          colB: 'Horas',
-          p1: 60,
-          v1: 4,
-          p2: 80, // (60*4)/80 = 3
-        },
-        {
-          template: (p1: number, v1: number, p2: number) =>
-            `Se ${p1} cadernos custam R$ ${v1}, quanto custarão ${p2} cadernos?`,
-          type: 'direct' as const,
-          colA: 'Cadernos',
-          colB: 'Preço',
-          p1: 3,
-          v1: 15,
-          p2: 7, // (7*15)/3 = 35
-        },
-        {
-          template: (p1: number, v1: number, p2: number) =>
-            `Uma impressora imprime ${p1} páginas em ${v1} minutos. Quantas páginas imprimirá em ${p2} minutos?`,
-          type: 'direct' as const,
-          colA: 'Páginas',
-          colB: 'Minutos',
-          p1: 40,
-          v1: 10,
-          p2: 25, // (40*25)/10 = 100
-        },
-        {
-          template: (p1: number, v1: number, p2: number) =>
-            `Um veículo consome ${v1} litros de combustível para percorrer ${p1} km. Quantos litros gastará em ${p2} km?`,
-          type: 'direct' as const,
-          colA: 'Distância (km)',
-          colB: 'Litros',
-          p1: 100,
-          v1: 8,
-          p2: 250, // (250*8)/100 = 20
-        },
-      ];
+      // Cenários variados e didáticos com geração dinâmica garantindo divisão exata
+      const isDirect = Math.random() > 0.4;
+      let item: {
+        type: 'direct' | 'inverse';
+        template: (p1: number, v1: number, p2: number) => string;
+        colA: string;
+        colB: string;
+        p1: number;
+        v1: number;
+        p2: number;
+      };
 
-      const item = pickRandom(scenarios);
+      if (isDirect) {
+        const directScenarios = [
+          {
+            template: (p1: number, v1: number, p2: number) =>
+              `Se ${p1} cadernos custam R$ ${v1}, quanto custarão ${p2} cadernos?`,
+            colA: 'Cadernos',
+            colB: 'Preço',
+            gen: () => {
+              const unitPrice = getRandomInt(3, 12);
+              const p1 = getRandomInt(2, 6);
+              const v1 = p1 * unitPrice;
+              const p2 = getRandomInt(p1 + 1, p1 + 8);
+              return { p1, v1, p2 };
+            },
+          },
+          {
+            template: (p1: number, v1: number, p2: number) =>
+              `Uma impressora imprime ${p1} páginas em ${v1} minutos. Quantas páginas imprimirá em ${p2} minutos?`,
+            colA: 'Páginas',
+            colB: 'Minutos',
+            gen: () => {
+              const rate = getRandomInt(4, 15);
+              const v1 = getRandomInt(3, 10);
+              const p1 = v1 * rate;
+              const p2 = getRandomInt(v1 + 2, v1 + 15);
+              return { p1, v1, p2 };
+            },
+          },
+          {
+            template: (p1: number, v1: number, p2: number) =>
+              `Um veículo consome ${v1} litros de combustível para percorrer ${p1} km. Quantos litros gastará em ${p2} km?`,
+            colA: 'Distância (km)',
+            colB: 'Litros',
+            gen: () => {
+              const kmPerL = getRandomInt(8, 15);
+              const v1 = getRandomInt(4, 10);
+              const p1 = v1 * kmPerL;
+              const v2 = getRandomInt(v1 + 2, v1 + 12);
+              const p2 = v2 * kmPerL;
+              return { p1, v1, p2 };
+            },
+          },
+        ];
+        const s = pickRandom(directScenarios);
+        const vals = s.gen();
+        item = { type: 'direct', template: s.template, colA: s.colA, colB: s.colB, ...vals };
+      } else {
+        const inverseScenarios = [
+          {
+            template: (p1: number, v1: number, p2: number) =>
+              `Se ${p1} operários constroem um muro em ${v1} dias, quantos dias levarão ${p2} operários trabalhando no mesmo ritmo?`,
+            colA: 'Operários',
+            colB: 'Dias',
+            gen: () => {
+              const p1 = getRandomInt(2, 6);
+              const mult = getRandomInt(2, 4);
+              const p2 = p1 * mult;
+              const v2 = getRandomInt(2, 8);
+              const v1 = v2 * mult;
+              return { p1, v1, p2 };
+            },
+          },
+          {
+            template: (p1: number, v1: number, p2: number) =>
+              `Um carro a ${p1} km/h faz um trajeto em ${v1} horas. A ${p2} km/h, fará em quantas horas?`,
+            colA: 'Velocidade',
+            colB: 'Horas',
+            gen: () => {
+              const distList = [120, 180, 240, 300, 360, 480];
+              const dist = pickRandom(distList);
+              const divisors = [2, 3, 4, 5, 6, 8].filter((d) => dist % d === 0);
+              const v1 = pickRandom(divisors);
+              const v2 = pickRandom(divisors.filter((d) => d !== v1)) || divisors[0];
+              const p1 = dist / v1;
+              const p2 = dist / v2;
+              return { p1, v1, p2 };
+            },
+          },
+        ];
+        const s = pickRandom(inverseScenarios);
+        const vals = s.gen();
+        item = { type: 'inverse', template: s.template, colA: s.colA, colB: s.colB, ...vals };
+      }
       const res = calculateRegraDeTresSimples({
         a1: item.p1.toString(),
         b1: item.v1.toString(),

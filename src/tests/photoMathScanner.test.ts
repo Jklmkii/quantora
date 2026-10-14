@@ -97,6 +97,19 @@ describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
       expect(res.isSolvable).toBe(false);
       expect(res.resultSummary).toContain('Sem Solução');
     });
+
+    it('solves linear equations with parentheses and distributive property', () => {
+      const res = solveLinearEquation('3(x - 4) = 15');
+      expect(res.isSolvable).toBe(true);
+      expect(res.resultSummary).toBe('x = 9');
+      expect(res.steps.some((s) => s.includes('Propriedade Distributiva'))).toBe(true);
+    });
+
+    it('solves bilateral linear equations with multiple parentheses', () => {
+      const res = solveLinearEquation('2(x + 3) = 4(x - 1)');
+      expect(res.isSolvable).toBe(true);
+      expect(res.resultSummary).toBe('x = 5');
+    });
   });
 
   describe('4. Quadratic Equation Solving (Bhaskara)', () => {
@@ -107,6 +120,13 @@ describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
       expect(res.resultSummary).toContain('2');
       expect(res.targetTab).toBe('bhaskara');
       expect(res.targetPayload).toBeDefined();
+    });
+
+    it('formats roots with custom decimal places and comma separator', () => {
+      const res = solveQuadraticEquation('3x^2 - 5x + 1 = 0', { decimals: 4, separator: ',' });
+      expect(res.isSolvable).toBe(true);
+      // roots of 3x^2 - 5x + 1 = 0: (5 +- sqrt(13)) / 6 approx 1,4343 and 0,2324
+      expect(res.resultSummary).toContain(',');
     });
 
     it('solves quadratic with non-zero right hand side', () => {

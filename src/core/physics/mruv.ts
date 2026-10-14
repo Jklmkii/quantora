@@ -276,6 +276,9 @@ export function calculateMRUV(
         }
 
         bigV = safeSqrt(vSq, 'v²');
+        if (bigV0.lte(0) && bigA.lt(0) && bigDeltaS.lte(0)) {
+          bigV = bigV.times(-1);
+        }
         bigS = bigS0.plus(bigDeltaS);
 
         if (!bigA.eq(0)) {
@@ -287,7 +290,9 @@ export function calculateMRUV(
             `   v² = (${formatNumberSmart(bigV0, decimals, separator)})² + 2 · (${formatNumberSmart(bigA, decimals, separator)}) · (${formatNumberSmart(bigDeltaS, decimals, separator)})\n` +
             `   v² = ${formatNumberSmart(v0Sq, decimals, separator)} + (${formatNumberSmart(twoADeltaS, decimals, separator)})\n` +
             `   v² = ${formatNumberSmart(vSq, decimals, separator)}\n` +
-            `   **v = √${formatNumberSmart(vSq, decimals, separator)} = ${formatNumberSmart(bigV, decimals, separator)} m/s**`
+            (bigV.lt(0)
+              ? `   **v = -√${formatNumberSmart(vSq, decimals, separator)} = ${formatNumberSmart(bigV, decimals, separator)} m/s** (sentido retrógrado)`
+              : `   **v = √${formatNumberSmart(vSq, decimals, separator)} = ${formatNumberSmart(bigV, decimals, separator)} m/s**`)
         );
         break;
       }

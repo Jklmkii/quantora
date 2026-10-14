@@ -212,7 +212,7 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
         // O Chrome redirecionará para com.quantora.app://auth-callback capturado pelo App listener
         window.open(data.url, '_system');
       } else if (typeof window !== 'undefined') {
-        window.open(data.url, '_blank');
+        window.location.assign(data.url);
       }
     }
 

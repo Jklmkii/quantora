@@ -136,6 +136,19 @@ describe('Physics Module - Unit Tests', () => {
       expect(res.v).toBe(20);
     });
 
+    it('calculates negative final velocity and correct time for retrograde accelerated motion in Torricelli', () => {
+      const res = calculateMRUV({
+        subMode: 'torricelli',
+        v0: '-10',
+        a: '-2',
+        deltaS: '-24',
+        unknown: 'v',
+      });
+      expect(res.v).toBe(-14);
+      expect(res.t).toBe(2);
+      expect(res.steps.some((s) => s.includes('sentido retrógrado'))).toBe(true);
+    });
+
     it('calculates stopping distance and stopping time for decelerating object', () => {
       const res = calculateMRUV({
         subMode: 'horaria',

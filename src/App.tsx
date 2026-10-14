@@ -140,64 +140,65 @@ export function App() {
       <Scratchpad />
 
       {/* Main Experience: Cosmic Hub Carousel OR Inner Calculator/Game Modules */}
-      {activeTab === 'hub' ? (
+      {activeTab === 'hub' && (
         <CosmicHub
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenProfile={() => setIsProfileOpen(true)}
           onOpenAuth={() => setIsAuthOpen(true)}
         />
-      ) : (
-        <>
-          {/* Header Focado do Módulo (Sem HUD de abas!) */}
-          <ModuleTopBar
-            onOpenSettings={() => setIsSettingsOpen(true)}
-            onOpenProfile={() => setIsProfileOpen(true)}
-            onOpenAuth={() => setIsAuthOpen(true)}
-          />
-
-          {/* Main Content Area */}
-          <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-36 md:pb-16">
-            <Suspense fallback={<ModuleSkeleton />}>
-              {/* Static Modules (Keep mounted to preserve state) */}
-              <div style={{ display: activeTab === 'bhaskara' ? 'block' : 'none' }}>
-                {visitedTabs.has('bhaskara') && <BhaskaraModule />}
-              </div>
-
-              <div style={{ display: (activeTab === 'regra_simples' || activeTab === 'regra_composta') ? 'block' : 'none' }}>
-                {(visitedTabs.has('regra_simples') || visitedTabs.has('regra_composta')) && <RegraDeTresModule />}
-              </div>
-
-              <div style={{ display: activeTab === 'pitagoras' ? 'block' : 'none' }}>
-                {visitedTabs.has('pitagoras') && <PitagorasModule />}
-              </div>
-
-              <div style={{ display: activeTab === 'physics' ? 'block' : 'none' }}>
-                {visitedTabs.has('physics') && <PhysicsModule />}
-              </div>
-
-              <div style={{ display: activeTab === 'photo_math' ? 'block' : 'none' }}>
-                {visitedTabs.has('photo_math') && <PhotoMathModule />}
-              </div>
-
-              {/* Dynamic Modules (Unmount to reset state) */}
-              {activeTab === 'quiz' && <QuizModule />}
-              {activeTab === 'history' && <HistoryModule />}
-            </Suspense>
-          </main>
-
-          {/* Floating Return to Cosmic Hub Button */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('hub')}
-            className="fixed bottom-6 left-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full cosmic-glass border border-cyan-500/40 text-cyan-400 dark:text-cyan-300 font-semibold text-xs tracking-wider uppercase shadow-xl hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl group"
-            title="Voltar ao Hub Cósmico"
-            aria-label="Voltar ao Hub Cósmico"
-          >
-            <LayoutGrid className="w-4 h-4 text-cyan-400 group-hover:rotate-90 transition-transform duration-300" />
-            <span>Hub</span>
-          </button>
-        </>
       )}
+
+      {/* Inner Modules Viewport (Mantido montado para preservar valores e estado das calculadoras) */}
+      <div className={activeTab === 'hub' ? 'hidden' : 'flex-1 flex flex-col w-full'}>
+        {/* Header Focado do Módulo (Sem HUD de abas!) */}
+        <ModuleTopBar
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenProfile={() => setIsProfileOpen(true)}
+          onOpenAuth={() => setIsAuthOpen(true)}
+        />
+
+        {/* Main Content Area */}
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 md:pt-8 pb-36 md:pb-16">
+          <Suspense fallback={<ModuleSkeleton />}>
+            {/* Static Modules (Keep mounted to preserve state) */}
+            <div style={{ display: activeTab === 'bhaskara' ? 'block' : 'none' }}>
+              {visitedTabs.has('bhaskara') && <BhaskaraModule />}
+            </div>
+
+            <div style={{ display: (activeTab === 'regra_simples' || activeTab === 'regra_composta') ? 'block' : 'none' }}>
+              {(visitedTabs.has('regra_simples') || visitedTabs.has('regra_composta')) && <RegraDeTresModule />}
+            </div>
+
+            <div style={{ display: activeTab === 'pitagoras' ? 'block' : 'none' }}>
+              {visitedTabs.has('pitagoras') && <PitagorasModule />}
+            </div>
+
+            <div style={{ display: activeTab === 'physics' ? 'block' : 'none' }}>
+              {visitedTabs.has('physics') && <PhysicsModule />}
+            </div>
+
+            <div style={{ display: activeTab === 'photo_math' ? 'block' : 'none' }}>
+              {visitedTabs.has('photo_math') && <PhotoMathModule />}
+            </div>
+
+            {/* Dynamic Modules (Unmount to reset state) */}
+            {activeTab === 'quiz' && <QuizModule />}
+            {activeTab === 'history' && <HistoryModule />}
+          </Suspense>
+        </main>
+
+        {/* Floating Return to Cosmic Hub Button */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('hub')}
+          className="fixed bottom-6 left-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full cosmic-glass border border-cyan-500/40 text-cyan-400 dark:text-cyan-300 font-semibold text-xs tracking-wider uppercase shadow-xl hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl group"
+          title="Voltar ao Hub Cósmico"
+          aria-label="Voltar ao Hub Cósmico"
+        >
+          <LayoutGrid className="w-4 h-4 text-cyan-400 group-hover:rotate-90 transition-transform duration-300" />
+          <span>Hub</span>
+        </button>
+      </div>
 
       {/* Modals */}
       {/*

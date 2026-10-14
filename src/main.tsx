@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Capacitor } from '@capacitor/core'
 import './index.css'
 import App from './App.tsx'
 import { TrayPracticeWidget } from './presentation/components/TrayPracticeWidget'
@@ -17,10 +18,15 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Register PWA Service Worker for offline support (Web only - skip in Electron to prevent file:// protocol error)
-if ('serviceWorker' in navigator && import.meta.env.PROD && !window.electronAPI) {
+// Register PWA Service Worker for offline support (Web only - skip in Electron and native Capacitor)
+if (
+  'serviceWorker' in navigator &&
+  import.meta.env.PROD &&
+  !window.electronAPI &&
+  !Capacitor.isNativePlatform()
+) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((err) => {
       console.error('SW registration failed: ', err);
     });
   });

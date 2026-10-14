@@ -189,15 +189,72 @@ export function solveLinearEquation(
     return { xCoeff, constant };
   }
 
+  // Expande parênteses e propriedade distributiva c*(ax + b)
+  function expandDistributive(expr: string): string {
+    let current = expr.trim();
+    if (!current.includes('(')) return current;
+
+    // Normaliza multiplicações implícitas antes ou depois de parênteses
+    current = current
+      .replace(/\(([^()]+)\)\s*\*?\s*(\d+(?:\.\d+)?)/g, '$2 * ($1)')
+      .replace(/(\d+(?:\.\d+)?)\s*\(/g, '$1 * (')
+      .replace(/([+-])\s*\(/g, '$1 1 * (')
+      .replace(/^\s*\(/, '1 * (');
+
+    let iterations = 0;
+    while (current.includes('(') && iterations < 10) {
+      iterations++;
+      const match = current.match(/([+-]?\s*\d+(?:\.\d+)?)\s*\*\s*\(([^()]+)\)/);
+      if (!match) break;
+
+      const [fullMatch, factorStr, innerStr] = match;
+      const factorBig = parseBig(factorStr.replace(/\s+/g, ''));
+      const parsedInner = parseSide(innerStr);
+
+      const expandedX = parsedInner.xCoeff.times(factorBig);
+      const expandedConst = parsedInner.constant.times(factorBig);
+
+      let replacement = '';
+      if (!expandedX.eq(0)) {
+        replacement += expandedX.gte(0) ? `+ ${expandedX.toString()}x ` : `- ${expandedX.abs().toString()}x `;
+      }
+      if (!expandedConst.eq(0)) {
+        replacement += expandedConst.gte(0) ? `+ ${expandedConst.toString()}` : `- ${expandedConst.abs().toString()}`;
+      }
+      if (!replacement.trim()) {
+        replacement = '+ 0';
+      }
+
+      current = current.replace(fullMatch, ` ${replacement.trim()} `);
+    }
+
+    return current.replace(/\s+/g, ' ').trim();
+  }
+
   try {
-    const left = parseSide(leftStr);
-    const right = parseSide(rightStr);
+    const hasParentheses = leftStr.includes('(') || rightStr.includes('(');
+    const leftExpanded = expandDistributive(leftStr);
+    const rightExpanded = expandDistributive(rightStr);
+
+    const left = parseSide(leftExpanded);
+    const right = parseSide(rightExpanded);
 
     const steps: string[] = [];
     steps.push(`Equação identificada: **${normalizedEquation}**`);
+
+    let stepNumber = 1;
+    if (hasParentheses) {
+      steps.push(
+        `${stepNumber}. **Propriedade Distributiva:** eliminação dos parênteses nos membros:`
+      );
+      steps.push(`   ${leftExpanded} = ${rightExpanded}`);
+      stepNumber++;
+    }
+
     steps.push(
-      `1. Agrupamento dos termos em $x$ no primeiro membro e constantes no segundo membro:`
+      `${stepNumber}. **Agrupamento de Termos:** incógnitas no primeiro membro e constantes no segundo:`
     );
+    stepNumber++;
 
     // ax - cx = d - b
     const finalCoeff = left.xCoeff.minus(right.xCoeff);
@@ -218,7 +275,7 @@ export function solveLinearEquation(
           resultSummary: 'Identidade: Infinitas Soluções (S = ℝ)',
           steps: [
             ...steps,
-            '2. Conclusão: $0x = 0$. Qualquer valor real de $x$ satisfaz a igualdade.',
+            `${stepNumber}. **Conclusão:** $0x = 0$. Qualquer valor real de $x$ satisfaz a igualdade.`,
           ],
           latexFormula: 'x \\in \\mathbb{R}',
         };
@@ -232,7 +289,7 @@ export function solveLinearEquation(
           resultSummary: 'Sem Solução (S = ∅)',
           steps: [
             ...steps,
-            `2. Conclusão: $0x = ${finalConst.toString()}$. Uma contradição matemática, pois $0 \\neq ${finalConst.toString()}$.`,
+            `${stepNumber}. **Conclusão:** $0x = ${finalConst.toString()}$. Uma contradição matemática, pois $0 \\neq ${finalConst.toString()}$.`,
           ],
           latexFormula: 'S = \\emptyset',
         };
@@ -242,7 +299,7 @@ export function solveLinearEquation(
     const xVal = finalConst.div(finalCoeff);
     const formattedX = formatNumberSmart(xVal.toNumber(), decimals, separator);
 
-    steps.push(`2. Isolamento da incógnita $x$:`);
+    steps.push(`${stepNumber}. **Isolamento da incógnita $x$:**`);
     steps.push(`   x = ${finalConst.toString()} / ${finalCoeff.toString()}`);
     steps.push(`   **x = ${formattedX}**`);
 
@@ -345,14 +402,20 @@ export function solveQuadraticEquation(
       options
     );
 
+    const decimals = options.decimals ?? 2;
+    const separator = options.separator ?? ',';
+
     let summary = '';
     let latex = '';
     if (bhaskaraRes.rootType === 'two_real') {
-      summary = `x₁ = ${bhaskaraRes.x1}, x₂ = ${bhaskaraRes.x2}`;
-      latex = `x_1 = ${bhaskaraRes.x1}, \\; x_2 = ${bhaskaraRes.x2}`;
+      const fX1 = formatNumberSmart(bhaskaraRes.x1!, decimals, separator);
+      const fX2 = formatNumberSmart(bhaskaraRes.x2!, decimals, separator);
+      summary = `x₁ = ${fX1}, x₂ = ${fX2}`;
+      latex = `x_1 = ${fX1}, \\; x_2 = ${fX2}`;
     } else if (bhaskaraRes.rootType === 'single_real') {
-      summary = `x = ${bhaskaraRes.x1} (raiz dupla)`;
-      latex = `x = ${bhaskaraRes.x1}`;
+      const fX1 = formatNumberSmart(bhaskaraRes.x1!, decimals, separator);
+      summary = `x = ${fX1} (raiz dupla)`;
+      latex = `x = ${fX1}`;
     } else {
       summary = `Raízes complexas: ${bhaskaraRes.complexRoots?.x1.formatted}, ${bhaskaraRes.complexRoots?.x2.formatted}`;
       latex = `x = ${bhaskaraRes.complexRoots?.x1.formatted}`;
