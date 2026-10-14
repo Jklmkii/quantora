@@ -29,6 +29,7 @@ import {
   CosmicDaily3D,
   CosmicSpaced3D,
   CosmicHistory3D,
+  CosmicScan3D,
 } from './CosmicIcons3D';
 
 interface HubCard {
@@ -194,6 +195,18 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       statsLabel: t.hub_regra_stats,
       statsValue: `${profile?.stats?.totalRegraDeTres || 0}`,
       renderIcon: (isActive) => <CosmicRegraDeTres3D size={isActive ? 84 : 64} />,
+    },
+    {
+      id: 'photo_math',
+      title: t.hub_photo_math_title,
+      subtitle: t.hub_photo_math_subtitle,
+      category: t.hub_photo_math_category,
+      neonColor: 'cyan',
+      targetTab: 'photo_math',
+      badge: t.hub_photo_math_badge,
+      statsLabel: t.hub_photo_math_stats_label,
+      statsValue: t.hub_photo_math_stats_value,
+      renderIcon: (isActive) => <CosmicScan3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'daily',

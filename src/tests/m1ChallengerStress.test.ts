@@ -23,14 +23,15 @@ const validateHistoryItem = (item: any) => validateHistorySchema([item]).valid =
 
 describe('Empirical Challenger 2 — Milestone M1 Stress Testing Suite', () => {
   describe('1. historyValidator: VALID_TYPES Integrity & Exhaustiveness', () => {
-    it('VALID_TYPES contains exactly the 5 expected calculation types including physics and pitagoras', () => {
-      expect(VALID_TYPES).toEqual(['bhaskara', 'regra_simples', 'regra_composta', 'physics', 'pitagoras']);
-      expect(VALID_TYPES.length).toBe(5);
+    it('VALID_TYPES contains exactly the 6 expected calculation types including physics, pitagoras and photo_math', () => {
+      expect(VALID_TYPES).toEqual(['bhaskara', 'regra_simples', 'regra_composta', 'physics', 'pitagoras', 'photo_math']);
+      expect(VALID_TYPES.length).toBe(6);
       expect(VALID_TYPES).toContain('physics');
       expect(VALID_TYPES).toContain('bhaskara');
       expect(VALID_TYPES).toContain('regra_simples');
       expect(VALID_TYPES).toContain('regra_composta');
       expect(VALID_TYPES).toContain('pitagoras');
+      expect(VALID_TYPES).toContain('photo_math');
       expect(Object.isFrozen(VALID_TYPES) || Array.isArray(VALID_TYPES)).toBe(true);
     });
   });

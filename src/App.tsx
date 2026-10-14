@@ -35,6 +35,9 @@ const HistoryModule = lazy(() =>
 const QuizModule = lazy(() =>
   import('./presentation/modules/QuizModule').then((m) => ({ default: m.QuizModule }))
 );
+const PhotoMathModule = lazy(() =>
+  import('./presentation/modules/PhotoMathModule').then((m) => ({ default: m.PhotoMathModule }))
+);
 
 function ModuleSkeleton() {
   return (
@@ -170,6 +173,10 @@ export function App() {
 
               <div style={{ display: activeTab === 'physics' ? 'block' : 'none' }}>
                 {visitedTabs.has('physics') && <PhysicsModule />}
+              </div>
+
+              <div style={{ display: activeTab === 'photo_math' ? 'block' : 'none' }}>
+                {visitedTabs.has('photo_math') && <PhotoMathModule />}
               </div>
 
               {/* Dynamic Modules (Unmount to reset state) */}

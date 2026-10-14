@@ -16,6 +16,7 @@ import {
   LayoutGrid,
   Cloud,
   Bell,
+  Camera,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -128,6 +129,13 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
           category: 'Auditoria Local',
           icon: <History size={18} className="text-purple-400" />,
           color: 'purple',
+        };
+      case 'photo_math':
+        return {
+          title: t.nav_photo_math || 'Foto Scanner',
+          category: 'Visão Computacional & IA',
+          icon: <Camera size={18} className="text-cyan-400" />,
+          color: 'cyan',
         };
       default:
         return {

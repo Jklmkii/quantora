@@ -44,7 +44,7 @@ import {
   type BossWeaponId,
 } from '../core/quiz/bossEngine';
 
-export type ActiveTab = 'hub' | 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings';
+export type ActiveTab = 'hub' | 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings' | 'photo_math';
 export type QuizSubmode = 'survival' | 'blitz' | 'boss_rush' | 'daily' | 'spaced';
 
 export interface BossRpgVictoryMeta {

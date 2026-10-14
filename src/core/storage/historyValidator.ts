@@ -12,6 +12,7 @@ export const VALID_TYPES: readonly CalculationType[] = [
   'regra_composta',
   'physics',
   'pitagoras',
+  'photo_math',
 ] as const;
 
 /**

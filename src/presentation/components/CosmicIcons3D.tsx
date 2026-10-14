@@ -660,3 +660,74 @@ export const CosmicHistory3D: React.FC<IconProps> = ({ className = '', size = 80
     <line x1="50" y1="46" x2="56" y2="42" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
+
+/**
+ * 11. CosmicScan3D — Scanner de Foto & Câmera de Equações
+ * Lente de cristal fotônica com retícula laser de enquadramento e facho de escaneamento.
+ */
+export const CosmicScan3D: React.FC<IconProps> = ({ className = '', size = 80 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 100 100"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={`drop-shadow-[0_0_24px_rgba(6,182,212,0.55)] transition-transform duration-500 ${className}`}
+    aria-hidden="true"
+  >
+    <defs>
+      <linearGradient id="scanBody" x1="15" y1="20" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.85" />
+        <stop offset="50%" stopColor="#0891b2" stopOpacity="0.45" />
+        <stop offset="100%" stopColor="#0f172a" stopOpacity="0.9" />
+      </linearGradient>
+      <radialGradient id="lensAperture" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#e0f2fe" stopOpacity="0.95" />
+        <stop offset="40%" stopColor="#06b6d4" stopOpacity="0.75" />
+        <stop offset="85%" stopColor="#0369a1" stopOpacity="0.9" />
+        <stop offset="100%" stopColor="#082f49" stopOpacity="1" />
+      </radialGradient>
+      <linearGradient id="laserBeam" x1="15" y1="50" x2="85" y2="50" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0" />
+        <stop offset="25%" stopColor="#22d3ee" stopOpacity="0.8" />
+        <stop offset="50%" stopColor="#ffffff" stopOpacity="1" />
+        <stop offset="75%" stopColor="#22d3ee" stopOpacity="0.8" />
+        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+      </linearGradient>
+    </defs>
+
+    {/* Corpo da Câmera Cósmica (Polígono chanfrado em vidro 3D) */}
+    <path
+      d="M24 30 L36 18 L64 18 L76 30 L84 34 L84 76 L76 84 L24 84 L16 76 L16 34 Z"
+      fill="url(#scanBody)"
+      stroke="rgba(255, 255, 255, 0.45)"
+      strokeWidth="1.2"
+    />
+
+    {/* Lente Objetiva Central com Anéis Reflexivos */}
+    <circle cx="50" cy="52" r="22" fill="#082f49" stroke="#38bdf8" strokeWidth="1.5" />
+    <circle cx="50" cy="52" r="17" fill="url(#lensAperture)" stroke="rgba(255,255,255,0.7)" strokeWidth="1" />
+    <circle cx="50" cy="52" r="8" fill="#0284c7" stroke="rgba(255,255,255,0.9)" strokeWidth="0.8" />
+
+    {/* Reflexo Especular da Lente */}
+    <ellipse cx="44" cy="46" rx="5" ry="3" fill="#ffffff" opacity="0.65" transform="rotate(-30 44 46)" />
+
+    {/* Retícula Laser de Enquadramento (Cantos em Ciano Neon) */}
+    {/* Superior Esquerdo */}
+    <path d="M12 28 L12 20 L20 20" stroke="#06b6d4" strokeWidth="2.2" strokeLinecap="round" />
+    {/* Superior Direito */}
+    <path d="M80 20 L88 20 L88 28" stroke="#06b6d4" strokeWidth="2.2" strokeLinecap="round" />
+    {/* Inferior Esquerdo */}
+    <path d="M12 72 L12 80 L20 80" stroke="#06b6d4" strokeWidth="2.2" strokeLinecap="round" />
+    {/* Inferior Direito */}
+    <path d="M80 80 L88 80 L88 72" stroke="#06b6d4" strokeWidth="2.2" strokeLinecap="round" />
+
+    {/* Feixe Laser Holográfico Horizontal */}
+    <rect x="14" y="51" width="72" height="2" fill="url(#laserBeam)" />
+
+    {/* Flash / Sensor Cósmico */}
+    <circle cx="72" cy="30" r="3" fill="#e0f2fe" stroke="#38bdf8" strokeWidth="1" />
+    <circle cx="28" cy="30" r="2" fill="#38bdf8" opacity="0.8" />
+  </svg>
+);
+
