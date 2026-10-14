@@ -30,6 +30,34 @@ import {
 import { hapticComboTick, hapticMasteryBadge } from '../../core/platform/haptics';
 import { playHubSwipe, playSfx } from '../../core/platform/audio';
 
+const StepRenderer: React.FC<{ step: string }> = ({ step }) => {
+  const parts = step.split(/(\*\*.*?\*\*|\$.*?\$)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return (
+            <strong key={i} className="text-cyan-300">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+        if (part.startsWith('$') && part.endsWith('$')) {
+          return (
+            <code
+              key={i}
+              className="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono text-xs"
+            >
+              {part.slice(1, -1)}
+            </code>
+          );
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
+    </>
+  );
+};
+
 export const PhotoMathModule: React.FC = () => {
   const {
     settings,
@@ -737,13 +765,7 @@ export const PhotoMathModule: React.FC = () => {
                     key={idx}
                     className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-200 text-sm leading-relaxed font-sans"
                   >
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: step
-                          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-300">$1</strong>')
-                          .replace(/\$(.*?)\$/g, '<code class="px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono text-xs">$1</code>'),
-                      }}
-                    />
+                    <StepRenderer step={step} />
                   </div>
                 ))}
               </div>

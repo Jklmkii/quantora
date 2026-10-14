@@ -63,6 +63,10 @@ export function normalizeOcrText(rawText: string): string {
   // Normaliza mais ou menos
   text = text.replace(/[\u00B1±]/g, '+-');
 
+  // Adiciona multiplicação explícita em parênteses implícitos
+  text = text.replace(/(\d)\s*\(/g, '$1 * (');
+  text = text.replace(/\)\s*(\d)/g, ') * $1');
+
   // Converte variáveis maiúsculas X para x minúsculo
   text = text.replace(/\bX\b/g, 'x');
   text = text.replace(/(\d)X/g, '$1x');

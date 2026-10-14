@@ -302,7 +302,7 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const isEraser = tool === 'eraser';

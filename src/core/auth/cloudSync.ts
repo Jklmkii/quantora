@@ -1,6 +1,6 @@
 import { getSupabase, getCurrentUser, isSupabaseConfigured } from './supabaseClient';
 import { useAppStore } from '../../store/useAppStore';
-import type { UserProfile, DailyChallengeState, SpacedRepetitionState, QuizProgress, AppSettings, HistoryItem } from '../../types';
+import type { UserProfile, DailyChallengeState, SpacedRepetitionState, QuizProgress, AppSettings, HistoryItem, BossWeaponId } from '../../types';
 
 export interface QuantoraFullState {
   profile: UserProfile;
@@ -8,6 +8,10 @@ export interface QuantoraFullState {
   dailyChallenge: DailyChallengeState;
   highestBossLevelCleared: number;
   bossCoins: number;
+  bossTokens?: number;
+  bossClearedLevels?: number[];
+  bossSPlusLevels?: number[];
+  unlockedBossWeapons?: BossWeaponId[];
   damageUpgradeLevel: number;
   bossOracleCharges: number;
   bossTimeFreezeCharges: number;
@@ -82,11 +86,42 @@ export function mergeStates(
       local.highestBossLevelCleared || 0,
       remote.highestBossLevelCleared || 0
     ),
+    totalPhysics: Math.max(lStats.totalPhysics || 0, rStats.totalPhysics || 0),
     bossCoins: Math.max(
       lStats.bossCoins || 0,
       rStats.bossCoins || 0,
       local.bossCoins || 0,
       remote.bossCoins || 0
+    ),
+    bossTokens: Math.max(
+      lStats.bossTokens || 0,
+      rStats.bossTokens || 0,
+      local.bossTokens || 0,
+      remote.bossTokens || 0
+    ),
+    bossClearedLevels: Array.from(
+      new Set([
+        ...(lStats.bossClearedLevels || []),
+        ...(rStats.bossClearedLevels || []),
+        ...(local.bossClearedLevels || []),
+        ...(remote.bossClearedLevels || []),
+      ])
+    ).sort((a, b) => a - b),
+    bossSPlusLevels: Array.from(
+      new Set([
+        ...(lStats.bossSPlusLevels || []),
+        ...(rStats.bossSPlusLevels || []),
+        ...(local.bossSPlusLevels || []),
+        ...(remote.bossSPlusLevels || []),
+      ])
+    ).sort((a, b) => a - b),
+    unlockedBossWeapons: Array.from(
+      new Set([
+        ...(lStats.unlockedBossWeapons || []),
+        ...(rStats.unlockedBossWeapons || []),
+        ...(local.unlockedBossWeapons || []),
+        ...(remote.unlockedBossWeapons || []),
+      ])
     ),
     damageUpgradeLevel: Math.max(
       lStats.damageUpgradeLevel || 0,
@@ -156,6 +191,39 @@ export function mergeStates(
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 100);
 
+  // 9. Tracks: Merge track progress taking highest stats per track
+  const allTrackKeys = Array.from(
+    new Set([
+      ...Object.keys(local.quizProgress?.tracks || {}),
+      ...Object.keys(remote.quizProgress?.tracks || {}),
+    ])
+  ) as Array<keyof QuizProgress['tracks']>;
+
+  const mergedTracks = {} as QuizProgress['tracks'];
+  for (const track of allTrackKeys) {
+    const lTrack = local.quizProgress?.tracks?.[track] || {
+      currentLevel: 1,
+      bestStreak: 0,
+      recordCount: 0,
+      totalCorrect: 0,
+      totalAnswered: 0,
+    };
+    const rTrack = remote.quizProgress?.tracks?.[track] || {
+      currentLevel: 1,
+      bestStreak: 0,
+      recordCount: 0,
+      totalCorrect: 0,
+      totalAnswered: 0,
+    };
+    mergedTracks[track] = {
+      currentLevel: Math.max(lTrack.currentLevel || 1, rTrack.currentLevel || 1),
+      bestStreak: Math.max(lTrack.bestStreak || 0, rTrack.bestStreak || 0),
+      recordCount: Math.max(lTrack.recordCount || 0, rTrack.recordCount || 0),
+      totalCorrect: Math.max(lTrack.totalCorrect || 0, rTrack.totalCorrect || 0),
+      totalAnswered: Math.max(lTrack.totalAnswered || 0, rTrack.totalAnswered || 0),
+    };
+  }
+
   return {
     profile: {
       totalXp,
@@ -174,6 +242,10 @@ export function mergeStates(
     },
     highestBossLevelCleared: stats.highestBossLevelCleared ?? 0,
     bossCoins: stats.bossCoins ?? 0,
+    bossTokens: stats.bossTokens ?? 0,
+    bossClearedLevels: stats.bossClearedLevels ?? [],
+    bossSPlusLevels: stats.bossSPlusLevels ?? [],
+    unlockedBossWeapons: stats.unlockedBossWeapons ?? [],
     damageUpgradeLevel: stats.damageUpgradeLevel ?? 0,
     bossOracleCharges: stats.bossOracleCharges ?? 0,
     bossTimeFreezeCharges: stats.bossTimeFreezeCharges ?? 0,
@@ -200,7 +272,7 @@ export function mergeStates(
           remote.quizProgress?.survival.totalCorrect || 0
         ),
       },
-      tracks: local.quizProgress?.tracks || remote.quizProgress?.tracks || ({} as QuizProgress['tracks']),
+      tracks: mergedTracks,
     },
     spacedRepetition: {
       cards: mergedCards,

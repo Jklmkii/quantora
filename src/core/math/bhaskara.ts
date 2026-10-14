@@ -78,8 +78,7 @@ export function calculateBhaskara(
   // Step 3: Roots
   if (delta.gt(0)) {
     rootType = 'two_real';
-    const sqrtDeltaNum = Math.sqrt(Number(delta.toString()));
-    const sqrtDeltaBig = new Big(sqrtDeltaNum);
+    const sqrtDeltaBig = delta.sqrt();
 
     const numX1 = minusB.plus(sqrtDeltaBig);
     const numX2 = minusB.minus(sqrtDeltaBig);
@@ -111,9 +110,7 @@ export function calculateBhaskara(
     );
   } else {
     rootType = 'complex';
-    const absDeltaNum = Math.abs(Number(delta.toString()));
-    const sqrtAbsDelta = Math.sqrt(absDeltaNum);
-    const sqrtAbsDeltaBig = new Big(sqrtAbsDelta);
+    const sqrtAbsDeltaBig = delta.abs().sqrt();
 
     const realPartBig = minusB.div(twoA);
     const imagPartBig = sqrtAbsDeltaBig.div(twoA.abs());

@@ -6,6 +6,7 @@ export interface BossClassStyleSpec {
   badgeBg: string;
   badgeText: string;
   bannerGradient: string;
+  radialGlowClass: string;
 }
 
 export function getBossClassStyles(
@@ -20,6 +21,7 @@ export function getBossClassStyles(
       badgeBg: 'bg-cyan-500/30',
       badgeText: 'text-cyan-200 border-cyan-400',
       bannerGradient: 'from-cyan-950 via-slate-900 to-slate-950',
+      radialGlowClass: 'bg-gradient-to-b from-cyan-500/25 to-transparent',
     };
   }
 
@@ -30,6 +32,7 @@ export function getBossClassStyles(
       badgeBg: 'bg-red-500/30',
       badgeText: 'text-red-200 border-red-500/60',
       bannerGradient: 'from-red-950 via-rose-950 to-slate-950',
+      radialGlowClass: 'bg-gradient-to-b from-red-500/25 to-transparent',
     };
   }
 
@@ -41,6 +44,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-rose-500/20',
         badgeText: 'text-rose-300 border-rose-500/40',
         bannerGradient: 'from-rose-950 via-slate-950 to-slate-900',
+        radialGlowClass: 'bg-gradient-to-b from-rose-500/25 to-transparent',
       };
     case 'parity_lord':
       return {
@@ -49,6 +53,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-amber-500/20',
         badgeText: 'text-amber-300 border-amber-500/40',
         bannerGradient: 'from-amber-950/70 via-indigo-950/70 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-amber-500/25 to-transparent',
       };
     case 'speed_executioner':
       return {
@@ -57,6 +62,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-yellow-500/20',
         badgeText: 'text-yellow-300 border-yellow-500/40',
         bannerGradient: 'from-amber-950 via-orange-950/80 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-yellow-500/25 to-transparent',
       };
     case 'glass_colossus':
       return {
@@ -65,6 +71,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-cyan-500/20',
         badgeText: 'text-cyan-200 border-cyan-400/40',
         bannerGradient: 'from-cyan-950/80 via-sky-950 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-cyan-500/25 to-transparent',
       };
     case 'core_engineer':
       return {
@@ -73,6 +80,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-orange-500/20',
         badgeText: 'text-orange-300 border-orange-500/40',
         bannerGradient: 'from-orange-950/80 via-stone-900 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-orange-500/25 to-transparent',
       };
     case 'operator_architect':
       return {
@@ -81,6 +89,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-emerald-500/20',
         badgeText: 'text-emerald-300 border-emerald-500/40',
         bannerGradient: 'from-emerald-950/80 via-teal-950 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-emerald-500/25 to-transparent',
       };
     case 'fraction_hydra':
       return {
@@ -89,6 +98,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-lime-500/20',
         badgeText: 'text-lime-300 border-lime-500/40',
         bannerGradient: 'from-lime-950/80 via-emerald-950 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-lime-500/25 to-transparent',
       };
     case 'cipher_sphinx':
       return {
@@ -97,6 +107,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-amber-500/20',
         badgeText: 'text-yellow-200 border-amber-500/40',
         bannerGradient: 'from-yellow-950/70 via-blue-950/80 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-amber-500/25 to-transparent',
       };
     case 'negative_wraith':
       return {
@@ -105,6 +116,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-purple-500/20',
         badgeText: 'text-purple-300 border-purple-500/40',
         bannerGradient: 'from-purple-950/80 via-indigo-950 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-purple-500/25 to-transparent',
       };
     case 'time_weaver':
       return {
@@ -113,6 +125,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-sky-500/20',
         badgeText: 'text-sky-300 border-sky-500/40',
         bannerGradient: 'from-sky-950/80 via-blue-950 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-sky-500/25 to-transparent',
       };
     default:
       return {
@@ -121,6 +134,7 @@ export function getBossClassStyles(
         badgeBg: 'bg-purple-500/20',
         badgeText: 'text-purple-300 border-purple-500/30',
         bannerGradient: 'from-purple-950/80 via-slate-900 to-slate-950',
+        radialGlowClass: 'bg-gradient-to-b from-purple-500/25 to-transparent',
       };
   }
 }

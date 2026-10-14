@@ -210,7 +210,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     titlePt: 'Mestre dos Números',
     titleEn: 'Master of Numbers',
     description: 'Alcançou o Nível 10 de Perfil.',
-    descriptionPt: 'Mestre dos Números',
+    descriptionPt: 'Alcançou o Nível 10 de Perfil.',
     descriptionEn: 'Reached Profile Level 10.',
     category: 'mestria',
     xpReward: 500,

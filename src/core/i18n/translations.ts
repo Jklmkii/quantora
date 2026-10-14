@@ -364,14 +364,14 @@ export const translations = {
     locked_feature_toast: 'Recurso bloqueado! Disponível a partir do Nível {level}.',
 
     // Hub
-    hub_survival_title: 'Survival Mode',
-    hub_survival_subtitle: 'Educational Math training',
+    hub_survival_title: 'Modo Sobrevivência',
+    hub_survival_subtitle: 'Treino educacional de Matemática',
     hub_survival_category: 'Arena Infinita',
     hub_survival_badge: 'Full-Mix',
     hub_survival_stats: 'Recorde: Conta #{record}',
 
     hub_blitz_title: '60s Blitz',
-    hub_blitz_subtitle: 'Glow glover electred speed training',
+    hub_blitz_subtitle: 'Treino de cálculo rápido sob pressão',
     hub_blitz_category: 'Speed Run',
     hub_blitz_badge: '60 Segundos',
     hub_blitz_stats: 'Recorde Blitz',
@@ -856,7 +856,7 @@ export const translations = {
     hub_survival_stats: 'Record: Problem #{record}',
 
     hub_blitz_title: '60s Blitz',
-    hub_blitz_subtitle: 'Glow glover electred speed training',
+    hub_blitz_subtitle: 'Fast calculation training under pressure',
     hub_blitz_category: 'Speed Run',
     hub_blitz_badge: '60 Seconds',
     hub_blitz_stats: 'Blitz Record',

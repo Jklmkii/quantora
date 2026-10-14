@@ -113,10 +113,8 @@ export function calculatePitagoras(
     );
 
     // Raiz quadrada de cSquared
-    const cSquaredNum = Number(cSquared.toString());
-    const cExact = Math.sqrt(cSquaredNum);
-    isExactSquare = Number.isInteger(cExact);
-    cBig = new Big(cExact);
+    cBig = cSquared.sqrt();
+    isExactSquare = cBig.eq(cBig.round(0, 0));
 
     if (isExactSquare) {
       steps.push(
@@ -170,10 +168,8 @@ export function calculatePitagoras(
       `   b² = **${fmt(bSquared)}**`
     );
 
-    const bSquaredNum = Number(bSquared.toString());
-    const bExact = Math.sqrt(bSquaredNum);
-    isExactSquare = Number.isInteger(bExact);
-    bBig = new Big(bExact);
+    bBig = bSquared.sqrt();
+    isExactSquare = bBig.eq(bBig.round(0, 0));
 
     if (isExactSquare) {
       steps.push(
@@ -228,10 +224,8 @@ export function calculatePitagoras(
       `   a² = **${fmt(aSquared)}**`
     );
 
-    const aSquaredNum = Number(aSquared.toString());
-    const aExact = Math.sqrt(aSquaredNum);
-    isExactSquare = Number.isInteger(aExact);
-    aBig = new Big(aExact);
+    aBig = aSquared.sqrt();
+    isExactSquare = aBig.eq(aBig.round(0, 0));
 
     if (isExactSquare) {
       steps.push(

@@ -1879,7 +1879,7 @@ export const BossBattle: React.FC<BossBattleProps> = ({
           className={`absolute top-0 left-1/2 -translate-x-1/2 w-96 h-56 pointer-events-none blur-3xl transition-colors duration-500 ${
             isRageMode
               ? 'bg-gradient-to-b from-red-600/35 to-transparent'
-              : 'bg-gradient-to-b from-' + activeBossClassSpec.themeColor + '-500/25 to-transparent'
+              : activeBossStyles.radialGlowClass
           }`}
         />
 

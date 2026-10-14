@@ -161,6 +161,20 @@ describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
       expect(res.isSolvable).toBe(true);
       expect(res.resultSummary).toBe('50');
     });
+
+    it('handles implicit multiplication with parentheses', () => {
+      // e.g. 15(4 - 2) becomes 15 * (4 - 2)
+      let norm = normalizeOcrText('15(4 - 2)');
+      let res = solveArithmeticExpression(norm);
+      expect(res.isSolvable).toBe(true);
+      expect(res.resultSummary).toBe('30');
+
+      // e.g. (3 + 2)5 becomes (3 + 2) * 5
+      norm = normalizeOcrText('(3 + 2)5');
+      res = solveArithmeticExpression(norm);
+      expect(res.isSolvable).toBe(true);
+      expect(res.resultSummary).toBe('25');
+    });
   });
 
   describe('8. Master scanAndSolveEquation Controller', () => {

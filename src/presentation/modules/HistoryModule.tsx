@@ -12,6 +12,9 @@ import {
   Sigma,
   Scale,
   Atom,
+  Triangle,
+  Camera,
+  Layers,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -29,6 +32,18 @@ export const HistoryModule: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<'all' | CalculationType | 'pinned'>('all');
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const getTypeLabel = (type: CalculationType): string => {
+    switch (type) {
+      case 'bhaskara': return 'Bhaskara';
+      case 'regra_simples': return 'Regra de Três';
+      case 'regra_composta': return 'Regra de Três Composta';
+      case 'physics': return 'Física';
+      case 'pitagoras': return 'Pitágoras';
+      case 'photo_math': return 'Foto Scanner';
+      default: return 'Desconhecido';
+    }
+  };
 
   // Filtered and sorted history items
   const filteredHistory = useMemo(() => {
@@ -107,7 +122,10 @@ export const HistoryModule: React.FC = () => {
               { id: 'pinned', label: 'Favoritos', icon: <Star size={12} className="fill-amber-400 text-amber-400" /> },
               { id: 'bhaskara', label: 'Bhaskara', icon: <Sigma size={12} /> },
               { id: 'regra_simples', label: 'Regra de 3', icon: <Scale size={12} /> },
+              { id: 'regra_composta', label: 'Regra Composta', icon: <Layers size={12} /> },
               { id: 'physics', label: 'Física', icon: <Atom size={12} /> },
+              { id: 'pitagoras', label: 'Pitágoras', icon: <Triangle size={12} /> },
+              { id: 'photo_math', label: 'Foto Scanner', icon: <Camera size={12} /> },
             ] as const
           ).map((filter) => (
             <button
@@ -166,7 +184,7 @@ export const HistoryModule: React.FC = () => {
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                        {item.type === 'bhaskara' ? 'Bhaskara' : item.type === 'physics' ? 'Física' : 'Regra de Três'}
+                        {getTypeLabel(item.type)}
                       </span>
                       <span className="text-[11px] text-slate-400">{dateStr}</span>
                     </div>
