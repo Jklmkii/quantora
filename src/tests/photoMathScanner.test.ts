@@ -220,4 +220,42 @@ describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
       expect(res.steps.length).toBeGreaterThan(0);
     });
   });
+
+  describe('9. Store & Scratchpad-to-Scanner Workflow', () => {
+    it('routes canvas image from scratchpad directly to photo_math tab and sets pending image', async () => {
+      const { useAppStore } = await import('../store/useAppStore');
+      const store = useAppStore.getState();
+
+      store.sendScratchpadToScanner('data:image/png;base64,mockPngData');
+      const updated = useAppStore.getState();
+
+      expect(updated.activeTab).toBe('photo_math');
+      expect(updated.isScratchpadOpen).toBe(false);
+      expect(updated.scratchpadPendingImage).toBe('data:image/png;base64,mockPngData');
+
+      // Cleanup
+      updated.setScratchpadPendingImage(null);
+      expect(useAppStore.getState().scratchpadPendingImage).toBeNull();
+    });
+
+    it('manages floating scratchpadContext state accurately', async () => {
+      const { useAppStore } = await import('../store/useAppStore');
+      const store = useAppStore.getState();
+
+      store.setScratchpadContext({
+        title: 'Foto Scanner',
+        expression: '3x + 12 = 36',
+      });
+
+      const updated = useAppStore.getState();
+      expect(updated.scratchpadContext).toEqual({
+        title: 'Foto Scanner',
+        expression: '3x + 12 = 36',
+      });
+
+      // Cleanup
+      updated.setScratchpadContext(null);
+      expect(useAppStore.getState().scratchpadContext).toBeNull();
+    });
+  });
 });

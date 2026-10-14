@@ -371,8 +371,8 @@ export const translations = {
     hub_survival_stats: 'Recorde: Conta #{record}',
 
     hub_blitz_title: '60s Blitz',
-    hub_blitz_subtitle: 'Treino de cálculo rápido sob pressão',
-    hub_blitz_category: 'Speed Run',
+    hub_blitz_subtitle: 'Agilidade mental contra o relógio (+2s acerto / -3s erro)',
+    hub_blitz_category: 'Corrida Contra o Tempo',
     hub_blitz_badge: '60 Segundos',
     hub_blitz_stats: 'Recorde Blitz',
     hub_blitz_unlock: 'Nível 3 de XP',
@@ -856,7 +856,7 @@ export const translations = {
     hub_survival_stats: 'Record: Problem #{record}',
 
     hub_blitz_title: '60s Blitz',
-    hub_blitz_subtitle: 'Fast calculation training under pressure',
+    hub_blitz_subtitle: 'Mental agility against the clock (+2s hit / -3s miss)',
     hub_blitz_category: 'Speed Run',
     hub_blitz_badge: '60 Seconds',
     hub_blitz_stats: 'Blitz Record',

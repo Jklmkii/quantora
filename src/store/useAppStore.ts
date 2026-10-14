@@ -81,7 +81,12 @@ interface AppState {
   // Scratchpad
   isScratchpadOpen: boolean;
   hasScratchpadStrokes: boolean;
+  scratchpadContext: { title: string; expression: string } | null;
+  scratchpadPendingImage: string | null;
   toggleScratchpad: () => void;
+  setScratchpadContext: (ctx: { title: string; expression: string } | null) => void;
+  setScratchpadPendingImage: (img: string | null) => void;
+  sendScratchpadToScanner: (dataUrl: string) => void;
   setHasScratchpadStrokes: (has: boolean) => void;
   incrementScratchpadUses: () => void;
 
@@ -325,8 +330,23 @@ export const useAppStore = create<AppState>()(
 
       isScratchpadOpen: false,
       hasScratchpadStrokes: false,
+      scratchpadContext: null,
+      scratchpadPendingImage: null,
       toggleScratchpad: () => {
         set((state) => ({ isScratchpadOpen: !state.isScratchpadOpen }));
+      },
+      setScratchpadContext: (ctx) => {
+        set({ scratchpadContext: ctx });
+      },
+      setScratchpadPendingImage: (img) => {
+        set({ scratchpadPendingImage: img });
+      },
+      sendScratchpadToScanner: (dataUrl) => {
+        set({
+          scratchpadPendingImage: dataUrl,
+          isScratchpadOpen: false,
+          activeTab: 'photo_math',
+        });
       },
       setHasScratchpadStrokes: (has) => {
         set({ hasScratchpadStrokes: has });
@@ -1612,6 +1632,8 @@ export const useAppStore = create<AppState>()(
           toastQueue: _toastQueue,
           featureToastQueue: _featureToastQueue,
           isScratchpadOpen: _isScratchpadOpen,
+          scratchpadContext: _scratchpadContext,
+          scratchpadPendingImage: _scratchpadPendingImage,
           ...rest
         } = state;
         return rest;

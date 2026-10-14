@@ -653,15 +653,15 @@ export const QuizModule: React.FC = () => {
             {/* Header do Card */}
             <div className="flex flex-col items-center gap-1 z-10">
               <span className="text-[10px] font-mono font-black uppercase tracking-widest text-amber-600 dark:text-amber-400/90">
-                Speed Run
+                {t.hub_blitz_category || 'Corrida Contra o Tempo'}
               </span>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-wide">
-                60s Blitz
+                {t.hub_blitz_title || '60s Blitz'}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">
                 {isBlitzUnlocked
-                  ? 'Agilidade mental contra o relógio (+2s acerto / -3s erro)'
-                  : 'Desbloqueia no Nível 3 de XP geral'}
+                  ? (t.hub_blitz_subtitle || 'Agilidade mental contra o relógio (+2s acerto / -3s erro)')
+                  : (t.hub_blitz_unlock || 'Desbloqueia no Nível 3 de XP')}
               </p>
             </div>
 
@@ -722,7 +722,7 @@ export const QuizModule: React.FC = () => {
                 </span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white font-mono tracking-wide">
-                Survival Mode
+                {t.hub_survival_title || 'Modo Sobrevivência'}
               </h2>
               <p className="text-xs text-slate-600 dark:text-cyan-200/90 max-w-[220px]">
                 {t.track_survival_sub}

@@ -9,11 +9,13 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Camera,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export type ScratchpadTool = 'pen' | 'eraser';
-export type ScratchpadBackgroundMode = 'translucent' | 'chalkboard' | 'grid';
+export type ScratchpadBackgroundMode = 'crystal' | 'translucent' | 'chalkboard' | 'grid';
 
 export interface ScratchpadStrokePoint {
   x: number;
@@ -62,10 +64,17 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
   const [tool, setTool] = useState<ScratchpadTool>('pen');
   const [selectedColor, setSelectedColor] = useState('#ffffff');
   const [strokeWidth, setStrokeWidth] = useState(4);
-  const [bgMode, setBgMode] = useState<ScratchpadBackgroundMode>('translucent');
+  const [bgMode, setBgMode] = useState<ScratchpadBackgroundMode>('crystal');
   const [strokesCount, setStrokesCount] = useState(0);
   const [canRestoreClear, setCanRestoreClear] = useState(false);
   const [isPaletteCollapsed, setIsPaletteCollapsed] = useState(false);
+
+  const { scratchpadContext, sendScratchpadToScanner } = useAppStore(
+    useShallow((s) => ({
+      scratchpadContext: s.scratchpadContext,
+      sendScratchpadToScanner: s.sendScratchpadToScanner,
+    }))
+  );
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -224,9 +233,10 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
 
   const cycleBackgroundMode = () => {
     setBgMode((prev) => {
+      if (prev === 'crystal') return 'translucent';
       if (prev === 'translucent') return 'chalkboard';
       if (prev === 'chalkboard') return 'grid';
-      return 'translucent';
+      return 'crystal';
     });
   };
 
@@ -390,7 +400,8 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
 
   // Background overlay styles
   const bgClasses: Record<ScratchpadBackgroundMode, string> = {
-    translucent: 'bg-slate-950/80 backdrop-blur-xs text-white',
+    crystal: 'bg-slate-950/20 backdrop-blur-none text-white',
+    translucent: 'bg-slate-950/70 backdrop-blur-xs text-white',
     chalkboard: 'bg-slate-900 text-white',
     grid: 'bg-slate-950 bg-[radial-gradient(rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:24px_24px] text-white',
   };
@@ -564,6 +575,23 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
               )}
             </button>
 
+            {/* Convert / Send to PhotoMath Scanner */}
+            <button
+              type="button"
+              onClick={() => {
+                if (!canvasRef.current) return;
+                const dataUrl = canvasRef.current.toDataURL('image/png');
+                sendScratchpadToScanner(dataUrl);
+              }}
+              disabled={strokesCount === 0}
+              title="Converter rascunho em equação e resolver no Foto Scanner"
+              aria-label="Resolver rascunho no Foto Scanner"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 shrink-0"
+            >
+              <Camera className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Resolver no Scanner</span>
+            </button>
+
             <div className="h-5 w-px bg-slate-700 mx-1 hidden sm:block" />
 
             {/* Close / Minimize (Deduplicated single action) */}
@@ -581,6 +609,20 @@ export const Scratchpad: React.FC<ScratchpadProps> = React.memo(({
 
         {/* Canvas Area */}
         <div ref={containerRef} className="relative flex-1 w-full h-full overflow-hidden">
+          {/* Floating Context Pill (Exibe a equação identificada / exercício ativo durante o rascunho) */}
+          {scratchpadContext && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-[92vw] sm:max-w-lg px-4 py-2 rounded-2xl bg-slate-900/90 border-2 border-cyan-500/50 text-cyan-300 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-3">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/15 px-2 py-0.5 rounded-md border border-cyan-500/30 shrink-0">
+                  {scratchpadContext.title}
+                </span>
+                <span className="text-sm font-mono font-black text-white truncate drop-shadow-[0_0_12px_rgba(6,182,212,0.6)]">
+                  {scratchpadContext.expression}
+                </span>
+              </div>
+            </div>
+          )}
+
           <canvas
             ref={canvasRef}
             className="w-full h-full touch-none cursor-crosshair block"

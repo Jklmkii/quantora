@@ -193,6 +193,70 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
           </div>
         </div>
 
+        {/* Centro: Menu de Navegação Global Persistente */}
+        <nav aria-label="Navegação Global" className="hidden lg:flex items-center gap-1 bg-slate-900/80 p-1 rounded-2xl border border-slate-700/60 backdrop-blur-md shadow-lg">
+          <button
+            type="button"
+            onClick={() => setActiveTab('hub')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'hub'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <LayoutGrid size={13} />
+            <span>Hub</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('photo_math')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'photo_math'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Camera size={13} />
+            <span>Foto Scanner</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab(['bhaskara', 'pitagoras', 'regra_simples', 'regra_composta', 'physics'].includes(activeTab) ? activeTab : 'bhaskara')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              ['bhaskara', 'pitagoras', 'regra_simples', 'regra_composta', 'physics'].includes(activeTab)
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Sigma size={13} />
+            <span>Calculadoras</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('quiz')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'quiz'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Brain size={13} />
+            <span>Arcade</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'history'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <History size={13} />
+            <span>Histórico</span>
+          </button>
+        </nav>
+
         {/* Lado Direito: Ferramentas Utilitárias & Perfil */}
         <div className="flex items-center gap-2 shrink-0">
           {/* Lousa de Rascunho */}
@@ -288,16 +352,18 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             <Settings size={17} />
           </button>
 
-          {/* Pílula de Perfil e Nível */}
+          {/* Pílula de Perfil e Nível com Contador Numérico de XP */}
           <button
             type="button"
             onClick={onOpenProfile}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-cyan-500/30 bg-slate-100/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-cyan-400 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
-            title="Perfil & Conquistas"
-            aria-label="Perfil & Conquistas"
+            title={`Perfil & Conquistas (${levelInfo.currentLevelXp}/${levelInfo.xpForNextLevel} XP para o próximo nível)`}
+            aria-label={`Perfil & Conquistas, Nível ${levelInfo.level}, ${levelInfo.currentLevelXp} de ${levelInfo.xpForNextLevel} XP`}
           >
             <Trophy size={14} className="text-amber-400 shrink-0" />
-            <span className="font-mono">Nv. {levelInfo.level}</span>
+            <span className="font-mono">
+              Nv. {levelInfo.level} <span className="text-[10px] text-slate-500 dark:text-cyan-300/80 font-normal">({levelInfo.currentLevelXp}/{levelInfo.xpForNextLevel} XP)</span>
+            </span>
             {(profile?.streakDays || 1) > 1 && (
               <span className="text-orange-400 font-extrabold text-[11px] ml-0.5">
                 🔥{profile.streakDays}

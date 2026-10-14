@@ -13,6 +13,8 @@ import {
   SwitchCamera,
   X,
   Loader2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -65,6 +67,9 @@ export const PhotoMathModule: React.FC = () => {
     addHistoryItem,
     addXp,
     toggleScratchpad,
+    scratchpadPendingImage,
+    setScratchpadPendingImage,
+    setScratchpadContext,
   } = useAppStore(
     useShallow((s) => ({
       settings: s.settings,
@@ -72,6 +77,9 @@ export const PhotoMathModule: React.FC = () => {
       addHistoryItem: s.addHistoryItem,
       addXp: s.addXp,
       toggleScratchpad: s.toggleScratchpad,
+      scratchpadPendingImage: s.scratchpadPendingImage,
+      setScratchpadPendingImage: s.setScratchpadPendingImage,
+      setScratchpadContext: s.setScratchpadContext,
     }))
   );
 
@@ -79,6 +87,17 @@ export const PhotoMathModule: React.FC = () => {
 
   // Abas de entrada: 'camera' | 'upload' | 'samples'
   const [inputMode, setInputMode] = useState<'camera' | 'upload' | 'samples'>('samples');
+
+  // Origem do cálculo: 'sample' | 'camera' | 'upload' | 'scratchpad' | 'manual' (para anti-farming de XP)
+  const [calculationSource, setCalculationSource] = useState<
+    'sample' | 'camera' | 'upload' | 'scratchpad' | 'manual'
+  >('sample');
+
+  // Estado de expansão do acordeão de passos
+  const [isStepsExpanded, setIsStepsExpanded] = useState(true);
+
+  // Ref para o input da equação para inserção cirúrgica de símbolos na posição do cursor
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Estado da câmera ao vivo
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -116,6 +135,54 @@ export const PhotoMathModule: React.FC = () => {
     },
     [settings.decimalPlaces, settings.decimalSeparator]
   );
+
+  // Sincroniza o contexto flutuante do Scratchpad com a equação ativa
+  useEffect(() => {
+    if (solution) {
+      setScratchpadContext({
+        title: 'Foto Scanner',
+        expression: solution.normalizedEquation || equationText,
+      });
+    }
+  }, [solution, equationText, setScratchpadContext]);
+
+  // Consome imagem enviada pela Lousa de Rascunho para resolução óptica
+  useEffect(() => {
+    if (!scratchpadPendingImage) return;
+
+    const dataUrl = scratchpadPendingImage;
+    const timer = setTimeout(() => {
+      setCapturedImageUrl(dataUrl);
+      setCalculationSource('scratchpad');
+      setScratchpadPendingImage(null);
+
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          sourceCanvasRef.current = canvas;
+
+          setIsProcessingImage(true);
+          const ocrRes = await recognizeTextFromCanvas(canvas);
+          setIsProcessingImage(false);
+
+          if (ocrRes.text) {
+            setEquationText(ocrRes.text);
+            handleSolve(ocrRes.text);
+          } else {
+            handleSolve(equationText);
+          }
+        }
+      };
+      img.src = dataUrl;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [scratchpadPendingImage, setScratchpadPendingImage, handleSolve, equationText]);
 
   // Inicia / Interrompe a câmera ao vivo
   const startCamera = useCallback(async () => {
@@ -183,6 +250,7 @@ export const PhotoMathModule: React.FC = () => {
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     setCapturedImageUrl(dataUrl);
+    setCalculationSource('camera');
     stopCamera();
 
     // Executa detecção óptica
@@ -208,6 +276,7 @@ export const PhotoMathModule: React.FC = () => {
     reader.onload = (event) => {
       const url = event.target?.result as string;
       setCapturedImageUrl(url);
+      setCalculationSource('upload');
 
       const img = new Image();
       img.onload = async () => {
@@ -240,12 +309,13 @@ export const PhotoMathModule: React.FC = () => {
   const handleSelectSample = (sample: SampleEquation) => {
     hapticComboTick(1);
     playHubSwipe();
+    setCalculationSource('sample');
     setEquationText(sample.equation);
     setCapturedImageUrl(null);
     handleSolve(sample.equation);
   };
 
-  // Salva no Histórico do Quantora e concede XP
+  // Salva no Histórico do Quantora e concede XP (apenas para cálculos orgânicos, não amostras puras)
   const handleSaveToHistory = () => {
     if (!solution || !solution.isSolvable || hasSavedHistory) return;
 
@@ -264,7 +334,10 @@ export const PhotoMathModule: React.FC = () => {
       },
     });
 
-    addXp(15);
+    // Anti-farming: Amostras prontas pré-carregadas sem edição não concedem XP
+    if (calculationSource !== 'sample') {
+      addXp(15);
+    }
     setHasSavedHistory(true);
   };
 
@@ -293,12 +366,29 @@ export const PhotoMathModule: React.FC = () => {
     setActiveTab(solution.targetTab);
   };
 
-  // Insere um símbolo matemático no campo editável
+  // Insere um símbolo matemático no campo editável na posição exata do cursor
   const insertSymbol = (sym: string) => {
     hapticComboTick(1);
-    const updated = equationText + sym;
-    setEquationText(updated);
-    handleSolve(updated);
+    setCalculationSource('manual');
+
+    const input = inputRef.current;
+    if (input) {
+      const start = input.selectionStart ?? equationText.length;
+      const end = input.selectionEnd ?? equationText.length;
+      const updated = equationText.slice(0, start) + sym + equationText.slice(end);
+      setEquationText(updated);
+      handleSolve(updated);
+
+      requestAnimationFrame(() => {
+        input.focus();
+        const nextPos = start + sym.length;
+        input.setSelectionRange(nextPos, nextPos);
+      });
+    } else {
+      const updated = equationText + sym;
+      setEquationText(updated);
+      handleSolve(updated);
+    }
   };
 
   // Badge do tipo de equação
@@ -640,9 +730,11 @@ export const PhotoMathModule: React.FC = () => {
         {/* Input da Equação Reconhecida */}
         <div className="relative">
           <input
+            ref={inputRef}
             type="text"
             value={equationText}
             onChange={(e) => {
+              setCalculationSource('manual');
               setEquationText(e.target.value);
               handleSolve(e.target.value);
             }}
@@ -659,14 +751,14 @@ export const PhotoMathModule: React.FC = () => {
           </button>
         </div>
 
-        {/* Barra de Símbolos Rápidos para Teclado Virtual */}
+        {/* Barra de Símbolos Rápidos para Teclado Virtual (Inserção Cirúrgica no Cursor) */}
         <div className="flex flex-wrap items-center gap-1.5 pt-1">
           <span className="text-[10px] font-bold uppercase text-slate-500 mr-1">Inserir:</span>
-          {['x', 'x²', '+', '-', '=', '*', '/', '²', '³', 'sqrt(', '(', ')'].map((sym) => (
+          {['x', 'x²', '√', '+', '-', '=', '*', '/', '²', '³', '(', ')', 'π'].map((sym) => (
             <button
               key={sym}
               type="button"
-              onClick={() => insertSymbol(sym)}
+              onClick={() => insertSymbol(sym === '√' ? 'sqrt(' : sym)}
               className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold border border-slate-700/80 active:scale-95 transition-all cursor-pointer shadow-sm"
             >
               {sym}
@@ -718,16 +810,27 @@ export const PhotoMathModule: React.FC = () => {
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 cursor-default'
                     : 'bg-slate-800/80 hover:bg-slate-700 text-slate-200 border-slate-700 active:scale-95'
                 }`}
+                title={
+                  calculationSource === 'sample'
+                    ? 'Amostras de teste não geram XP no histórico'
+                    : 'Gere +15 XP com cálculos reais'
+                }
               >
                 {hasSavedHistory ? (
                   <>
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Salvo (+15 XP)</span>
+                    <span>
+                      {calculationSource === 'sample' ? 'Salvo no Histórico' : 'Salvo (+15 XP)'}
+                    </span>
                   </>
                 ) : (
                   <>
                     <BookmarkPlus className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>{t.photo_math_save_history || 'Salvar no Histórico'}</span>
+                    <span>
+                      {calculationSource === 'sample'
+                        ? 'Salvar no Histórico'
+                        : (t.photo_math_save_history || 'Salvar no Histórico (+15 XP)')}
+                    </span>
                   </>
                 )}
               </button>
@@ -752,27 +855,47 @@ export const PhotoMathModule: React.FC = () => {
             </div>
           </div>
 
-          {/* Passos Didáticos da Resolução */}
+          {/* Passos Didáticos da Resolução com Acordeão Expansível */}
           <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Demonstração Passo a Passo:
-            </h3>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsStepsExpanded((prev) => !prev);
+                  hapticComboTick(1);
+                }}
+                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer group"
+              >
+                <span>Demonstração Passo a Passo ({solution.steps.length} etapas)</span>
+                {isStepsExpanded ? (
+                  <ChevronUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
+                )}
+              </button>
 
-            {solution.steps.length > 0 ? (
-              <div className="space-y-2">
-                {solution.steps.map((step, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-200 text-sm leading-relaxed font-sans"
-                  >
-                    <StepRenderer step={step} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-slate-500 italic">
-                Nenhum passo gerado para esta equação. Verifique a sintaxe.
-              </p>
+              <span className="text-[11px] text-slate-400">
+                {isStepsExpanded ? 'Clique para recolher' : 'Clique para expandir'}
+              </span>
+            </div>
+
+            {isStepsExpanded && (
+              solution.steps.length > 0 ? (
+                <div className="space-y-2 animate-fadeIn">
+                  {solution.steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-200 text-sm leading-relaxed font-sans"
+                    >
+                      <StepRenderer step={step} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 italic">
+                  Nenhum passo gerado para esta equação. Verifique a sintaxe.
+                </p>
+              )
             )}
           </div>
         </div>

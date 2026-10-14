@@ -462,13 +462,15 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
             type="button"
             onClick={onOpenProfile}
             className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl cosmic-glass border border-slate-300/80 dark:border-slate-700/60 hover:border-cyan-400/50 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-md"
-            title="Perfil do Jogador"
-            aria-label="Perfil do Jogador"
+            title={`Perfil do Jogador (Nível ${levelInfo.level} • ${levelInfo.currentLevelXp}/${levelInfo.xpForNextLevel} XP)`}
+            aria-label={`Perfil do Jogador, Nível ${levelInfo.level}, ${levelInfo.currentLevelXp} de ${levelInfo.xpForNextLevel} XP`}
           >
             <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
               <Trophy size={13} className="text-amber-500 dark:text-amber-400" />
             </div>
-            <span className="font-mono text-cyan-800 dark:text-cyan-200">Nv. {levelInfo.level}</span>
+            <span className="font-mono text-cyan-800 dark:text-cyan-200">
+              Nv. {levelInfo.level} <span className="text-[10px] text-slate-500 dark:text-cyan-300/80 font-normal">({levelInfo.currentLevelXp}/{levelInfo.xpForNextLevel} XP)</span>
+            </span>
           </button>
         </div>
       </div>
