@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import {
   X,
   Cloud,
@@ -37,6 +37,11 @@ interface AuthModalProps {
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const language = useAppStore((s) => s.settings.language || 'pt');
   const t = useTranslation(language);
+
+  const urlInputId = useId();
+  const keyInputId = useId();
+  const emailInputId = useId();
+  const passwordInputId = useId();
 
   const [configured, setConfigured] = useState(isSupabaseConfigured());
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -312,10 +317,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
               <form onSubmit={handleSaveCredentials} className="space-y-2.5 pt-2">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  <label htmlFor={urlInputId} className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     {t.supabase_url_label}
                   </label>
                   <input
+                    id={urlInputId}
                     type="url"
                     placeholder="https://xyzcompany.supabase.co"
                     value={customUrl}
@@ -325,10 +331,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  <label htmlFor={keyInputId} className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     {t.supabase_key_label}
                   </label>
                   <input
+                    id={keyInputId}
                     type="text"
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
                     value={customKey}
@@ -474,11 +481,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               {/* Form */}
               <form onSubmit={handleEmailAuth} className="space-y-3">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    <label htmlFor={emailInputId} className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     {t.email_label}
                   </label>
                   <div className="relative">
                     <input
+                        id={emailInputId}
                       type="email"
                       required
                       value={email}
@@ -492,11 +500,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                 {authMode !== 'magic' && (
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      <label htmlFor={passwordInputId} className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
                       {t.password_label}
                     </label>
                     <div className="relative">
                       <input
+                          id={passwordInputId}
                         type="password"
                         required
                         value={password}
