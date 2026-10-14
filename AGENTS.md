@@ -259,6 +259,19 @@ When implementing features, fixing bugs, or refactoring code, adhere strictly to
 * **Painel Multi-Conversa em Tempo Real (`coding-progress-bar`):**
   - O sidecar `C:\Users\lucas\.gemini\config\plugins\coding-progress-bar\sidecars\panel\main.mjs` lê diretamente os últimos 96 KB dos arquivos `transcript.jsonl` em `~/.gemini/antigravity/brain/*/.system_generated/logs/transcript.jsonl`, atualizando automaticamente o projeto ativo (`quantora`, `gerenciador_senhas`, etc.) e a porcentagem real (`0%` a `100%`) sem depender de mocks estáticos.
 
+### O. Invariantes de Combate do Boss Rush & Testes Determinísticos
+* **Nomenclatura Oficial do Modo (Boss Rush):**
+  * O modo de combate procedural da torre infinita é oficialmente denominado **Boss Rush** (substituindo antigas menções a "Boss Battle" e "Batalha de Chefes").
+  * Todos os textos visíveis, botões, títulos de cards no Treino Mental e dicionários em `src/core/i18n/translations.ts` (`boss_battle_title`, `hub_boss_title`) devem utilizar "Boss Rush", preservando os identificadores internos de rotas e arquivos (`boss_rush`, `bossEngine.ts`) para evitar breaking changes.
+* **Isolamento de Classes em Testes de Vitória / Derrota:**
+  * O gerador procedural de chefes (`rollBossClassForLevel`) pode sortear classes com mecânicas de interceptação de morte (como o **Last Stand** do `core_engineer`, que sobrevive com 1 HP para rodadas de desarme).
+  * Em testes unitários com Vitest que avaliem condições diretas de vitória (`isVictory: true`) ou derrota, **nunca confie no sorteio procedural aleatório**. Sempre defina explicitamente no `BossRpgConfig` uma classe previsível (ex: `bossClass: 'illusionist'`) ou passe flags de conclusão prévia (`lastStandCompleted: true`).
+* **Asserções de Mitigação Proporcional em Vez de Números Mágicos:**
+  * Em testes de redução de dano (como a Carapaça do Modo Difícil de 30%, 50% e 70%), nunca utilize valores brutos absolutos fixos que ignorem modificadores de armas, críticos ou passivas acumulativas.
+  * Valide sempre a fórmula matemática de proporção:
+    `const totalPreArmor = roundResult.damageResult.damage + (roundResult.damageBlockedByArmor || 0);`
+    `expect(roundResult.damageBlockedByArmor).toBe(Math.round(totalPreArmor * (reductionPct / 100)));`
+
 ---
 
 ## 🤖 6. Carta de Funções & Atribuições da Jules AI no Quantora
