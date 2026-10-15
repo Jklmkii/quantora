@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantora — Console de Depuração & Telemetria do Agente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              cyan: '#06b6d4',
+              purple: '#a855f7',
+              emerald: '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #030712;
+      color: #f3f4f6;
+    }
+    .cosmic-glow {
+      box-shadow: 0 0 50px -10px rgba(6, 182, 212, 0.25);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(6, 182, 212, 0.3);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(6, 182, 212, 0.6);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
+  <!-- Glows de Fundo Cósmicos -->
+  <div class="fixed top-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+  <div class="fixed bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <div class="max-w-7xl w-full mx-auto space-y-6 relative z-10">
+    <!-- Header Principal -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900/80 border border-cyan-500/30 backdrop-blur-xl cosmic-glow">
+      <div class="flex items-center gap-4">
+        <div class="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400">
+          <svg class="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 animate-ping"></span>
+          <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950"></span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Console de Depuração & Telemetria do Agente
+            </h1>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 uppercase">
+              Ao Vivo
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 font-mono mt-0.5">
+            Monitoramento Visual • <span class="text-cyan-400 font-bold">Google Antigravity</span> & <span class="text-purple-400 font-bold">Jules AI</span> • Quantora v1.2.90
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden sm:block font-mono">
+          <span class="text-[10px] text-slate-500 uppercase block">Hora Local</span>
+          <span id="live-clock" class="text-xs text-slate-300 font-bold">--:--:--</span>
+        </div>
+        <button id="fullscreen-btn" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all cursor-pointer" title="Modo Tela Cheia (F11)">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Pipeline em 5 Fases & Barra de Progresso com ETA -->
+    <section class="p-6 rounded-3xl bg-slate-900/80 border border-cyan-500/30 backdrop-blur-xl space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+          <h2 id="phase-title" class="text-sm font-mono font-bold text-slate-300 uppercase tracking-wider">
+            Fase 5/5: Entrega & Documentação no Vault
+          </h2>
+        </div>
+        <div class="flex items-center gap-4 font-mono text-xs">
+          <span id="percent-label" class="text-cyan-400 font-bold text-sm">100% Concluído</span>
+          <span class="text-slate-600">•</span>
+          <span id="eta-label" class="text-slate-400 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Concluído
+          </span>
+        </div>
+      </div>
+
+      <!-- Barra Estilo Files by Google -->
+      <div class="w-full h-3.5 rounded-full bg-slate-950 p-0.5 border border-slate-800 overflow-hidden shadow-inner">
+        <div id="progress-bar" class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-500 shadow-[0_0_15px_rgba(6,182,212,0.6)]" style="width: 100%;"></div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-slate-400">
+        <span id="action-label" class="text-slate-300 font-medium">Concluído com sucesso • Todas as etapas finalizadas</span>
+        <span class="font-mono text-[11px] text-cyan-400/80">ETA Tracker Ativo</span>
+      </div>
+
+      <!-- 5 Etapas do Pipeline -->
+      <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-2">
+        <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">
+          <span class="text-[10px] font-mono font-bold block mb-1">ETAPA 1</span>
+          <h4 class="text-xs font-bold">Análise & Leitura</h4>
+          <p class="text-[10px] opacity-75 mt-0.5">Inspecionar requisitos</p>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">
+          <span class="text-[10px] font-mono font-bold block mb-1">ETAPA 2</span>
+          <h4 class="text-xs font-bold">Implementação</h4>
+          <p class="text-[10px] opacity-75 mt-0.5">Edições no TypeScript</p>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">
+          <span class="text-[10px] font-mono font-bold block mb-1">ETAPA 3</span>
+          <h4 class="text-xs font-bold">Build & Lint</h4>
+          <p class="text-[10px] opacity-75 mt-0.5">Oxlint 0 warnings</p>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">
+          <span class="text-[10px] font-mono font-bold block mb-1">ETAPA 4</span>
+          <h4 class="text-xs font-bold">Testes Vitest</h4>
+          <p class="text-[10px] opacity-75 mt-0.5">576 testes automatizados</p>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-300">
+          <span class="text-[10px] font-mono font-bold block mb-1">ETAPA 5</span>
+          <h4 class="text-xs font-bold">Entrega & Vault</h4>
+          <p class="text-[10px] opacity-75 mt-0.5">Commit GitHub & Cofre</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Radar Jules AI & Saúde do Sistema -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Card Radar Jules AI -->
+      <div class="p-6 rounded-3xl bg-slate-900/80 border border-purple-500/30 backdrop-blur-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400">
+              🤖
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-white">Radar Jules AI</h3>
+              <p class="text-[11px] text-slate-400">Guardiãs diárias agendadas</p>
+            </div>
+          </div>
+          <span id="jules-quota-badge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
+            97/100 restantes
+          </span>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
+            <div>
+              <h4 class="text-xs font-bold text-slate-200">Palette 🎨 (UX & A11y)</h4>
+              <p class="text-[10px] text-slate-400">Acessibilidade WCAG e ARIA</p>
+            </div>
+            <span class="text-[10px] font-mono text-emerald-400 font-bold">PR #91 Mergeado</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
+            <div>
+              <h4 class="text-xs font-bold text-slate-200">Bolt ⚡ (Performance)</h4>
+              <p class="text-[10px] text-slate-400">Otimizações e React.memo</p>
+            </div>
+            <span class="text-[10px] font-mono text-cyan-400 font-bold">Standby (21:00)</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
+            <div>
+              <h4 class="text-xs font-bold text-slate-200">Sentinel 🛡️ (Segurança)</h4>
+              <p class="text-[10px] text-slate-400">Hardening e dependências</p>
+            </div>
+            <span class="text-[10px] font-mono text-purple-400 font-bold">Standby (21:00)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Saúde do Sistema -->
+      <div class="p-6 rounded-3xl bg-slate-900/80 border border-cyan-500/30 backdrop-blur-xl space-y-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+            🛡️
+          </span>
+          <div>
+            <h3 class="text-sm font-bold text-white">Saúde do Sistema</h3>
+            <p class="text-[11px] text-slate-400">Testes, linter e build local</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+            <span class="text-[10px] text-slate-500 uppercase font-mono block">Vitest</span>
+            <span class="text-lg font-black text-emerald-400 font-mono">576 / 576</span>
+            <span class="text-[10px] text-slate-400 block">35 suítes (100%)</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+            <span class="text-[10px] text-slate-500 uppercase font-mono block">Oxlint</span>
+            <span class="text-lg font-black text-cyan-400 font-mono">0 warnings</span>
+            <span class="text-[10px] text-slate-400 block">146 arquivos limpos</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+            <span class="text-[10px] text-slate-500 uppercase font-mono block">Build</span>
+            <span class="text-lg font-black text-amber-400 font-mono">1.66s</span>
+            <span class="text-[10px] text-slate-400 block">tsc -b & vite (OK)</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+            <span class="text-[10px] text-slate-500 uppercase font-mono block">Vault Health</span>
+            <span class="text-lg font-black text-purple-400 font-mono">100.0%</span>
+            <span class="text-[10px] text-slate-400 block">70 notas auditadas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Crons & Background -->
+      <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 backdrop-blur-xl space-y-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+            ⚡
+          </span>
+          <div>
+            <h3 class="text-sm font-bold text-white">Crons no Background</h3>
+            <p class="text-[11px] text-slate-400">Rotinas agendadas (IsDaemon: true)</p>
+          </div>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-xs text-slate-200">Sync Vault (14:00)</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">0 14 * * *</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Sincronização diária Repositório -> Vault e ronda do Guardião.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-xs text-slate-200">Revisão Jules (21:30)</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">30 21 * * *</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Auditoria noturna das sessões Palette 🎨, Bolt ⚡ e Sentinel 🛡️.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feed de Ferramentas / Terminal Forense -->
+    <section class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 backdrop-blur-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 font-mono">
+          <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Terminal de Ações & Ferramentas do Agente
+        </h3>
+        <span class="text-xs text-slate-500 font-mono">Polling a cada 2s</span>
+      </div>
+
+      <div id="logs-container" class="space-y-2 font-mono text-xs max-h-64 overflow-y-auto custom-scrollbar pr-1">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+    </section>
+  </div>
+
+  <footer class="text-center text-xs text-slate-500 font-mono pt-6">
+    Quantora Agent Telemetry Engine • Desenvolvido para Pareamento Humano-IA com Google Antigravity & Jules
+  </footer>
+
+  <script>
+    // Relógio ao Vivo
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('live-clock').textContent = now.toLocaleTimeString('pt-BR');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Modo Tela Cheia
+    document.getElementById('fullscreen-btn').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Polling de Telemetria
+    async function fetchTelemetry() {
+      try {
+        const res = await fetch('./agent_telemetry.json?t=' + Date.now());
+        if (!res.ok) return;
+        const data = await res.json();
+        renderTelemetry(data);
+      } catch (err) {
+        // Fallback silencioso mantendo interface
+      }
+    }
+
+    function renderTelemetry(data) {
+      if (data.currentPhase) {
+        document.getElementById('phase-title').textContent = `Fase ${data.currentPhase.index}/${data.currentPhase.total}: ${data.currentPhase.name}`;
+        document.getElementById('percent-label').textContent = `${data.currentPhase.percent}% Concluído`;
+        document.getElementById('progress-bar').style.width = `${data.currentPhase.percent}%`;
+        document.getElementById('action-label').textContent = data.currentPhase.currentAction;
+        document.getElementById('eta-label').innerHTML = `
+          <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          ${data.currentPhase.etaSeconds > 0 ? `~${data.currentPhase.etaSeconds}s restantes` : 'Concluído'}
+        `;
+      }
+
+      if (data.jules) {
+        document.getElementById('jules-quota-badge').textContent = `${data.jules.remaining}/${data.jules.dailyLimit} restantes`;
+      }
+
+      if (data.recentLogs && data.recentLogs.length > 0) {
+        const container = document.getElementById('logs-container');
+        container.innerHTML = data.recentLogs.map(log => `
+          <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:border-cyan-500/40 transition-all">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">${log.toolName}</span>
+                ${log.target ? `<span class="text-slate-400 text-[11px]">${log.target}</span>` : ''}
+              </div>
+              <p class="text-slate-300 text-xs font-sans mt-1">${log.summary}</p>
+            </div>
+            <div class="flex items-center gap-3 text-[11px] text-slate-400 shrink-0">
+              <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700/60">${log.durationMs}ms</span>
+              <span class="text-emerald-400 font-bold">● OK</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Iniciar busca periódica
+    fetchTelemetry();
+    setInterval(fetchTelemetry, 2000);
+  </script>
+</body>
+</html>

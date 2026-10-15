@@ -1,0 +1,95 @@
+{
+  "activeAgent": "Antigravity",
+  "statusMessage": "Pronto e monitorando sistema em tempo real",
+  "currentPhase": {
+    "index": 5,
+    "total": 5,
+    "name": "Entrega & Documentação no Vault",
+    "percent": 100,
+    "etaSeconds": 0,
+    "currentAction": "Concluído com sucesso • Todas as etapas finalizadas"
+  },
+  "jules": {
+    "palette": "idle",
+    "bolt": "idle",
+    "sentinel": "idle",
+    "usedToday": 3,
+    "dailyLimit": 100,
+    "remaining": 97,
+    "lastMergedPr": "PR #91 (🎨 Palette: Add aria-current for active navigation tabs)"
+  },
+  "health": {
+    "vitestTests": 576,
+    "vitestSuites": 35,
+    "oxlintWarnings": 0,
+    "oxlintErrors": 0,
+    "buildStatus": "passed",
+    "buildDurationSec": 1.66,
+    "vaultHealthScore": 100.0,
+    "vaultNotesCount": 70,
+    "lastCommitHash": "29683c9",
+    "lastCommitMessage": "Merge pull request #91 from Jklmkii/palette-ux-aria-current-tabs"
+  },
+  "crons": [
+    {
+      "name": "Sync Vault Diário (14:00)",
+      "expression": "0 14 * * *",
+      "description": "Sincronização de integridade Repositório -> Vault e ronda do Guardião",
+      "status": "active"
+    },
+    {
+      "name": "Revisão Jules Diária (21:30)",
+      "expression": "30 21 * * *",
+      "description": "Auditoria noturna das sessões Palette 🎨, Bolt ⚡ e Sentinel 🛡️",
+      "status": "active"
+    }
+  ],
+  "recentLogs": [
+    {
+      "id": "log-1",
+      "timestamp": 1792033000000,
+      "toolName": "git pull origin main",
+      "target": "PR #91 Palette",
+      "durationMs": 1200,
+      "status": "success",
+      "summary": "Sincronizado commit 29683c9 com aria-current nas abas de navegação"
+    },
+    {
+      "id": "log-2",
+      "timestamp": 1792033050000,
+      "toolName": "schedule (14:00)",
+      "target": "Cron Background",
+      "durationMs": 50,
+      "status": "success",
+      "summary": "Restaurado cron autônomo 0 14 * * * com IsDaemon: true"
+    },
+    {
+      "id": "log-3",
+      "timestamp": 1792033055000,
+      "toolName": "schedule (21:30)",
+      "target": "Cron Background",
+      "durationMs": 50,
+      "status": "success",
+      "summary": "Restaurado cron autônomo 30 21 * * * com IsDaemon: true"
+    },
+    {
+      "id": "log-4",
+      "timestamp": 1792033100000,
+      "toolName": "npx vitest run",
+      "target": "src/tests/",
+      "durationMs": 1970,
+      "status": "success",
+      "summary": "576 testes executados e 100% aprovados em 35 suítes"
+    },
+    {
+      "id": "log-5",
+      "timestamp": 1792033150000,
+      "toolName": "vault_guardian_core.cjs",
+      "target": "Obsidian-Vault",
+      "durationMs": 79,
+      "status": "success",
+      "summary": "Auditoria de 70 notas no cofre: VHS 100%, 0 links órfãos"
+    }
+  ],
+  "updatedAt": 1792033200000
+}

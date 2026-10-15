@@ -10,6 +10,7 @@ import { UpdateBanner } from './presentation/components/UpdateBanner';
 import { AchievementToast } from './presentation/components/AchievementToast';
 import { FeatureUnlockToast } from './presentation/components/FeatureUnlockToast';
 import { Scratchpad } from './presentation/components/Scratchpad';
+import { AgentTelemetryHUD } from './presentation/components/AgentTelemetryHUD';
 import { CosmicHub } from './presentation/components/CosmicHub';
 import { CosmicBackgroundCanvas } from './presentation/components/CosmicBackgroundCanvas';
 import { LayoutGrid } from 'lucide-react';
@@ -228,6 +229,7 @@ export function App() {
         />
       )}
       <OnboardingModal />
+      <AgentTelemetryHUD />
     </div>
   );
 }

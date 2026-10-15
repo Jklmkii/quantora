@@ -17,6 +17,7 @@ import {
   Cloud,
   Bell,
   Camera,
+  Bot,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -42,6 +43,8 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
     isScratchpadOpen,
     toggleScratchpad,
     hasScratchpadStrokes,
+    isAgentTelemetryOpen,
+    toggleAgentTelemetry,
     openQuizWithSubmode,
     spacedRepetition,
     dailyChallenge,
@@ -55,6 +58,8 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
       isScratchpadOpen: s.isScratchpadOpen,
       toggleScratchpad: s.toggleScratchpad,
       hasScratchpadStrokes: s.hasScratchpadStrokes,
+      isAgentTelemetryOpen: s.isAgentTelemetryOpen,
+      toggleAgentTelemetry: s.toggleAgentTelemetry,
       openQuizWithSubmode: s.openQuizWithSubmode,
       spacedRepetition: s.spacedRepetition,
       dailyChallenge: s.dailyChallenge,
@@ -264,6 +269,22 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
 
         {/* Lado Direito: Ferramentas Utilitárias & Perfil */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Telemetria & Depuração do Agente (Ctrl+Shift+D) */}
+          <button
+            type="button"
+            onClick={toggleAgentTelemetry}
+            className={`relative p-2 rounded-xl border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
+              isAgentTelemetryOpen
+                ? 'border-cyan-400 bg-cyan-500/20 text-cyan-400 shadow-md shadow-cyan-500/20'
+                : 'border-slate-300 dark:border-cyan-500/20 bg-slate-100/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 hover:text-cyan-400 hover:border-cyan-500/40'
+            }`}
+            title="Telemetria & Depuração do Agente (Ctrl+Shift+D)"
+            aria-label="Telemetria do Agente"
+          >
+            <Bot size={17} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          </button>
+
           {/* Lousa de Rascunho */}
           <button
             type="button"

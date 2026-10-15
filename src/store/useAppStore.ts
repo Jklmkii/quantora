@@ -43,6 +43,11 @@ import {
   type BossClassId,
   type BossWeaponId,
 } from '../core/quiz/bossEngine';
+import {
+  DEFAULT_AGENT_TELEMETRY,
+  type AgentTelemetryState,
+  type ToolLogEntry,
+} from '../core/agent/agentTelemetry';
 
 export type ActiveTab = 'hub' | 'bhaskara' | 'regra_simples' | 'regra_composta' | 'pitagoras' | 'physics' | 'quiz' | 'history' | 'settings' | 'photo_math';
 export type QuizSubmode = 'survival' | 'blitz' | 'boss_rush' | 'daily' | 'spaced';
@@ -89,6 +94,14 @@ interface AppState {
   sendScratchpadToScanner: (dataUrl: string) => void;
   setHasScratchpadStrokes: (has: boolean) => void;
   incrementScratchpadUses: () => void;
+
+  // Agent Telemetry & Debug HUD
+  isAgentTelemetryOpen: boolean;
+  agentTelemetry: AgentTelemetryState;
+  toggleAgentTelemetry: () => void;
+  setAgentTelemetryOpen: (open: boolean) => void;
+  updateAgentTelemetry: (partial: Partial<AgentTelemetryState>) => void;
+  addAgentLog: (entry: Omit<ToolLogEntry, 'id' | 'timestamp'>) => void;
 
   // Daily Challenge
   dailyChallenge: DailyChallengeState;
@@ -332,6 +345,37 @@ export const useAppStore = create<AppState>()(
       hasScratchpadStrokes: false,
       scratchpadContext: null,
       scratchpadPendingImage: null,
+
+      // Agent Telemetry & Debug HUD
+      isAgentTelemetryOpen: false,
+      agentTelemetry: DEFAULT_AGENT_TELEMETRY,
+      toggleAgentTelemetry: () => {
+        set((state) => ({ isAgentTelemetryOpen: !state.isAgentTelemetryOpen }));
+      },
+      setAgentTelemetryOpen: (open) => {
+        set({ isAgentTelemetryOpen: open });
+      },
+      updateAgentTelemetry: (partial) => {
+        set((state) => ({
+          agentTelemetry: { ...state.agentTelemetry, ...partial, updatedAt: Date.now() },
+        }));
+      },
+      addAgentLog: (entry) => {
+        set((state) => ({
+          agentTelemetry: {
+            ...state.agentTelemetry,
+            recentLogs: [
+              {
+                id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                timestamp: Date.now(),
+                ...entry,
+              },
+              ...state.agentTelemetry.recentLogs.slice(0, 49),
+            ],
+            updatedAt: Date.now(),
+          },
+        }));
+      },
       toggleScratchpad: () => {
         set((state) => ({ isScratchpadOpen: !state.isScratchpadOpen }));
       },
@@ -1632,6 +1676,7 @@ export const useAppStore = create<AppState>()(
           toastQueue: _toastQueue,
           featureToastQueue: _featureToastQueue,
           isScratchpadOpen: _isScratchpadOpen,
+          isAgentTelemetryOpen: _isAgentTelemetryOpen,
           scratchpadContext: _scratchpadContext,
           scratchpadPendingImage: _scratchpadPendingImage,
           ...rest
