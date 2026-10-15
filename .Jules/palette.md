@@ -13,3 +13,6 @@
 ## 2024-10-05 - Missing Focus Styles in Mini-Games
 **Learning:** High-intensity interactive components like mini-games (e.g., BlitzGame) often overlook standard accessibility patterns like keyboard focus rings because they are primarily designed for fast-paced touch/mouse interaction.
 **Action:** Always ensure fast-paced game UI buttons retain explicit `focus-visible` styles so keyboard users can navigate and interact smoothly.
+## 2025-03-02 - Tab Navigation Accessibility
+**Learning:** Found an accessibility issue where the main navigation tabs in `ModuleTopBar.tsx` visually indicated the active tab but did not communicate this state to screen readers, making it harder for users to understand their current context.
+**Action:** Applied `aria-current="page"` conditionally based on the active tab state (`activeTab === 'tab_name'`). This is a standard ARIA pattern that should be applied to all custom tab or navigation lists to ensure proper contextual feedback for assistive technologies.
