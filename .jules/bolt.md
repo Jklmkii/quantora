@@ -21,3 +21,7 @@
 ## 2025-03-02 - Conditionally Mount Modals/Popovers Subscribed to Stores
 **Learning:** Returning `null` *inside* a child component (like `NotificationPopover`) based on an `isOpen` prop does not prevent that component from re-rendering or evaluating its hooks when global state changes. If it uses `useAppStore` to subscribe to frequently changing state, these hidden subscriptions hurt performance.
 **Action:** Always conditionally mount components that subscribe to a global store (e.g., `{isOpen && <Popover />}`) from their parent, avoiding hidden background subscriptions and wasted React render cycles entirely.
+
+## 2025-03-02 - Component Splitting for Hidden Subscriptions
+**Learning:** Returning null inside a component that must remain mounted (e.g., to preserve global keyboard shortcuts) doesn't prevent it from re-rendering if it subscribes to frequently updated Zustand state (like telemetry logs).
+**Action:** Split the component into an outer wrapper that subscribes only to the visibility boolean and handles the shortcut, and an inner content component that subscribes to the heavy state and is conditionally rendered by the wrapper.
