@@ -281,6 +281,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <button
                   key={item.mode}
                   type="button"
+                  aria-pressed={settings.theme === item.mode}
                   onClick={() => updateSettings({ theme: item.mode as ThemeMode })}
                   className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border font-semibold transition-all touch-target ${
                     settings.theme === item.mode
@@ -308,6 +309,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <button
                   key={item.lang}
                   type="button"
+                  aria-pressed={(settings.language || 'pt') === item.lang}
                   onClick={() => updateSettings({ language: item.lang as AppLanguage })}
                   className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-bold text-center transition-all touch-target ${
                     (settings.language || 'pt') === item.lang
@@ -448,6 +450,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 <button
                   key={places}
                   type="button"
+                  aria-pressed={settings.decimalPlaces === places}
                   onClick={() => updateSettings({ decimalPlaces: places })}
                   className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-2.5 sm:p-3 rounded-2xl border font-semibold text-center transition-all touch-target flex flex-col items-center justify-center min-h-[58px] ${
                     settings.decimalPlaces === places
@@ -481,6 +484,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                   <button
                     key={item.sep}
                     type="button"
+                    aria-pressed={settings.decimalSeparator === item.sep}
                     onClick={() => updateSettings({ decimalSeparator: item.sep as DecimalSeparator })}
                     className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 p-3 rounded-2xl border font-semibold text-center transition-all touch-target flex flex-col items-center justify-center min-h-[58px] ${
                       settings.decimalSeparator === item.sep
