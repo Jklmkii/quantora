@@ -18,20 +18,19 @@ import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
 import { hapticComboTick } from '../../core/platform/haptics';
 
+/**
+ * ⚡ Bolt Performance Optimization
+ * 💡 What: Split AgentTelemetryHUD into a wrapper and an inner content component.
+ * 🎯 Why: When hidden via early return, the component still subscribed to the frequently updating agentTelemetry state, causing invisible background re-renders. The wrapper conditionally mounts the inner component while preserving the global keyboard shortcut listener.
+ * 📊 Impact: Eliminates hidden background re-renders when the HUD is closed.
+ */
 export const AgentTelemetryHUD: React.FC = () => {
-  const {
-    isAgentTelemetryOpen,
-    setAgentTelemetryOpen,
-    agentTelemetry,
-  } = useAppStore(
+  const { isAgentTelemetryOpen, setAgentTelemetryOpen } = useAppStore(
     useShallow((s) => ({
       isAgentTelemetryOpen: s.isAgentTelemetryOpen,
       setAgentTelemetryOpen: s.setAgentTelemetryOpen,
-      agentTelemetry: s.agentTelemetry,
     }))
   );
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'terminal' | 'jules' | 'health'>('overview');
 
   // Atalho global de teclado: Ctrl + Shift + D para abrir/fechar, ESC para fechar
   useEffect(() => {
@@ -51,6 +50,19 @@ export const AgentTelemetryHUD: React.FC = () => {
   }, [isAgentTelemetryOpen, setAgentTelemetryOpen]);
 
   if (!isAgentTelemetryOpen) return null;
+
+  return <AgentTelemetryHUDContent />;
+};
+
+const AgentTelemetryHUDContent: React.FC = () => {
+  const { agentTelemetry, setAgentTelemetryOpen } = useAppStore(
+    useShallow((s) => ({
+      agentTelemetry: s.agentTelemetry,
+      setAgentTelemetryOpen: s.setAgentTelemetryOpen,
+    }))
+  );
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'terminal' | 'jules' | 'health'>('overview');
 
   const { currentPhase, jules, health, crons, recentLogs } = agentTelemetry;
 
