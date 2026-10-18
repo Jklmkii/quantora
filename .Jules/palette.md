@@ -16,3 +16,6 @@
 ## 2025-03-02 - Tab Navigation Accessibility
 **Learning:** Found an accessibility issue where the main navigation tabs in `ModuleTopBar.tsx` visually indicated the active tab but did not communicate this state to screen readers, making it harder for users to understand their current context.
 **Action:** Applied `aria-current="page"` conditionally based on the active tab state (`activeTab === 'tab_name'`). This is a standard ARIA pattern that should be applied to all custom tab or navigation lists to ensure proper contextual feedback for assistive technologies.
+## 2024-05-18 - Segmented Control Accessibility
+**Learning:** Custom toggle grids and segmented controls (like in AuthModal) frequently lack `aria-pressed` states and focus rings, making them inaccessible to screen readers and keyboard users.
+**Action:** Always explicitly add `aria-pressed={isActive}` and `focus-visible:ring-2` to custom toggle button elements to ensure proper state announcement and focus visibility.
