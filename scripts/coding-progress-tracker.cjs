@@ -447,11 +447,14 @@ function main() {
   }
 
   if (eventType === 'post-tool') {
-    const rawStepDur = Math.max(100, now - (state.lastStepStartedAt || now));
-    const stepDuration = Math.min(45000, rawStepDur);
+    // Item 2: Delta real entre o término do passo anterior (ou início do turno) e o término deste passo.
+    // Captura o ciclo completo incluindo o tempo de inferência e raciocínio da IA (LLM think time) + execução da ferramenta.
+    const prevEnd = state.lastStepEndedAt || state.lastStepStartedAt || state.startedAt || now;
+    const deltaRealMs = Math.max(1000, now - prevEnd);
+    const stepDuration = Math.min(60000, deltaRealMs);
     state.lastStepEndedAt = now;
     state.activeWorkMs = (state.activeWorkMs || 0) + stepDuration;
-    state.avgStepMs = Math.round((state.avgStepMs || 3000) * 0.7 + stepDuration * 0.3);
+    state.avgStepMs = Math.round((state.avgStepMs || 15000) * 0.7 + stepDuration * 0.3);
     state.stepsCompleted = (state.stepsCompleted || 0) + 1;
     if (state.stepsCompleted >= state.estimatedTotalSteps - 1) {
       state.estimatedTotalSteps = state.stepsCompleted + 2;
@@ -488,13 +491,23 @@ function main() {
         if (fs.existsSync(profilePath)) {
           profile = JSON.parse(fs.readFileSync(profilePath, 'utf8'));
         }
-        const entry = profile[catKey] || { samples: [], ewmaMs: stepDuration, p50Ms: stepDuration, p90Ms: stepDuration };
-        const clamped = Math.min(35000, Math.max(150, stepDuration));
+        // Fallback inicial realista: Leitura = 12s, Edição = 18s, Terminal/Build = 15s
+        const defaultPriorsMs = {
+          fast_read: 12000,
+          code_edit: 18000,
+          cmd_light: 10000,
+          cmd_build_lint: 15000,
+          cmd_test: 18000,
+          subagent_web: 22000,
+        };
+        const priorMs = defaultPriorsMs[catKey] || 15000;
+        const entry = profile[catKey] || { samples: [], ewmaMs: priorMs, p50Ms: priorMs, p90Ms: Math.round(priorMs * 1.3) };
+        const clamped = Math.min(60000, Math.max(3000, stepDuration));
         const samples = [...(Array.isArray(entry.samples) ? entry.samples : []), clamped].slice(-30);
         const sorted = [...samples].sort((a, b) => a - b);
         const p50Ms = sorted[Math.floor(sorted.length * 0.5)] || clamped;
         const p90Ms = sorted[Math.floor(sorted.length * 0.9)] || clamped;
-        const ewmaMs = Math.round(0.3 * clamped + 0.7 * (entry.ewmaMs || p50Ms));
+        const ewmaMs = Math.round(0.35 * clamped + 0.65 * (entry.ewmaMs || priorMs));
         profile[catKey] = { samples, ewmaMs, p50Ms, p90Ms, updatedAt: now };
         fs.writeFileSync(profilePath, JSON.stringify(profile, null, 2), 'utf8');
       } catch {
