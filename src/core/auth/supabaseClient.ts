@@ -107,13 +107,19 @@ export async function signInWithGoogle(): Promise<{ error: Error | null; url?: s
     const isElectron = typeof window !== 'undefined' && Boolean((window as unknown as { electronAPI?: { isElectron?: boolean } }).electronAPI?.isElectron);
     const isCapacitor = typeof window !== 'undefined' && Capacitor.isNativePlatform();
 
+    if (isCapacitor) {
+      return {
+        error: new Error(
+          'O login com Google no celular requer um servidor local (localhost:3000) configurado no Supabase. Por favor, utilize seu E-mail e Senha abaixo para entrar e sincronizar instantaneamente no celular!'
+        ),
+      };
+    }
+
     const redirectUrl = isElectron
       ? 'http://localhost:3000'
-      : isCapacitor
-        ? 'com.quantora.app://auth-callback'
-        : (typeof window !== 'undefined' && window.location.origin.startsWith('http')
-          ? window.location.origin
-          : undefined);
+      : (typeof window !== 'undefined' && window.location.origin.startsWith('http')
+        ? window.location.origin
+        : undefined);
 
     // Pre-warm: evita 502 Bad Gateway no navegador caso o container GoTrue esteja em repouso (cold start no plano gratuito)
     const { url: supabaseUrl, anonKey } = getSupabaseCredentials();

@@ -13,6 +13,7 @@ export const VALID_TYPES: readonly CalculationType[] = [
   'physics',
   'pitagoras',
   'photo_math',
+  'linear_systems',
 ] as const;
 
 /**

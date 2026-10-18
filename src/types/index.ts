@@ -66,8 +66,8 @@ export interface RegraDeTresCompostaResult {
   equation: string;
 }
 
-export type CalculationType = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'pitagoras' | 'photo_math';
-export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'pitagoras' | 'quiz' | 'history' | 'settings' | 'hub' | 'photo_math';
+export type CalculationType = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'pitagoras' | 'photo_math' | 'linear_systems';
+export type ActiveTab = 'bhaskara' | 'regra_simples' | 'regra_composta' | 'physics' | 'pitagoras' | 'quiz' | 'history' | 'settings' | 'hub' | 'photo_math' | 'linear_systems';
 
 export interface HistoryItem {
   id: string;

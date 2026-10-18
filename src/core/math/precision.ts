@@ -27,6 +27,7 @@ export const NUMERICAL_BOUNDARY_MAP = {
     'src/core/math/pitagoras.ts',
     'src/core/math/regraDeTresSimples.ts',
     'src/core/math/regraDeTresComposta.ts',
+    'src/core/math/linearSystemAndProgression.ts',
     'src/core/gamification/leveling.ts',
   ],
   analyticalFloat64WithTolerance: [

@@ -24,11 +24,10 @@ import {
   type ScannedEquationResult,
   type ScannedEquationType,
 } from '../../core/math/equationScanner';
-import {
-  SAMPLE_EQUATIONS,
-  recognizeTextFromCanvas,
-  type SampleEquation,
-} from '../../core/math/imageOcr';
+import { SAMPLE_EQUATIONS, type SampleEquation } from '../../core/math/imageOcr';
+import { preprocessImage } from '../../core/math/imagePreprocessor';
+import { recognizeMathText } from '../../core/math/ocrService';
+import { normalizeEquation } from '../../core/math/equationNormalizer';
 import { hapticComboTick, hapticMasteryBadge } from '../../core/platform/haptics';
 import { playHubSwipe, playSfx } from '../../core/platform/audio';
 
@@ -108,6 +107,9 @@ export const PhotoMathModule: React.FC = () => {
   const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<'original' | 'contrast' | 'binarize'>('binarize');
   const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrStatusText, setOcrStatusText] = useState('');
+  const [ocrErrorMessage, setOcrErrorMessage] = useState<string | null>(null);
 
   // Canvas ref para processamento de OCR
   const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -146,43 +148,84 @@ export const PhotoMathModule: React.FC = () => {
     }
   }, [solution, equationText, setScratchpadContext]);
 
-  // Consome imagem enviada pela Lousa de Rascunho para resolução óptica
+  // Pipeline de 4 Passos: Pré-processador -> OCR -> Normalizador -> Integração com a UI
+  const processImagePipeline = useCallback(
+    async (
+      source: File | Blob | HTMLVideoElement | HTMLCanvasElement | HTMLImageElement,
+      currentFilter: 'original' | 'contrast' | 'binarize'
+    ) => {
+      setIsProcessingImage(true);
+      setOcrProgress(15);
+      setOcrStatusText('Pré-processando imagem (escala de cinza, contraste e binarização Otsu)...');
+      setOcrErrorMessage(null);
+
+      try {
+        // Passo 1: imagePreprocessor.ts — Otimiza, aplica contraste e binariza
+        const preprocessed = await preprocessImage(source, {
+          binarize: currentFilter === 'binarize',
+          contrast: currentFilter === 'contrast' ? 45 : 35,
+          brightness: currentFilter === 'contrast' ? 5 : 10,
+        });
+
+        sourceCanvasRef.current = preprocessed.canvas;
+        setCapturedImageUrl(preprocessed.dataUrl);
+
+        // Passo 2: ocrService.ts — Tesseract.js com whitelist matemática e segmentação de bloco
+        setOcrStatusText('Reconhecendo caracteres matemáticos com OCR...');
+        const ocrResult = await recognizeMathText(preprocessed.canvas, {
+          onProgress: (pct, status) => {
+            setOcrProgress(pct);
+            setOcrStatusText(
+              status === 'recognizing text'
+                ? `Lendo caracteres matemáticos... ${pct}%`
+                : 'Analisando blocos e símbolos...'
+            );
+          },
+        });
+
+        // Passo 3: equationNormalizer.ts — Limpeza pura de erros de OCR e expoentes
+        const cleanedEquation = normalizeEquation(ocrResult.rawText);
+
+        // Passo 4: Integração com a UI — Preenche o input editável e dispara o cálculo oficial e tipo
+        if (cleanedEquation && cleanedEquation.length > 0) {
+          setEquationText(cleanedEquation);
+          handleSolve(cleanedEquation);
+          setOcrErrorMessage(null);
+        } else {
+          setOcrErrorMessage(
+            'Não foi possível extrair uma equação nítida da imagem. Experimente alternar o filtro acima ou digitar no teclado abaixo.'
+          );
+        }
+      } catch (err) {
+        console.error('[PhotoMath] Erro no pipeline do scanner:', err);
+        setOcrErrorMessage(
+          'Ocorreu uma instabilidade na leitura óptica. Você pode digitar ou ajustar os símbolos diretamente.'
+        );
+      } finally {
+        setIsProcessingImage(false);
+      }
+    },
+    [handleSolve]
+  );
+
+  // Consome imagem enviada pela Lousa de Rascunho para resolução óptica via pipeline
   useEffect(() => {
     if (!scratchpadPendingImage) return;
 
     const dataUrl = scratchpadPendingImage;
     const timer = setTimeout(() => {
-      setCapturedImageUrl(dataUrl);
       setCalculationSource('scratchpad');
       setScratchpadPendingImage(null);
 
       const img = new Image();
-      img.onload = async () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          sourceCanvasRef.current = canvas;
-
-          setIsProcessingImage(true);
-          const ocrRes = await recognizeTextFromCanvas(canvas);
-          setIsProcessingImage(false);
-
-          if (ocrRes.text) {
-            setEquationText(ocrRes.text);
-            handleSolve(ocrRes.text);
-          } else {
-            handleSolve(equationText);
-          }
-        }
+      img.onload = () => {
+        processImagePipeline(img, filterMode);
       };
       img.src = dataUrl;
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [scratchpadPendingImage, setScratchpadPendingImage, handleSolve, equationText]);
+  }, [scratchpadPendingImage, setScratchpadPendingImage, processImagePipeline, filterMode]);
 
   // Inicia / Interrompe a câmera ao vivo
   const startCamera = useCallback(async () => {
@@ -238,71 +281,37 @@ export const PhotoMathModule: React.FC = () => {
     playHubSwipe();
 
     const video = videoRef.current;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    sourceCanvasRef.current = canvas;
-
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-    setCapturedImageUrl(dataUrl);
     setCalculationSource('camera');
     stopCamera();
 
-    // Executa detecção óptica
-    setIsProcessingImage(true);
-    const ocrResult = await recognizeTextFromCanvas(canvas);
-    setIsProcessingImage(false);
-
-    if (ocrResult.text) {
-      setEquationText(ocrResult.text);
-      handleSolve(ocrResult.text);
-    } else {
-      handleSolve(equationText);
-    }
-  }, [stopCamera, equationText, handleSolve]);
+    await processImagePipeline(video, filterMode);
+  }, [stopCamera, filterMode, processImagePipeline]);
 
   // Upload de arquivo de imagem do usuário
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     hapticComboTick(1);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const url = event.target?.result as string;
-      setCapturedImageUrl(url);
-      setCalculationSource('upload');
+    setCalculationSource('upload');
+    await processImagePipeline(file, filterMode);
+  };
 
-      const img = new Image();
-      img.onload = async () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          sourceCanvasRef.current = canvas;
+  // Alterna o filtro de visão computacional e re-executa OCR se houver canvas ativo
+  const handleFilterChange = (newFilter: 'original' | 'contrast' | 'binarize') => {
+    setFilterMode(newFilter);
+    hapticComboTick(1);
+    if (sourceCanvasRef.current) {
+      processImagePipeline(sourceCanvasRef.current, newFilter);
+    }
+  };
 
-          setIsProcessingImage(true);
-          const ocrRes = await recognizeTextFromCanvas(canvas);
-          setIsProcessingImage(false);
-
-          if (ocrRes.text) {
-            setEquationText(ocrRes.text);
-            handleSolve(ocrRes.text);
-          } else {
-            handleSolve(equationText);
-          }
-        }
-      };
-      img.src = url;
-    };
-    reader.readAsDataURL(file);
+  // Re-escaneia o canvas ativo com o filtro corrente
+  const handleRescan = () => {
+    if (sourceCanvasRef.current) {
+      hapticComboTick(1);
+      processImagePipeline(sourceCanvasRef.current, filterMode);
+    }
   };
 
   // Seleção de amostra pronta de teste
@@ -404,6 +413,8 @@ export const PhotoMathModule: React.FC = () => {
         return { label: 'Regra de Três / Proporção', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' };
       case 'arithmetic':
         return { label: 'Expressão Aritmética', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
+      case 'calculus':
+        return { label: 'Cálculo Diferencial & Integral', color: 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30' };
       default:
         return { label: 'Formato Livre', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30' };
     }
@@ -671,12 +682,13 @@ export const PhotoMathModule: React.FC = () => {
               </div>
             </div>
 
-            {/* Alternador de Filtro da Imagem */}
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900/60 border border-slate-700">
+            {/* Alternador de Filtro da Imagem e Ação de Reescanear */}
+            <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-900/60 border border-slate-700">
               <button
                 type="button"
-                onClick={() => setFilterMode('original')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                onClick={() => handleFilterChange('original')}
+                disabled={isProcessingImage}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-all disabled:opacity-50 ${
                   filterMode === 'original' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400'
                 }`}
               >
@@ -684,8 +696,9 @@ export const PhotoMathModule: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setFilterMode('contrast')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                onClick={() => handleFilterChange('contrast')}
+                disabled={isProcessingImage}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-all disabled:opacity-50 ${
                   filterMode === 'contrast' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400'
                 }`}
               >
@@ -693,17 +706,61 @@ export const PhotoMathModule: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setFilterMode('binarize')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                onClick={() => handleFilterChange('binarize')}
+                disabled={isProcessingImage}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-all disabled:opacity-50 ${
                   filterMode === 'binarize' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400'
                 }`}
               >
                 {t.photo_math_filter_bw || 'Binarizado P&B'}
               </button>
+
+              <button
+                type="button"
+                onClick={handleRescan}
+                disabled={isProcessingImage}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 cursor-pointer disabled:opacity-50 transition-all ml-1"
+                title="Reescanear a foto com o filtro atual"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isProcessingImage ? 'animate-spin' : ''}`} />
+                <span>Reescanear</span>
+              </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Barra de Progresso do OCR */}
+      {isProcessingImage && (
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold animate-pulse shadow-lg">
+          <Loader2 className="w-5 h-5 animate-spin text-cyan-400 shrink-0" />
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-medium text-slate-200">
+                {ocrStatusText || 'Processando imagem e identificando equação com OCR...'}
+              </span>
+              <span className="font-mono font-bold text-cyan-300">{ocrProgress}%</span>
+            </div>
+            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-300 rounded-full"
+                style={{ width: `${Math.max(12, ocrProgress)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Aviso quando a imagem não continha texto identificável */}
+      {ocrErrorMessage && !isProcessingImage && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs shadow-lg animate-fadeIn">
+          <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-1">
+            <span className="font-bold text-amber-300 block text-sm">Aviso de Leitura Óptica</span>
+            <span className="text-slate-300 block">{ocrErrorMessage}</span>
+          </div>
+        </div>
+      )}
 
       {/* ÁREA DE RECONHECIMENTO & CONFIRMAÇÃO EDITÁVEL */}
       <div className="p-6 rounded-3xl cosmic-glass border border-cyan-500/20 space-y-4 shadow-xl">
@@ -754,11 +811,13 @@ export const PhotoMathModule: React.FC = () => {
         {/* Barra de Símbolos Rápidos para Teclado Virtual (Inserção Cirúrgica no Cursor) */}
         <div className="flex flex-wrap items-center gap-1.5 pt-1">
           <span className="text-[10px] font-bold uppercase text-slate-500 mr-1">Inserir:</span>
-          {['x', 'x²', '√', '+', '-', '=', '*', '/', '²', '³', '(', ')', 'π'].map((sym) => (
+          {['∫', 'dx', 'x', 'x²', '√', '+', '-', '=', '*', '/', '²', '³', '(', ')', 'π'].map((sym) => (
             <button
               key={sym}
               type="button"
-              onClick={() => insertSymbol(sym === '√' ? 'sqrt(' : sym)}
+              onClick={() =>
+                insertSymbol(sym === '√' ? 'sqrt(' : sym === '∫' ? '∫ ' : sym === 'dx' ? ' dx' : sym)
+              }
               className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold border border-slate-700/80 active:scale-95 transition-all cursor-pointer shadow-sm"
             >
               {sym}

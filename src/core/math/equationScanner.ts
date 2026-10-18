@@ -11,6 +11,7 @@ export type ScannedEquationType =
   | 'pitagoras'
   | 'regra_simples'
   | 'arithmetic'
+  | 'calculus'
   | 'unknown';
 
 export interface ScannedEquationResult {
@@ -43,6 +44,13 @@ export function normalizeOcrText(rawText: string): string {
   // Substitui quebras de linha por espaços
   text = text.replace(/[\r\n]+/g, ' ');
 
+  // Normaliza notações de integral (\int, int, barra vertical antes de dx)
+  text = text.replace(/\\int\b/gi, '∫');
+  text = text.replace(/\bint\s+/gi, '∫ ');
+  if (/^[|I/]\s*.*d[xyz]\b/i.test(text)) {
+    text = text.replace(/^[|I/]\s*/, '∫ ');
+  }
+
   // Normaliza operadores de multiplicação e divisão
   text = text.replace(/[×•\u00D7\u22C5\u2219]/g, '*');
   text = text.replace(/[÷\u00F7]/g, '/');
@@ -63,6 +71,11 @@ export function normalizeOcrText(rawText: string): string {
   // Normaliza mais ou menos
   text = text.replace(/[\u00B1±]/g, '+-');
 
+  // Corrige leituras ópticas de integrais onde o 'x' em itálico antes do expoente foi omitido ou lido como 'v'
+  text = text.replace(/∫\s*[vV]?(\d+)\s*d([xyz])\b/g, '∫ $2^$1 d$2');
+  text = text.replace(/∫\s*([xyz])(\d+)\s*d([xyz])\b/gi, '∫ $1^$2 d$3');
+  text = text.replace(/∫\s*([xyz]\^\d+)\s*d([xyz])\b/gi, '∫ $1 d$2');
+
   // Adiciona multiplicação explícita em parênteses implícitos
   text = text.replace(/(\d)\s*\(/g, '$1 * (');
   text = text.replace(/\)\s*(\d)/g, ') * $1');
@@ -72,6 +85,16 @@ export function normalizeOcrText(rawText: string): string {
   text = text.replace(/(\d)X/g, '$1x');
   text = text.replace(/X(\d)/g, 'x$1');
 
+  // Corrige variáveis com sufixo 2 ou 3 lidos sem acento circunflexo (ex: x2 -> x^2, x3 -> x^3)
+  text = text.replace(/([a-zA-Z])2\b/g, '$1^2');
+  text = text.replace(/([a-zA-Z])3\b/g, '$1^3');
+  text = text.replace(/([a-zA-Z])2(?=d[xyz]\b)/g, '$1^2 ');
+  text = text.replace(/([a-zA-Z])3(?=d[xyz]\b)/g, '$1^3 ');
+
+  // Corrige somas de quadrados lidas com expoente 2 colado (ex: 172 + 202 = x^2 -> 17^2 + 20^2 = x^2)
+  text = text.replace(/(\d{1,3})2\s*\+\s*(\d{1,3})2\s*=\s*([a-zA-Z])\^?2?/g, '$1^2 + $2^2 = $3^2');
+  text = text.replace(/([a-zA-Z])\^?2?\s*=\s*(\d{1,3})2\s*\+\s*(\d{1,3})2/g, '$1^2 = $2^2 + $3^2');
+
   // Corrige 'o' ou 'O' como zero quando entre números ou no final de equação
   text = text.replace(/=\s*[oO]\b/g, '= 0');
   text = text.replace(/\b[oO]\s*=/g, '0 =');
@@ -79,6 +102,11 @@ export function normalizeOcrText(rawText: string): string {
   // Remove espaços extras antes e depois de operadores (preservando expoentes ^ juntos)
   text = text.replace(/\s*([=+\-*/])\s*/g, ' $1 ');
   text = text.replace(/\s*\^\s*/g, '^');
+  text = text.replace(/\^\s*-\s*(\d+)/g, '^-$1');
+  if (text.includes('∫')) {
+    text = text.replace(/\s*=\s*$/, '');
+    text = text.replace(/^∫\s*/, '∫ ');
+  }
   text = text.replace(/\s+/g, ' ').trim();
 
   return text;
@@ -92,14 +120,25 @@ export function detectEquationType(normalizedText: string): ScannedEquationType 
 
   if (!clean) return 'unknown';
 
-  // Verifica Teorema de Pitágoras: a^2 + b^2 = c^2 ou padrão com hipotenusa/catetos
+  // Verifica Cálculo Diferencial e Integral (∫ ... dx, d/dx)
+  if (
+    clean.includes('∫') ||
+    /^int\b/i.test(normalizedText.trim()) ||
+    /d\/d[xyz]/i.test(clean) ||
+    /d[xyz]$/i.test(clean.replace(/=$/, ''))
+  ) {
+    return 'calculus';
+  }
+
+  // Verifica Teorema de Pitágoras: a^2 + b^2 = c^2, a^2 + b^2 = x^2, x^2 = a^2 + b^2, etc.
   if (
     clean.includes('^2') &&
     (clean.includes('a^2+b^2=c^2') ||
       clean.includes('c^2=a^2+b^2') ||
-      /(\d+)\^2\+(\d+)\^2=x\^2/.test(clean) ||
-      /x\^2\+(\d+)\^2=(\d+)\^2/.test(clean) ||
-      /(\d+)\^2\+x\^2=(\d+)\^2/.test(clean))
+      /(\d+(?:\.\d+)?)\^2\+(\d+(?:\.\d+)?)\^2=[xc]\^2/.test(clean) ||
+      /[xc]\^2=(\d+(?:\.\d+)?)\^2\+(\d+(?:\.\d+)?)\^2/.test(clean) ||
+      /[xc]\^2\+(\d+(?:\.\d+)?)\^2=(\d+(?:\.\d+)?)\^2/.test(clean) ||
+      /(\d+(?:\.\d+)?)\^2\+[xc]\^2=(\d+(?:\.\d+)?)\^2/.test(clean))
   ) {
     return 'pitagoras';
   }
@@ -461,8 +500,10 @@ export function solvePitagorasEquation(
   const clean = normalizedEquation.toLowerCase().replace(/\s+/g, '');
 
   try {
-    // Caso 1: cateto1^2 + cateto2^2 = x^2 (descobrir hipotenusa)
-    const matchHyp = clean.match(/(\d+(?:\.\d+)?)\^2\+(\d+(?:\.\d+)?)\^2=x\^2/);
+    // Caso 1: cateto1^2 + cateto2^2 = x^2 ou x^2 = cateto1^2 + cateto2^2 (descobrir hipotenusa)
+    const matchHyp1 = clean.match(/(\d+(?:\.\d+)?)\^2\+(\d+(?:\.\d+)?)\^2=[xc]\^2/);
+    const matchHyp2 = clean.match(/[xc]\^2=(\d+(?:\.\d+)?)\^2\+(\d+(?:\.\d+)?)\^2/);
+    const matchHyp = matchHyp1 || matchHyp2;
     if (matchHyp) {
       const legA = matchHyp[1];
       const legB = matchHyp[2];
@@ -682,6 +723,230 @@ export function solveArithmeticExpression(
 }
 
 /**
+ * Calcula o Máximo Divisor Comum (MDC) entre dois inteiros positivos
+ */
+function gcdInt(a: number, b: number): number {
+  let x = Math.abs(Math.round(a));
+  let y = Math.abs(Math.round(b));
+  while (y !== 0) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x || 1;
+}
+
+/**
+ * Resolve Integrais Indefinidas Polinomiais (∫ a*x^n dx) e Derivadas Polinomiais (d/dx)
+ * seguindo as 4 fases didáticas e precisão arbitrária com big.js.
+ */
+export function solveCalculusEquation(
+  normalizedExpr: string,
+  options: ScannerOptions = {}
+): ScannedEquationResult {
+  const decimals = options.decimals ?? 2;
+  const separator = options.separator ?? ',';
+
+  const clean = normalizedExpr.replace(/=\s*$/, '').trim();
+
+  try {
+    // Caso 1: Derivada d/dx (...)
+    const derivMatch = clean.match(/^d\s*\/\s*d([xyz])\s*\(?(.+?)\)?$/i);
+    if (derivMatch) {
+      const variable = derivMatch[1].toLowerCase();
+      const inner = derivMatch[2].trim();
+      const termMatch = inner.match(/^([+-]?\s*\d+(?:\.\d+)?)?\s*\*?\s*([xyz])(?:\^([+-]?\d+))?$/i);
+      if (termMatch) {
+        const rawCoeff = (termMatch[1] || '1').replace(/\s+/g, '');
+        const coeff =
+          rawCoeff === '' || rawCoeff === '+'
+            ? new Big(1)
+            : rawCoeff === '-'
+              ? new Big(-1)
+              : parseBig(rawCoeff);
+        const exp = termMatch[3] ? Number.parseInt(termMatch[3], 10) : 1;
+        const newCoeff = coeff.times(exp);
+        const newExp = exp - 1;
+
+        const formattedCoeff = formatNumberSmart(newCoeff.toNumber(), decimals, separator);
+        const resultStr =
+          newExp === 0
+            ? formattedCoeff
+            : newExp === 1
+              ? `${newCoeff.eq(1) ? '' : newCoeff.eq(-1) ? '-' : formattedCoeff}${variable}`
+              : `${newCoeff.eq(1) ? '' : newCoeff.eq(-1) ? '-' : formattedCoeff}${variable}^${newExp}`;
+
+        return {
+          type: 'calculus',
+          rawInput: normalizedExpr,
+          normalizedEquation: `d/d${variable} (${inner})`,
+          isSolvable: true,
+          resultSummary: resultStr,
+          steps: [
+            `1. **Identificação do Problema:** Derivada de primeira ordem de $${inner}$ em relação a $${variable}$.`,
+            `2. **Seleção da Fórmula (Regra da Potência para Derivadas):** $\\frac{d}{d${variable}}[a${variable}^n] = a \\cdot n \\cdot ${variable}^{n-1}$.`,
+            `3. **Substituição dos Valores:** Multiplicamos o coeficiente $${coeff.toString()}$ pelo expoente $n = ${exp}$ e subtraímos $1$ do expoente: $${coeff.toString()} \\cdot ${exp} \\cdot ${variable}^{${exp}-1}$.`,
+            `4. **Simplificação e Conclusão:** Resultado final **$${resultStr}$**.`,
+          ],
+          latexFormula: resultStr,
+        };
+      }
+    }
+
+    // Caso 2: Integral Indefinida Polinomial (ex: ∫ x^3 dx, ∫ (3x^2 + 2x) dx)
+    const intMatch = clean
+      .replace(/^int\b/i, '∫')
+      .match(/^∫?\s*\(?(.+?)\)?\s*d([xyz])$/i);
+
+    if (!intMatch) {
+      throw new Error('Use o formato ∫ x^n dx ou d/dx (x^n).');
+    }
+
+    const integrandRaw = intMatch[1].replace(/^\(|\)$/g, '').trim();
+    const variable = intMatch[2].toLowerCase();
+
+    // Separa os termos polinomiais do integrando
+    const rawTokens = integrandRaw
+      .replace(/\s+/g, '')
+      .replace(/(?=[+-])/g, ' ')
+      .split(' ')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+
+    if (rawTokens.length === 0) {
+      throw new Error('Integrando vazio.');
+    }
+
+    const formattedTerms: string[] = [];
+    const stepSubstitutions: string[] = [];
+
+    for (const token of rawTokens) {
+      if (token.toLowerCase().includes(variable)) {
+        const parts = token.toLowerCase().split(variable);
+        const coeffPart = parts[0].replace(/\*/g, '').trim();
+        const expPart = parts[1] ? parts[1].replace('^', '').trim() : '';
+
+        const coeff =
+          coeffPart === '' || coeffPart === '+'
+            ? new Big(1)
+            : coeffPart === '-'
+              ? new Big(-1)
+              : parseBig(coeffPart);
+        const exp = expPart === '' ? 1 : Number.parseInt(expPart, 10);
+
+        if (Number.isNaN(exp)) {
+          throw new Error(`Expoente inválido no termo ${token}.`);
+        }
+
+        if (exp === -1) {
+          stepSubstitutions.push(
+            `$\\int ${token} \\, d${variable} = ${coeff.eq(1) ? '' : coeff.toString()}\\ln|${variable}|$`
+          );
+          const prefix =
+            formattedTerms.length === 0
+              ? coeff.lt(0)
+                ? '-'
+                : ''
+              : coeff.lt(0)
+                ? ' - '
+                : ' + ';
+          const absCoeff = coeff.abs();
+          formattedTerms.push(
+            `${prefix}${absCoeff.eq(1) ? '' : formatNumberSmart(absCoeff.toNumber(), decimals, separator)}ln|${variable}|`
+          );
+          continue;
+        }
+
+        const newExp = exp + 1;
+        stepSubstitutions.push(
+          `$\\frac{${coeff.eq(1) ? '' : coeff.toString()}${variable}^{${exp}+1}}{${exp}+1} = \\frac{${coeff.eq(1) ? '' : coeff.toString()}${variable}^{${newExp}}}{${newExp}}$`
+        );
+
+        const isSignNegative = coeff.lt(0) ? newExp > 0 : newExp < 0;
+        const prefix =
+          formattedTerms.length === 0
+            ? isSignNegative
+              ? '-'
+              : ''
+            : isSignNegative
+              ? ' - '
+              : ' + ';
+
+        const absCoeffNum = coeff.abs().toNumber();
+        const absDenom = Math.abs(newExp);
+        const varPower = newExp === 1 ? variable : `${variable}^${newExp}`;
+
+        if (Number.isInteger(absCoeffNum)) {
+          const g = gcdInt(absCoeffNum, absDenom);
+          const redNum = absCoeffNum / g;
+          const redDen = absDenom / g;
+
+          if (redDen === 1) {
+            formattedTerms.push(`${prefix}${redNum === 1 ? '' : redNum}${varPower}`);
+          } else {
+            formattedTerms.push(`${prefix}${redNum === 1 ? '' : redNum}${varPower}/${redDen}`);
+          }
+        } else {
+          const ratio = coeff.abs().div(absDenom);
+          const formattedRatio = formatNumberSmart(ratio.toNumber(), decimals, separator);
+          formattedTerms.push(`${prefix}${formattedRatio}${varPower}`);
+        }
+      } else {
+        // Termo constante k -> k*x
+        const constVal = parseBig(token);
+        if (constVal.eq(0)) continue;
+        stepSubstitutions.push(`$\\int ${token} \\, d${variable} = ${token}${variable}$`);
+        const prefix =
+          formattedTerms.length === 0
+            ? constVal.lt(0)
+              ? '-'
+              : ''
+            : constVal.lt(0)
+              ? ' - '
+              : ' + ';
+        const absVal = constVal.abs();
+        formattedTerms.push(
+          `${prefix}${absVal.eq(1) ? '' : formatNumberSmart(absVal.toNumber(), decimals, separator)}${variable}`
+        );
+      }
+    }
+
+    const finalExpression =
+      formattedTerms.length > 0 ? `${formattedTerms.join('')} + C` : 'C';
+    const canonicalInput = `∫ ${integrandRaw} d${variable}`;
+
+    const steps: string[] = [
+      `1. **Identificação do Problema:** Integral indefinida de $f(${variable}) = ${integrandRaw}$ em relação à variável de integração $${variable}$.`,
+      `2. **Seleção da Fórmula (Regra da Potência para Integrais):** Para todo expoente $n \\neq -1$, aplica-se $\\int ${variable}^n \\, d${variable} = \\frac{${variable}^{n+1}}{n+1} + C$.`,
+      `3. **Substituição na Regra de Integração:** Incrementamos o expoente em $+1$ e dividimos pelo novo denominador: ${stepSubstitutions.join(', ')}.`,
+      `4. **Simplificação e Constante de Integração ($C$):** Somando a constante arbitrária $C \\in \\mathbb{R}$, concluímos que **$${finalExpression}$**.`,
+    ];
+
+    return {
+      type: 'calculus',
+      rawInput: normalizedExpr,
+      normalizedEquation: canonicalInput,
+      isSolvable: true,
+      resultSummary: finalExpression,
+      steps,
+      latexFormula: finalExpression,
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return {
+      type: 'calculus',
+      rawInput: normalizedExpr,
+      normalizedEquation: clean,
+      isSolvable: false,
+      errorMessage: `Erro ao resolver expressão de Cálculo: ${msg}`,
+      resultSummary: 'Erro de sintaxe',
+      steps: [],
+      latexFormula: clean,
+    };
+  }
+}
+
+/**
  * Ponto de entrada mestre para escanear e resolver qualquer equação
  */
 export function scanAndSolveEquation(
@@ -692,6 +957,8 @@ export function scanAndSolveEquation(
   const detectedType = detectEquationType(normalized);
 
   switch (detectedType) {
+    case 'calculus':
+      return solveCalculusEquation(normalized, options);
     case 'bhaskara':
       return solveQuadraticEquation(normalized, options);
     case 'pitagoras':
@@ -714,6 +981,7 @@ export function scanAndSolveEquation(
         steps: [
           'Dica de Enquadramento: Certifique-se de que a equação esteja nítida, com boa iluminação e sem sombras sobre as incógnitas.',
           'Formatos Suportados:',
+          '• Cálculo Diferencial e Integral: $\\int x^3 \\, dx$ ou $d/dx (x^3)$',
           '• Equações do 2º Grau: $ax^2 + bx + c = 0$',
           '• Equações do 1º Grau: $ax + b = cx + d$',
           '• Teorema de Pitágoras: $a^2 + b^2 = c^2$',

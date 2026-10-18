@@ -485,6 +485,15 @@ export const translations = {
     notifications_streak_desc: '{streak} dias consecutivos de prática matemática.',
     notifications_btn_profile: 'Ver Perfil Completo',
     notifications_close: 'Fechar notificações',
+
+    // Sistemas Lineares 2x2, PA/PG & Listas Imprimíveis (v1.3.0)
+    nav_linear: 'Sistemas & PA/PG',
+    hub_linear_title: 'Sistemas & PA/PG',
+    hub_linear_subtitle: 'Sistemas 2×2 (Cramer + Gráfico), Progressões PA/PG e Listas Imprimíveis.',
+    hub_linear_category: 'ÁLGEBRA & LISTAS',
+    hub_linear_badge: 'NOVO • CRAMER & PDF',
+    hub_linear_stats_label: 'Motores Didáticos',
+    hub_linear_stats_value: '2×2 • PA/PG • PDF',
   },
   en: {
     // Navbar
@@ -972,6 +981,15 @@ export const translations = {
     notifications_streak_desc: '{streak} consecutive days of math practice.',
     notifications_btn_profile: 'View Full Profile',
     notifications_close: 'Close notifications',
+
+    // 2x2 Linear Systems, AP/GP & Printable Worksheets (v1.3.0)
+    nav_linear: 'Systems & AP/GP',
+    hub_linear_title: 'Systems & AP/GP',
+    hub_linear_subtitle: '2×2 Linear Systems (Cramer + Chart), AP/GP Progressions & Printable Worksheets.',
+    hub_linear_category: 'ALGEBRA & SHEETS',
+    hub_linear_badge: 'NEW • CRAMER & PDF',
+    hub_linear_stats_label: 'Didactic Engines',
+    hub_linear_stats_value: '2×2 • AP/GP • PDF',
   },
 } as const;
 

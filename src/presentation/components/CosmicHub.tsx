@@ -30,6 +30,7 @@ import {
   CosmicSpaced3D,
   CosmicHistory3D,
   CosmicScan3D,
+  CosmicLinear3D,
 } from './CosmicIcons3D';
 
 interface HubCard {
@@ -207,6 +208,18 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
       statsLabel: t.hub_photo_math_stats_label,
       statsValue: t.hub_photo_math_stats_value,
       renderIcon: (isActive) => <CosmicScan3D size={isActive ? 84 : 64} />,
+    },
+    {
+      id: 'linear_systems',
+      title: t.hub_linear_title,
+      subtitle: t.hub_linear_subtitle,
+      category: t.hub_linear_category,
+      neonColor: 'cyan',
+      targetTab: 'linear_systems',
+      badge: t.hub_linear_badge,
+      statsLabel: t.hub_linear_stats_label,
+      statsValue: t.hub_linear_stats_value,
+      renderIcon: (isActive) => <CosmicLinear3D size={isActive ? 84 : 64} />,
     },
     {
       id: 'daily',

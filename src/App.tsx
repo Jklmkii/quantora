@@ -10,7 +10,6 @@ import { UpdateBanner } from './presentation/components/UpdateBanner';
 import { AchievementToast } from './presentation/components/AchievementToast';
 import { FeatureUnlockToast } from './presentation/components/FeatureUnlockToast';
 import { Scratchpad } from './presentation/components/Scratchpad';
-import { AgentTelemetryHUD } from './presentation/components/AgentTelemetryHUD';
 import { CosmicHub } from './presentation/components/CosmicHub';
 import { CosmicBackgroundCanvas } from './presentation/components/CosmicBackgroundCanvas';
 import { LayoutGrid } from 'lucide-react';
@@ -38,6 +37,9 @@ const QuizModule = lazy(() =>
 );
 const PhotoMathModule = lazy(() =>
   import('./presentation/modules/PhotoMathModule').then((m) => ({ default: m.PhotoMathModule }))
+);
+const LinearSystemModule = lazy(() =>
+  import('./presentation/modules/LinearSystemModule').then((m) => ({ default: m.LinearSystemModule }))
 );
 
 function ModuleSkeleton() {
@@ -182,6 +184,10 @@ export function App() {
               {visitedTabs.has('photo_math') && <PhotoMathModule />}
             </div>
 
+            <div style={{ display: activeTab === 'linear_systems' ? 'block' : 'none' }}>
+              {visitedTabs.has('linear_systems') && <LinearSystemModule />}
+            </div>
+
             {/* Dynamic Modules (Unmount to reset state) */}
             {activeTab === 'quiz' && <QuizModule />}
             {activeTab === 'history' && <HistoryModule />}
@@ -229,7 +235,6 @@ export function App() {
         />
       )}
       <OnboardingModal />
-      <AgentTelemetryHUD />
     </div>
   );
 }

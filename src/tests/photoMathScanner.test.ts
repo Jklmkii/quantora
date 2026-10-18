@@ -9,6 +9,10 @@ import {
   solveArithmeticExpression,
   scanAndSolveEquation,
 } from '../core/math/equationScanner';
+import { extractBestEquationFromOcrText } from '../core/math/imageOcr';
+import { calculateOtsuThreshold } from '../core/math/imagePreprocessor';
+import { DEFAULT_MATH_WHITELIST } from '../core/math/ocrService';
+import { normalizeEquation, extractMathLine } from '../core/math/equationNormalizer';
 
 describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
   describe('1. OCR Text Normalization', () => {
@@ -35,6 +39,18 @@ describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
       const normalized = normalizeOcrText(input);
       expect(normalized).toBe('2x^2 - 4x = 0');
     });
+
+    it('normalizes variable exponents missing carets like x2 to x^2', () => {
+      const input = 'x2 - 5x + 6 = 0';
+      const normalized = normalizeOcrText(input);
+      expect(normalized).toBe('x^2 - 5x + 6 = 0');
+    });
+
+    it('normalizes Pythagorean square sums from handwriting like 17² + 20² = x² or 172 + 202 = x2', () => {
+      expect(normalizeOcrText('17² + 20² = x²')).toBe('17^2 + 20^2 = x^2');
+      expect(normalizeOcrText('172 + 202 = x2')).toBe('17^2 + 20^2 = x^2');
+      expect(normalizeOcrText('x2 = 32 + 42')).toBe('x^2 = 3^2 + 4^2');
+    });
   });
 
   describe('2. Equation Type Detection', () => {
@@ -50,9 +66,23 @@ describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
       expect(detectEquationType('2x = 10')).toBe('linear');
     });
 
-    it('detects Pythagorean theorem equations', () => {
+    it('detects Pythagorean theorem equations including inverted forms', () => {
       expect(detectEquationType('3^2 + 4^2 = x^2')).toBe('pitagoras');
+      expect(detectEquationType('17^2 + 20^2 = x^2')).toBe('pitagoras');
+      expect(detectEquationType('x^2 = 17^2 + 20^2')).toBe('pitagoras');
       expect(detectEquationType('x^2 + 12^2 = 13^2')).toBe('pitagoras');
+      expect(detectEquationType('c^2 = 3^2 + 4^2')).toBe('pitagoras');
+    });
+
+    it('extracts best equation line from raw multi-line OCR text ignoring UI chrome', () => {
+      const rawOcr = `
+        Foto Capturada com Sucesso
+        Filtro aplicado para clarear os traços
+        17² + 20² = x²
+        400 = x²
+      `;
+      const best = extractBestEquationFromOcrText(rawOcr);
+      expect(best).toBe('17² + 20² = x²');
     });
 
     it('detects proportions and rule of three', () => {
@@ -256,6 +286,122 @@ describe('Photo Math Scanner — Engine & Solver Unit Tests', () => {
       // Cleanup
       updated.setScratchpadContext(null);
       expect(useAppStore.getState().scratchpadContext).toBeNull();
+    });
+  });
+
+  describe('10. imagePreprocessor — Otsu Adaptive Thresholding', () => {
+    it('calculates optimal Otsu threshold for bimodal pixel distributions', () => {
+      // Simula uma distribuição bimodal (fundo claro ~200, texto escuro ~30)
+      const data = new Uint8ClampedArray(100 * 4);
+      for (let i = 0; i < 50; i++) {
+        data[i * 4] = 30; // Texto escuro
+      }
+      for (let i = 50; i < 100; i++) {
+        data[i * 4] = 220; // Fundo claro
+      }
+      const threshold = calculateOtsuThreshold(data);
+      expect(threshold).toBeGreaterThanOrEqual(30);
+      expect(threshold).toBeLessThan(220);
+    });
+  });
+
+  describe('11. ocrService — Math Configuration & Whitelist', () => {
+    it('contains all required digits, operators, exponents and math variables in whitelist', () => {
+      expect(DEFAULT_MATH_WHITELIST).toContain('0123456789');
+      expect(DEFAULT_MATH_WHITELIST).toContain('+-*/=()^.,');
+      expect(DEFAULT_MATH_WHITELIST).toContain('xyzabc');
+      expect(DEFAULT_MATH_WHITELIST).toContain('√');
+      expect(DEFAULT_MATH_WHITELIST).toContain('²');
+      expect(DEFAULT_MATH_WHITELIST).toContain('³');
+    });
+  });
+
+  describe('12. equationNormalizer — Pure Error Correction & Formatting', () => {
+    it('swaps letter O for 0 in equation and numeric contexts', () => {
+      expect(normalizeEquation('x^2 - 4 = O')).toBe('x^2 - 4 = 0');
+      expect(normalizeEquation('2O + 5 = 25')).toBe('20 + 5 = 25');
+      expect(normalizeEquation('O = 3x - 9')).toBe('0 = 3x - 9');
+    });
+
+    it('converts unicode dashes and minus signs into standard minus', () => {
+      expect(normalizeEquation('5x − 10 = 0')).toBe('5x - 10 = 0'); // unicode minus \u2212
+      expect(normalizeEquation('5x — 10 = 0')).toBe('5x - 10 = 0'); // em-dash
+    });
+
+    it('converts patterns like x2 or c2 or a2 into powers x^2, c^2, a^2', () => {
+      expect(normalizeEquation('x2 - 5x + 6 = 0')).toBe('x^2 - 5x + 6 = 0');
+      expect(normalizeEquation('a2 + b2 = c2')).toBe('a^2 + b^2 = c^2');
+      expect(normalizeEquation('172 + 202 = x2')).toBe('17^2 + 20^2 = x^2');
+      expect(normalizeEquation('x2 = 172 + 202')).toBe('x^2 = 17^2 + 20^2');
+    });
+
+    it('extracts single math line from multi-line OCR ignoring UI chrome', () => {
+      const sample = `
+        Foto Capturada com Sucesso
+        Filtro aplicado para clarear os traços da escrita.
+        Original Alto Contraste Binarizado
+        17² + 20² = x²
+        400 = x²
+      `;
+      expect(extractMathLine(sample)).toBe('17² + 20² = x²');
+      expect(normalizeEquation(sample)).toBe('17^2 + 20^2 = x^2');
+    });
+  });
+
+  describe('13. UI Integration & 4 Master Mathematical Classifications', () => {
+    it('classifies and solves: 1. Aritmética', () => {
+      const res = scanAndSolveEquation('15 * 4 - (8 + 12) / 2');
+      expect(res.type).toBe('arithmetic');
+      expect(res.isSolvable).toBe(true);
+      expect(res.resultSummary).toContain('50');
+    });
+
+    it('classifies and solves: 2. Álgebra Linear (1º Grau)', () => {
+      const res = scanAndSolveEquation('3x + 12 = 36');
+      expect(res.type).toBe('linear');
+      expect(res.isSolvable).toBe(true);
+      expect(res.resultSummary).toBe('x = 8');
+    });
+
+    it('classifies and solves: 3. Equação do 2º Grau (Bhaskara)', () => {
+      const res = scanAndSolveEquation('x² - 5x + 6 = 0');
+      expect(res.type).toBe('bhaskara');
+      expect(res.isSolvable).toBe(true);
+      expect(res.resultSummary).toContain('x₁ = 3');
+      expect(res.resultSummary).toContain('x₂ = 2');
+    });
+
+    it('classifies and solves: 4. Geometria (Teorema de Pitágoras)', () => {
+      const resHyp = scanAndSolveEquation('17^2 + 20^2 = x^2');
+      expect(resHyp.type).toBe('pitagoras');
+      expect(resHyp.isSolvable).toBe(true);
+      expect(resHyp.resultSummary).toContain('Hipotenusa c =');
+
+      const resInverted = scanAndSolveEquation('x^2 = 3^2 + 4^2');
+      expect(resInverted.type).toBe('pitagoras');
+      expect(resInverted.isSolvable).toBe(true);
+      expect(resInverted.resultSummary).toBe('Hipotenusa c = 5');
+    });
+
+    it('classifies and solves: 5. Cálculo Diferencial e Integral (∫ x³ dx e derivadas)', () => {
+      expect(normalizeEquation('∫ 3dx')).toBe('∫ x^3 dx');
+      expect(normalizeEquation('∫ v3dx =')).toBe('∫ x^3 dx');
+
+      const resInt = scanAndSolveEquation('∫ x³ dx');
+      expect(resInt.type).toBe('calculus');
+      expect(resInt.isSolvable).toBe(true);
+      expect(resInt.resultSummary).toBe('x^4/4 + C');
+      expect(resInt.steps.length).toBe(4);
+
+      const resPolyInt = scanAndSolveEquation('∫ (3x^2 + 2x - 5) dx');
+      expect(resPolyInt.type).toBe('calculus');
+      expect(resPolyInt.isSolvable).toBe(true);
+      expect(resPolyInt.resultSummary).toBe('x^3 + x^2 - 5x + C');
+
+      const resDeriv = scanAndSolveEquation('d/dx (x^3)');
+      expect(resDeriv.type).toBe('calculus');
+      expect(resDeriv.isSolvable).toBe(true);
+      expect(resDeriv.resultSummary).toBe('3x^2');
     });
   });
 });

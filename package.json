@@ -25,7 +25,8 @@
     "apk:build": "node scripts/build-apk.cjs",
     "test:e2e:record": "node scripts/record-quantora-e2e.mjs",
     "test:e2e:boss": "node scripts/record-boss-battle-e2e.mjs",
-    "debug:hud": "node scripts/open-debug-hud.cjs"
+    "task:watch": "node scripts/wait-for-task.mjs",
+    "release:prepare": "npm run build && node scripts/prepare-release.mjs"
   },
   "build": {
     "appId": "com.quantora.desktop",
@@ -82,6 +83,7 @@
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.5.2",
     "@capacitor/haptics": "^8.0.2",
+    "@capgo/capacitor-updater": "^8.53.0",
     "@supabase/supabase-js": "^2.117.2",
     "big.js": "^7.0.1",
     "clsx": "^2.1.1",
@@ -90,6 +92,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwind-merge": "^3.7.0",
+    "tesseract.js": "^7.0.0",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

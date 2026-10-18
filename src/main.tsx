@@ -5,10 +5,13 @@ import './index.css'
 import App from './App.tsx'
 import { TrayPracticeWidget } from './presentation/components/TrayPracticeWidget'
 import { useAppStore } from './store/useAppStore'
+import { initMobileAutoUpdater } from './services/mobileAutoUpdater'
 
 if (typeof window !== 'undefined') {
   (window as unknown as { __quantoraStore: typeof useAppStore }).__quantoraStore = useAppStore;
 }
+
+void initMobileAutoUpdater();
 
 const isTrayPractice = window.location.hash === '#tray-practice';
 

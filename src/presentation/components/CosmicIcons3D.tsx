@@ -731,3 +731,70 @@ export const CosmicScan3D: React.FC<IconProps> = ({ className = '', size = 80 })
   </svg>
 );
 
+/**
+ * 12. CosmicLinear3D — Sistemas Lineares & Progressões
+ * Grade cartesiana holográfica 3D com intersecção de retas e nós de progressão PA/PG.
+ */
+export const CosmicLinear3D: React.FC<IconProps> = ({ className = '', size = 80 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 100 100"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={`drop-shadow-[0_0_24px_rgba(6,182,212,0.45)] transition-transform duration-500 ${className}`}
+    aria-hidden="true"
+  >
+    <defs>
+      <linearGradient id="linearGridBg" x1="15" y1="15" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#0891b2" stopOpacity="0.3" />
+        <stop offset="50%" stopColor="#0369a1" stopOpacity="0.15" />
+        <stop offset="100%" stopColor="#0f172a" stopOpacity="0.6" />
+      </linearGradient>
+      <linearGradient id="lineR1" x1="18" y1="78" x2="82" y2="22" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#38bdf8" />
+        <stop offset="100%" stopColor="#06b6d4" />
+      </linearGradient>
+      <linearGradient id="lineR2" x1="18" y1="28" x2="82" y2="72" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#c084fc" />
+        <stop offset="100%" stopColor="#818cf8" />
+      </linearGradient>
+    </defs>
+
+    {/* Placa Traseira Facetada em Perspectiva */}
+    <rect
+      x="14"
+      y="14"
+      width="72"
+      height="72"
+      rx="16"
+      fill="url(#linearGridBg)"
+      stroke="rgba(255, 255, 255, 0.25)"
+      strokeWidth="1.2"
+    />
+
+    {/* Malha Cartesiana Sutil */}
+    <line x1="14" y1="50" x2="86" y2="50" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" strokeDasharray="3 3" />
+    <line x1="50" y1="14" x2="50" y2="86" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" strokeDasharray="3 3" />
+
+    {/* Reta r1 (Ciano Neon) */}
+    <line x1="20" y1="76" x2="80" y2="24" stroke="url(#lineR1)" strokeWidth="3" strokeLinecap="round" />
+
+    {/* Reta r2 (Violeta / Indigo Neon) */}
+    <line x1="22" y1="30" x2="78" y2="70" stroke="url(#lineR2)" strokeWidth="3" strokeLinecap="round" />
+
+    {/* Ponto de Intersecção Central P(x,y) Pulsante */}
+    <circle cx="50" cy="50" r="7" fill="#ffffff" opacity="0.35" />
+    <circle cx="50" cy="50" r="4.5" fill="#e0f2fe" stroke="#06b6d4" strokeWidth="2" />
+
+    {/* Pontos de Progressão PA/PG ao longo de r1 */}
+    <circle cx="32" cy="65" r="2.5" fill="#38bdf8" />
+    <circle cx="68" cy="35" r="2.5" fill="#22d3ee" />
+
+    {/* Símbolo de Somatório / Sucessão Discreta */}
+    <circle cx="28" cy="26" r="2" fill="#a855f7" opacity="0.8" />
+    <circle cx="72" cy="74" r="2" fill="#818cf8" opacity="0.8" />
+  </svg>
+);
+
+

@@ -69,7 +69,7 @@ function startStaticServer(port = 5388) {
         const data = fs.readFileSync(filePath);
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(data);
-      } catch (err) {
+      } catch {
         res.writeHead(404);
         res.end('Not found');
       }

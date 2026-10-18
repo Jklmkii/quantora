@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+dist.zip
 dist-ssr
 dist-electron
 release
@@ -33,3 +34,10 @@ coverage
 .env
 .env.*
 !.env.example
+
+# OCR traineddata
+*.traineddata
+
+# Task automation queue
+tasks/inbox/*.md
+tasks/processing/*.md

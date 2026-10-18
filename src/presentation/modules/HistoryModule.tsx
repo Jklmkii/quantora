@@ -15,6 +15,7 @@ import {
   Triangle,
   Camera,
   Layers,
+  GitMerge,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -41,6 +42,7 @@ export const HistoryModule: React.FC = () => {
       case 'physics': return 'Física';
       case 'pitagoras': return 'Pitágoras';
       case 'photo_math': return 'Foto Scanner';
+      case 'linear_systems': return 'Sistemas & Progressões';
       default: return 'Desconhecido';
     }
   };
@@ -126,6 +128,7 @@ export const HistoryModule: React.FC = () => {
               { id: 'physics', label: 'Física', icon: <Atom size={12} /> },
               { id: 'pitagoras', label: 'Pitágoras', icon: <Triangle size={12} /> },
               { id: 'photo_math', label: 'Foto Scanner', icon: <Camera size={12} /> },
+              { id: 'linear_systems', label: 'Sistemas & PA/PG', icon: <GitMerge size={12} /> },
             ] as const
           ).map((filter) => (
             <button
