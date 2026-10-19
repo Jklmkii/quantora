@@ -69,7 +69,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onO
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-target flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/50"
             aria-label="Fechar"
           >
             <X size={20} />
@@ -225,8 +225,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onO
                   <button
                     key={tab.key}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => setSelectedCategory(tab.key)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer touch-target ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer touch-target focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 ${
                       isSelected
                         ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
                         : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/80'
@@ -338,7 +339,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onO
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold touch-target hover:opacity-95 transition-opacity"
+            className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold touch-target hover:opacity-95 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/50"
           >
             {t.done}
           </button>
