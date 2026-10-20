@@ -283,6 +283,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             }`}
             title="Lousa de Rascunho"
             aria-label="Lousa de Rascunho"
+            aria-pressed={isScratchpadOpen}
           >
             <Pencil size={17} className={isScratchpadOpen ? 'rotate-12' : ''} />
             {hasScratchpadStrokes && !isScratchpadOpen && (
