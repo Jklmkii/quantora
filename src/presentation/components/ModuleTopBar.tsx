@@ -34,54 +34,66 @@ interface ModuleTopBarProps {
 }
 
 export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSettings, onOpenProfile, onOpenAuth }) => {
+  /**
+   * ⚡ Bolt Performance Optimization
+   * 💡 What: Extracted specific primitive fields from useAppStore instead of full objects.
+   * 🎯 Why: Extracting `profile: s.profile` or `settings: s.settings` causes re-renders when *any* property of those objects changes.
+   * 📊 Impact: Prevents unnecessary component re-renders when unrelated properties (like profile.stats) are updated.
+   */
   const {
     activeTab,
     setActiveTab,
-    settings,
+    language,
+    theme,
     updateSettings,
-    profile,
+    totalXp,
+    streakDays,
     isScratchpadOpen,
     toggleScratchpad,
     hasScratchpadStrokes,
     openQuizWithSubmode,
-    spacedRepetition,
-    dailyChallenge,
+    spacedRepetitionCards,
+    spacedRepetitionGlobalQuestionsAnswered,
+    dailyChallengeLastCompletedDate,
   } = useAppStore(
     useShallow((s) => ({
       activeTab: s.activeTab,
       setActiveTab: s.setActiveTab,
-      settings: s.settings,
+      language: s.settings.language,
+      theme: s.settings.theme,
       updateSettings: s.updateSettings,
-      profile: s.profile,
+      totalXp: s.profile?.totalXp,
+      streakDays: s.profile?.streakDays,
       isScratchpadOpen: s.isScratchpadOpen,
       toggleScratchpad: s.toggleScratchpad,
       hasScratchpadStrokes: s.hasScratchpadStrokes,
       openQuizWithSubmode: s.openQuizWithSubmode,
-      spacedRepetition: s.spacedRepetition,
-      dailyChallenge: s.dailyChallenge,
+      spacedRepetitionCards: s.spacedRepetition?.cards,
+      spacedRepetitionGlobalQuestionsAnswered: s.spacedRepetition?.globalQuestionsAnswered,
+      dailyChallengeLastCompletedDate: s.dailyChallenge?.lastCompletedDate,
     }))
   );
 
-  const t = useTranslation(settings.language || 'pt');
+  const t = useTranslation(language || 'pt');
   const levelInfo = useMemo(
-    () => calculateLevelInfo(profile?.totalXp || 0, settings.language || 'pt'),
-    [profile?.totalXp, settings.language]
+    () => calculateLevelInfo(totalXp || 0, language || 'pt'),
+    [totalXp, language]
   );
 
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const today = useMemo(() => getDeviceLocalDateString(), []);
   const [mountTime] = useState(() => Date.now());
   const isDailyCompleted = useMemo(() => {
-    return dailyChallenge?.lastCompletedDate === today;
-  }, [dailyChallenge?.lastCompletedDate, today]);
+    return dailyChallengeLastCompletedDate === today;
+  }, [dailyChallengeLastCompletedDate, today]);
 
   const dueCards = useMemo(() => {
     return getDueCards(
-      spacedRepetition?.cards || {},
-      spacedRepetition?.globalQuestionsAnswered || 0,
+      spacedRepetitionCards || {},
+      spacedRepetitionGlobalQuestionsAnswered || 0,
       mountTime
     );
-  }, [spacedRepetition, mountTime]);
+  }, [spacedRepetitionCards, spacedRepetitionGlobalQuestionsAnswered, mountTime]);
 
   const hasDueCards = dueCards.length > 0;
 
@@ -157,7 +169,8 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
 
   const cycleTheme = () => {
     const modes = ['light', 'dark', 'system'] as const;
-    const nextIndex = (modes.indexOf(settings.theme) + 1) % modes.length;
+    const currentTheme = theme || 'system';
+    const nextIndex = (modes.indexOf(currentTheme) + 1) % modes.length;
     updateSettings({ theme: modes[nextIndex] });
   };
 
@@ -295,12 +308,12 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             type="button"
             onClick={cycleTheme}
             className="p-2 rounded-xl border border-slate-300 dark:border-cyan-500/20 bg-slate-100/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 hover:text-cyan-400 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
-            title={`${t.theme_prefix}: ${settings.theme}`}
-            aria-label={t.theme}
+            title={`${t.theme_prefix}: ${theme || 'system'}`}
+            aria-label={theme || 'system'}
           >
-            {settings.theme === 'light' && <Sun size={17} />}
-            {settings.theme === 'dark' && <Moon size={17} />}
-            {settings.theme === 'system' && <Laptop size={17} />}
+            {theme === 'light' && <Sun size={17} />}
+            {theme === 'dark' && <Moon size={17} />}
+            {(!theme || theme === 'system') && <Laptop size={17} />}
           </button>
 
           {/* Sincronização em Nuvem */}
@@ -377,9 +390,9 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             <span className="font-mono">
               Nv. {levelInfo.level} <span className="text-[10px] text-slate-500 dark:text-cyan-300/80 font-normal">({levelInfo.currentLevelXp}/{levelInfo.xpForNextLevel} XP)</span>
             </span>
-            {(profile?.streakDays || 1) > 1 && (
+            {(streakDays || 1) > 1 && (
               <span className="text-orange-400 font-extrabold text-[11px] ml-0.5">
-                🔥{profile.streakDays}
+                🔥{streakDays}
               </span>
             )}
           </button>

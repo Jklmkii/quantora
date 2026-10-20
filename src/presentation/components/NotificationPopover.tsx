@@ -33,37 +33,45 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const { profile, settings, spacedRepetition, dailyChallenge } = useAppStore(
+  /**
+   * ⚡ Bolt Performance Optimization
+   * 💡 What: Extracted specific primitive fields from useAppStore instead of full objects.
+   * 🎯 Why: Extracting `profile: s.profile` or `settings: s.settings` causes re-renders when *any* property of those objects changes.
+   * 📊 Impact: Prevents unnecessary component re-renders when unrelated properties (like profile.stats) are updated.
+   */
+  const { totalXp, streakDays, language, spacedRepetitionCards, spacedRepetitionGlobalQuestionsAnswered, dailyChallengeLastCompletedDate } = useAppStore(
     useShallow((s) => ({
-      profile: s.profile,
-      settings: s.settings,
-      spacedRepetition: s.spacedRepetition,
-      dailyChallenge: s.dailyChallenge,
+      totalXp: s.profile?.totalXp,
+      streakDays: s.profile?.streakDays,
+      language: s.settings.language,
+      spacedRepetitionCards: s.spacedRepetition?.cards,
+      spacedRepetitionGlobalQuestionsAnswered: s.spacedRepetition?.globalQuestionsAnswered,
+      dailyChallengeLastCompletedDate: s.dailyChallenge?.lastCompletedDate,
     }))
   );
 
-  const t = useTranslation(settings.language || 'pt');
+  const t = useTranslation(language || 'pt');
 
   // Cálculos reativos de estado
   const [mountTime] = useState(() => Date.now());
   const today = useMemo(() => getDeviceLocalDateString(), []);
   const isDailyCompleted = useMemo(() => {
-    return dailyChallenge?.lastCompletedDate === today;
-  }, [dailyChallenge?.lastCompletedDate, today]);
+    return dailyChallengeLastCompletedDate === today;
+  }, [dailyChallengeLastCompletedDate, today]);
 
   const dueCards = useMemo(() => {
     return getDueCards(
-      spacedRepetition?.cards || {},
-      spacedRepetition?.globalQuestionsAnswered || 0,
+      spacedRepetitionCards || {},
+      spacedRepetitionGlobalQuestionsAnswered || 0,
       mountTime
     );
-  }, [spacedRepetition, mountTime]);
+  }, [spacedRepetitionCards, spacedRepetitionGlobalQuestionsAnswered, mountTime]);
 
   const levelInfo = useMemo(() => {
-    return calculateLevelInfo(profile?.totalXp || 0, settings.language || 'pt');
-  }, [profile?.totalXp, settings.language]);
+    return calculateLevelInfo(totalXp || 0, language || 'pt');
+  }, [totalXp, language]);
 
-  const streakDays = profile?.streakDays || 1;
+  const safeStreakDays = streakDays || 1;
   const pendingCount = (isDailyCompleted ? 0 : 1) + (dueCards.length > 0 ? 1 : 0);
 
   // Fechar ao clicar fora
@@ -169,7 +177,7 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
                     : t.notifications_daily_title_done}
                 </h3>
                 <span className="text-[10px] text-slate-400 font-mono">
-                  {!isDailyCompleted ? '+50 XP • ' + (settings.language === 'en' ? 'Daily' : 'Diário') : t.notifications_daily_badge_done}
+                  {!isDailyCompleted ? '+50 XP • ' + (language === 'en' ? 'Daily' : 'Diário') : t.notifications_daily_badge_done}
                 </span>
               </div>
             </div>
@@ -221,7 +229,7 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
                 </h3>
                 <span className="text-[10px] text-slate-400 font-mono">
                   {dueCards.length > 0
-                    ? `${dueCards.length} ${settings.language === 'en' ? 'due' : 'pendentes'}`
+                    ? `${dueCards.length} ${language === 'en' ? 'due' : 'pendentes'}`
                     : t.notifications_mistakes_badge_clean}
                 </span>
               </div>
@@ -279,7 +287,7 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
                 .replace('{xp}', String(Math.max(0, levelInfo.xpForNextLevel - levelInfo.currentLevelXp)))
                 .replace('{nextLevel}', String(levelInfo.level + 1))}
             </span>
-            <span className="text-amber-300/90 font-bold">{profile?.totalXp || 0} XP</span>
+            <span className="text-amber-300/90 font-bold">{totalXp || 0} XP</span>
           </div>
         </div>
 
@@ -294,12 +302,12 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
                 {t.notifications_streak_title}
               </span>
               <p className="text-[10px] text-slate-400 font-mono">
-                {t.notifications_streak_desc.replace('{streak}', String(streakDays))}
+                {t.notifications_streak_desc.replace('{streak}', String(safeStreakDays))}
               </p>
             </div>
           </div>
           <span className="text-xs font-mono font-extrabold text-orange-400">
-            🔥 {streakDays}
+            🔥 {safeStreakDays}
           </span>
         </div>
       </div>
