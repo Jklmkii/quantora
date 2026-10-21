@@ -310,7 +310,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             onClick={cycleTheme}
             className="p-2 rounded-xl border border-slate-300 dark:border-cyan-500/20 bg-slate-100/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 hover:text-cyan-400 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
             title={`${t.theme_prefix}: ${theme || 'system'}`}
-            aria-label={theme || 'system'}
+            aria-label={`${t.theme_prefix}: ${theme || 'system'}`}
           >
             {theme === 'light' && <Sun size={17} />}
             {theme === 'dark' && <Moon size={17} />}
