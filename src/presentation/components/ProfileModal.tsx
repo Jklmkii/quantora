@@ -23,9 +23,12 @@ const FILTER_TABS: Array<{ key: FilterCategory; labelPt: string; labelEn: string
 ];
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onOpenAuth }) => {
-  const { profile, highestBossLevelCleared, language } = useAppStore(
+  const { totalXp, streakDays, unlockedAchievements, statsProps, highestBossLevelCleared, language } = useAppStore(
     useShallow((s) => ({
-      profile: s.profile,
+      totalXp: s.profile?.totalXp,
+      streakDays: s.profile?.streakDays,
+      unlockedAchievements: s.profile?.unlockedAchievements,
+      statsProps: s.profile?.stats,
       highestBossLevelCleared: s.highestBossLevelCleared ?? s.profile?.stats?.highestBossLevelCleared ?? 0,
       language: s.settings.language || 'pt',
     }))
@@ -34,13 +37,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onO
   const t = useTranslation(language);
 
   const currentLang = language;
-  const levelInfo = React.useMemo(() => calculateLevelInfo(profile?.totalXp || 0, currentLang), [profile?.totalXp, currentLang]);
+  const levelInfo = React.useMemo(() => calculateLevelInfo(totalXp || 0, currentLang), [totalXp, currentLang]);
 
   if (!isOpen) return null;
 
-  const unlockedSet = new Set(profile?.unlockedAchievements || []);
+  const unlockedSet = new Set(unlockedAchievements || []);
 
-  const stats = profile?.stats || {
+  const stats = statsProps || {
     totalCalculations: 0,
     totalBhaskara: 0,
     totalRegraDeTres: 0,
@@ -123,7 +126,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onO
                 <Flame size={18} />
               </div>
               <span className="text-lg font-black text-slate-900 dark:text-white leading-tight">
-                {profile?.streakDays || 1}
+                {streakDays || 1}
               </span>
               <span className="text-[11px] text-slate-400 font-medium">
                 {t.streak_days}
