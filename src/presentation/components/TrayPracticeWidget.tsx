@@ -15,13 +15,13 @@ import Big from 'big.js';
  * 📊 Impact: Significantly reduces unnecessary re-renders of the widget, especially when unrelated state updates.
  */
 export const TrayPracticeWidget: React.FC = () => {
-  const { profile, addXp } = useAppStore(
+  const { totalXp, addXp } = useAppStore(
     useShallow((s) => ({
-      profile: s.profile,
+      totalXp: s.profile?.totalXp,
       addXp: s.addXp,
     }))
   );
-  const levelInfo = calculateLevelInfo(profile?.totalXp || 0);
+  const levelInfo = calculateLevelInfo(totalXp || 0);
   const [, setQuestionIndex] = useState(1);
   const [question, setQuestion] = useState<QuizQuestion>(() =>
     generateQuizQuestion('sobrevivencia', 1)
@@ -151,7 +151,7 @@ export const TrayPracticeWidget: React.FC = () => {
         <div className="flex items-center justify-between mb-4 text-xs text-slate-400">
           <span className="flex items-center gap-1.5 font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Nível {levelInfo.level} • {profile?.totalXp || 0} XP
+            Nível {levelInfo.level} • {totalXp || 0} XP
           </span>
           <span className="font-semibold text-amber-400/90">
             Resolvidas: {sessionScore}
