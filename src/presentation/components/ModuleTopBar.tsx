@@ -220,7 +220,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             type="button"
             onClick={() => setActiveTab('hub')}
             aria-current={activeTab === 'hub' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
               activeTab === 'hub'
                 ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
@@ -233,7 +233,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             type="button"
             onClick={() => setActiveTab('photo_math')}
             aria-current={activeTab === 'photo_math' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
               activeTab === 'photo_math'
                 ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
@@ -246,7 +246,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             type="button"
             onClick={() => setActiveTab(['bhaskara', 'pitagoras', 'regra_simples', 'regra_composta', 'physics'].includes(activeTab) ? activeTab : 'bhaskara')}
             aria-current={['bhaskara', 'pitagoras', 'regra_simples', 'regra_composta', 'physics'].includes(activeTab) ? 'page' : undefined}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
               ['bhaskara', 'pitagoras', 'regra_simples', 'regra_composta', 'physics'].includes(activeTab)
                 ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
@@ -259,7 +259,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             type="button"
             onClick={() => setActiveTab('quiz')}
             aria-current={activeTab === 'quiz' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
               activeTab === 'quiz'
                 ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
@@ -272,7 +272,7 @@ export const ModuleTopBar: React.FC<ModuleTopBarProps> = React.memo(({ onOpenSet
             type="button"
             onClick={() => setActiveTab('history')}
             aria-current={activeTab === 'history' ? 'page' : undefined}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
               activeTab === 'history'
                 ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
