@@ -355,6 +355,7 @@ export const DailyChallengeCard: React.FC<DailyChallengeCardProps> = React.memo(
                   <button
                     key={opt}
                     type="button"
+                    aria-pressed={isSelected}
                     disabled={hasSubmitted}
                     onClick={() => setSelectedOption(opt)}
                     className={`p-4 rounded-2xl border font-mono text-lg font-bold flex items-center justify-between gap-3 transition-all active:scale-[0.98] cursor-pointer touch-target focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/50 ${optionStyle}`}

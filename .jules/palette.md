@@ -19,3 +19,6 @@
 ## 2024-05-18 - Segmented Control Accessibility
 **Learning:** Custom toggle grids and segmented controls (like in AuthModal) frequently lack `aria-pressed` states and focus rings, making them inaccessible to screen readers and keyboard users.
 **Action:** Always explicitly add `aria-pressed={isActive}` and `focus-visible:ring-2` to custom toggle button elements to ensure proper state announcement and focus visibility.
+## 2025-03-02 - ARIA Pressed for Segmented Controls
+**Learning:** Found an accessibility issue where the daily challenge options functioned visually like a segmented control (where only one option can be selected at a time), but lacked the proper `aria-pressed` ARIA state to communicate the selected status to screen readers.
+**Action:** Applied `aria-pressed={isSelected}` to the option buttons in `DailyChallengeCard.tsx`. This reinforces the pattern that any custom single-select or multi-select grid buttons should explicitly use `aria-pressed` to ensure assistive technologies can correctly identify the active option.
