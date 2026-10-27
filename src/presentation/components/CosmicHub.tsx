@@ -443,7 +443,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
             <button
               type="button"
               onClick={onOpenAuth}
-              className="w-10 h-10 rounded-2xl cosmic-glass flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400/50 transition-all cursor-pointer shadow-md relative"
+              className="w-10 h-10 rounded-2xl cosmic-glass flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400/50 transition-all cursor-pointer shadow-md relative focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
               title={t.auth_title || 'Sincronização em Nuvem'}
               aria-label={t.auth_title || 'Sincronização em Nuvem'}
             >
@@ -493,7 +493,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
           <button
             type="button"
             onClick={onOpenProfile}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl cosmic-glass border border-slate-300/80 dark:border-slate-700/60 hover:border-cyan-400/50 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-md"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl cosmic-glass border border-slate-300/80 dark:border-slate-700/60 hover:border-cyan-400/50 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
             title={`Perfil do Jogador (Nível ${levelInfo.level} • ${levelInfo.currentLevelXp}/${levelInfo.xpForNextLevel} XP)`}
             aria-label={`Perfil do Jogador, Nível ${levelInfo.level}, ${levelInfo.currentLevelXp} de ${levelInfo.xpForNextLevel} XP`}
           >
@@ -514,7 +514,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
           type="button"
           onClick={() => scrollToCard(Math.max(0, activeIndex - 1))}
           disabled={activeIndex === 0}
-          className="hidden md:flex absolute left-4 z-40 w-12 h-12 rounded-full cosmic-glass border border-slate-300/80 dark:border-cyan-500/30 items-center justify-center text-slate-700 dark:text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer shadow-lg dark:shadow-xl bg-white/90 dark:bg-slate-900/70"
+          className="hidden md:flex absolute left-4 z-40 w-12 h-12 rounded-full cosmic-glass border border-slate-300/80 dark:border-cyan-500/30 items-center justify-center text-slate-700 dark:text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer shadow-lg dark:shadow-xl bg-white/90 dark:bg-slate-900/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
           aria-label="Card anterior"
         >
           <ChevronLeft size={24} />
@@ -524,7 +524,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
           type="button"
           onClick={() => scrollToCard(Math.min(hubCards.length - 1, activeIndex + 1))}
           disabled={activeIndex === hubCards.length - 1}
-          className="hidden md:flex absolute right-4 z-40 w-12 h-12 rounded-full cosmic-glass border border-slate-300/80 dark:border-cyan-500/30 items-center justify-center text-slate-700 dark:text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer shadow-lg dark:shadow-xl bg-white/90 dark:bg-slate-900/70"
+          className="hidden md:flex absolute right-4 z-40 w-12 h-12 rounded-full cosmic-glass border border-slate-300/80 dark:border-cyan-500/30 items-center justify-center text-slate-700 dark:text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all disabled:opacity-20 disabled:pointer-events-none cursor-pointer shadow-lg dark:shadow-xl bg-white/90 dark:bg-slate-900/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
           aria-label="Próximo card"
         >
           <ChevronRight size={24} />
@@ -657,7 +657,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
                         scrollToCard(idx);
                       }
                     }}
-                    className={`w-full py-3 rounded-full font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`w-full py-3 rounded-full font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
                       isActive
                         ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-400 hover:from-cyan-300 hover:to-sky-200 text-slate-950 shadow-lg shadow-cyan-500/25 dark:shadow-[0_0_35px_rgba(6,182,212,0.8)] hover:scale-105 active:scale-95'
                         : 'bg-slate-100/90 dark:bg-transparent text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-slate-700 hover:border-cyan-400/50'
@@ -702,7 +702,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
           <button
             type="button"
             onClick={() => scrollToCard(0)}
-            className="w-10 h-10 rounded-full cosmic-glass border border-slate-300/80 dark:border-cyan-500/30 flex items-center justify-center text-slate-700 dark:text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all cursor-pointer shadow-md dark:shadow-lg bg-white/90 dark:bg-slate-900/60"
+            className="w-10 h-10 rounded-full cosmic-glass border border-slate-300/80 dark:border-cyan-500/30 flex items-center justify-center text-slate-700 dark:text-cyan-300 hover:scale-110 hover:border-cyan-400 transition-all cursor-pointer shadow-md dark:shadow-lg bg-white/90 dark:bg-slate-900/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
             title="Voltar ao início do Hub"
             aria-label="Voltar ao início do Hub"
           >
@@ -720,7 +720,7 @@ export const CosmicHub: React.FC<CosmicHubProps> = ({ onOpenSettings, onOpenProf
             type="button"
             onClick={onOpenSettings}
             aria-label="Abrir configurações do sistema"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full cosmic-glass border border-slate-300/80 dark:border-slate-700/60 hover:border-cyan-400/50 text-xs font-mono text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-all cursor-pointer shadow-md bg-white/90 dark:bg-slate-900/60"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full cosmic-glass border border-slate-300/80 dark:border-slate-700/60 hover:border-cyan-400/50 text-xs font-mono text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-all cursor-pointer shadow-md bg-white/90 dark:bg-slate-900/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
           >
             <span>Refined</span>
             <span className="text-cyan-600 dark:text-cyan-400">⚙</span>
