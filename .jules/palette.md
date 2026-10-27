@@ -22,3 +22,6 @@
 ## 2025-03-02 - ARIA Pressed for Segmented Controls
 **Learning:** Found an accessibility issue where the daily challenge options functioned visually like a segmented control (where only one option can be selected at a time), but lacked the proper `aria-pressed` ARIA state to communicate the selected status to screen readers.
 **Action:** Applied `aria-pressed={isSelected}` to the option buttons in `DailyChallengeCard.tsx`. This reinforces the pattern that any custom single-select or multi-select grid buttons should explicitly use `aria-pressed` to ensure assistive technologies can correctly identify the active option.
+## 2024-05-14 - Cosmic Hub Missing Focus Indicators
+**Learning:** Found several interactive buttons in `CosmicHub.tsx` lacking `focus-visible` states, which makes keyboard navigation inaccessible. The existing pattern across the app is `focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50`.
+**Action:** Always ensure all custom interactive elements, especially icon-only and standalone buttons like pagination controls, have explicit focus ring styles to maintain keyboard accessibility, matching the app's established design system.
