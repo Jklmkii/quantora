@@ -37,6 +37,8 @@ const BossBattle = React.lazy(() =>
   import('../components/BossBattle').then((m) => ({ default: m.BossBattle }))
 );
 
+const UNLOCKED_FEATURES_FALLBACK = ['survival'];
+
 export const QuizModule: React.FC = () => {
   const {
     quizProgress,
@@ -50,7 +52,7 @@ export const QuizModule: React.FC = () => {
     bossCoins,
     spacedRepetition,
     recordSpacedAnswer,
-    unlockedFeatures,
+    unlockedFeaturesRaw,
     unlockAllFeatures,
     quizSubmode,
     setActiveTab,
@@ -67,12 +69,15 @@ export const QuizModule: React.FC = () => {
       bossCoins: s.profile?.stats?.bossCoins || 0,
       spacedRepetition: s.spacedRepetition,
       recordSpacedAnswer: s.recordSpacedAnswer,
-      unlockedFeatures: s.unlockedFeatures || ['survival'],
+      unlockedFeaturesRaw: s.unlockedFeatures,
       unlockAllFeatures: s.settings?.unlockAllFeatures ?? false,
       quizSubmode: s.quizSubmode,
       setActiveTab: s.setActiveTab,
     }))
   );
+
+  const unlockedFeatures = unlockedFeaturesRaw || UNLOCKED_FEATURES_FALLBACK;
+
   const settings = React.useMemo(
     () => ({ decimalPlaces, decimalSeparator, language }),
     [decimalPlaces, decimalSeparator, language]
