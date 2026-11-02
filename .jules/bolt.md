@@ -29,3 +29,7 @@
 ## 2023-10-20 - Zustand useShallow Over-subscription
 **Learning:** Extracting an entire nested object (like `profile: s.profile`) inside a Zustand `useShallow` selector defeats the purpose of the shallow equality check if the component only needs a primitive field (like `s.profile.totalXp`). The component will re-render whenever *any* unrelated property in that parent object changes (e.g., `profile.stats`). Also, creating new object instances inline as fallbacks (like `spacedRepetitionCards: s.spacedRepetition?.cards || {}`) inside the selector completely breaks `useShallow` because the empty object `{} ` is a new reference every update, triggering a re-render.
 **Action:** Always map the exact primitive properties needed directly inside the selector (e.g., `totalXp: s.profile?.totalXp`). Wait to apply object/array fallbacks (like `|| {}` or `|| []`) downstream, outside of the selector, to preserve reference equality.
+
+## 2025-03-02 - Array/Object Fallbacks breaking useShallow in BossBattle
+**Learning:** Using `?? []` or `?? {}` as fallbacks for deeply nested nullable properties (like `profile?.stats?.bossClearedLevels ?? []`) inside a `useShallow` selector causes the selector to return a new object reference on every state update, completely breaking the shallow equality check and triggering expensive re-renders in heavy components like BossBattle and QuizModule.
+**Action:** Always extract the potentially nullable value directly in the selector without inline object/array fallbacks, and apply the fallback downstream or use module-level constants.

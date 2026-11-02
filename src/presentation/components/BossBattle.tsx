@@ -86,6 +86,10 @@ interface FloatingText {
   type: 'critical' | 'standard' | 'shield_loss' | 'correction';
 }
 
+const EMPTY_ARRAY_FALLBACK: number[] = [];
+const EMPTY_OBJECT_FALLBACK: Record<number, number> = {};
+const STARTER_WEAPON_FALLBACK: BossWeaponId[] = ['starter_blade'];
+
 export const BossBattle: React.FC<BossBattleProps> = ({
   onExit,
   initialScreen = 'level_select',
@@ -96,15 +100,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
     highestBossLevelCleared,
     bossCoins,
     bossTokens,
-    bossClearedLevels,
+    bossClearedLevelsRaw,
     damageUpgradeLevel,
     bossOracleCharges,
     bossTimeFreezeCharges,
     selectedPlayerClass,
     lastBossClass,
-    bossBestTimeByLevel,
-    bossSPlusLevels,
-    unlockedBossWeapons,
+    bossBestTimeByLevelRaw,
+    bossSPlusLevelsRaw,
+    unlockedBossWeaponsRaw,
     equippedBossWeapon,
     selectedGamblerBet,
     setSelectedPlayerClass,
@@ -132,15 +136,15 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       highestBossLevelCleared: s.highestBossLevelCleared ?? s.profile?.stats?.highestBossLevelCleared ?? 0,
       bossCoins: s.bossCoins ?? s.profile?.stats?.bossCoins ?? 0,
       bossTokens: s.bossTokens ?? s.profile?.stats?.bossTokens ?? 0,
-      bossClearedLevels: s.bossClearedLevels ?? s.profile?.stats?.bossClearedLevels ?? [],
+      bossClearedLevelsRaw: s.bossClearedLevels ?? s.profile?.stats?.bossClearedLevels,
       damageUpgradeLevel: s.damageUpgradeLevel ?? s.profile?.stats?.damageUpgradeLevel ?? 0,
       bossOracleCharges: s.bossOracleCharges ?? s.profile?.stats?.bossOracleCharges ?? 0,
       bossTimeFreezeCharges: s.bossTimeFreezeCharges ?? s.profile?.stats?.bossTimeFreezeCharges ?? 0,
       selectedPlayerClass: s.selectedPlayerClass ?? s.profile?.stats?.selectedPlayerClass ?? 'duelist',
       lastBossClass: s.lastBossClass ?? s.profile?.stats?.lastBossClass ?? null,
-      bossBestTimeByLevel: s.bossBestTimeByLevel ?? s.profile?.stats?.bossBestTimeByLevel ?? {},
-      bossSPlusLevels: s.bossSPlusLevels ?? s.profile?.stats?.bossSPlusLevels ?? [],
-      unlockedBossWeapons: s.unlockedBossWeapons ?? s.profile?.stats?.unlockedBossWeapons ?? ['starter_blade'],
+      bossBestTimeByLevelRaw: s.bossBestTimeByLevel ?? s.profile?.stats?.bossBestTimeByLevel,
+      bossSPlusLevelsRaw: s.bossSPlusLevels ?? s.profile?.stats?.bossSPlusLevels,
+      unlockedBossWeaponsRaw: s.unlockedBossWeapons ?? s.profile?.stats?.unlockedBossWeapons,
       equippedBossWeapon: s.equippedBossWeapon ?? s.profile?.stats?.equippedBossWeapon ?? 'starter_blade',
       selectedGamblerBet: s.selectedGamblerBet ?? s.profile?.stats?.selectedGamblerBet ?? 2,
       setSelectedPlayerClass: s.setSelectedPlayerClass,
@@ -164,6 +168,11 @@ export const BossBattle: React.FC<BossBattleProps> = ({
       setBossHardModeEnabled: s.setBossHardModeEnabled,
     }))
   );
+
+  const bossClearedLevels = bossClearedLevelsRaw ?? EMPTY_ARRAY_FALLBACK;
+  const bossBestTimeByLevel = bossBestTimeByLevelRaw ?? EMPTY_OBJECT_FALLBACK;
+  const bossSPlusLevels = bossSPlusLevelsRaw ?? EMPTY_ARRAY_FALLBACK;
+  const unlockedBossWeapons = unlockedBossWeaponsRaw ?? STARTER_WEAPON_FALLBACK;
 
   const t = useTranslation(language);
 
