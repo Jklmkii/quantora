@@ -25,3 +25,6 @@
 ## 2024-05-14 - Cosmic Hub Missing Focus Indicators
 **Learning:** Found several interactive buttons in `CosmicHub.tsx` lacking `focus-visible` states, which makes keyboard navigation inaccessible. The existing pattern across the app is `focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50`.
 **Action:** Always ensure all custom interactive elements, especially icon-only and standalone buttons like pagination controls, have explicit focus ring styles to maintain keyboard accessibility, matching the app's established design system.
+## 2025-03-02 - Missing focus styles on floating navigation button
+**Learning:** The floating "Return to Cosmic Hub" button in the inner module view was missing visible focus styles, making it inaccessible for keyboard navigation.
+**Action:** Added standard `focus-visible:ring-*` classes to ensure the floating button has a clear focus indicator, continuing to ensure all custom interactive elements, especially standalone navigational ones, are keyboard accessible.
