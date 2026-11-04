@@ -198,7 +198,7 @@ export function App() {
         <button
           type="button"
           onClick={() => setActiveTab('hub')}
-          className="fixed bottom-6 left-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full cosmic-glass border border-cyan-500/40 text-cyan-400 dark:text-cyan-300 font-semibold text-xs tracking-wider uppercase shadow-xl hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl group"
+          className="fixed bottom-6 left-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full cosmic-glass border border-cyan-500/40 text-cyan-400 dark:text-cyan-300 font-semibold text-xs tracking-wider uppercase shadow-xl hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-xl group focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
           title="Voltar ao Hub Cósmico"
           aria-label="Voltar ao Hub Cósmico"
         >
