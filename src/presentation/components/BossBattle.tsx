@@ -2658,14 +2658,16 @@ export const BossBattle: React.FC<BossBattleProps> = ({
             <button
               type="button"
               onClick={() => setShowExplanation((prev) => !prev)}
-              className="w-full py-2 px-3 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-[11px] font-bold text-slate-400 hover:text-slate-200 flex items-center justify-between transition-colors cursor-pointer"
+              aria-expanded={showExplanation}
+              aria-controls="boss-explanation-content"
+              className="w-full py-2 px-3 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-[11px] font-bold text-slate-400 hover:text-slate-200 flex items-center justify-between transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
             >
               <span>Explicação do último problema ({lastRoundResult.question.displayExpression})</span>
               {showExplanation ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
             {showExplanation && (
-              <div className="mt-2 p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 text-xs text-slate-300 space-y-1">
+              <div id="boss-explanation-content" className="mt-2 p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 text-xs text-slate-300 space-y-1">
                 <p className="font-bold text-amber-400">
                   Resposta Correta: {lastRoundResult.question.formattedCorrectAnswer}
                 </p>
