@@ -678,15 +678,64 @@ export function solveArithmeticExpression(
   // Remove '=' se houver no final
   const expr = normalizedExpr.replace(/=\s*$/, '').trim();
 
+  // Evaluador matemático seguro
+  function safeEvaluate(expression: string): number {
+    const tokens = expression.match(/\d*\.\d+|\d+|[+\-*/()]/g);
+    if (!tokens) throw new Error('Expressão vazia.');
+    let pos = 0;
+    function parseExpression(): number {
+      let left = parseTerm();
+      while (pos < tokens!.length) {
+        const op = tokens![pos];
+        if (op === '+' || op === '-') {
+          pos++;
+          left = op === '+' ? left + parseTerm() : left - parseTerm();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+    function parseTerm(): number {
+      let left = parseFactor();
+      while (pos < tokens!.length) {
+        const op = tokens![pos];
+        if (op === '*' || op === '/') {
+          pos++;
+          left = op === '*' ? left * parseFactor() : left / parseFactor();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+    function parseFactor(): number {
+      if (pos >= tokens!.length) throw new Error('Expressão incompleta.');
+      const token = tokens![pos++];
+      if (token === '(') {
+        const val = parseExpression();
+        if (pos >= tokens!.length || tokens![pos++] !== ')') throw new Error('Parênteses não fechado.');
+        return val;
+      } else if (token === '+' || token === '-') {
+        return token === '+' ? parseFactor() : -parseFactor();
+      }
+      const num = parseFloat(token);
+      if (isNaN(num)) throw new Error('Número inválido.');
+      return num;
+    }
+    const res = parseExpression();
+    if (pos < tokens.length) throw new Error('Sintaxe inválida.');
+    return res;
+  }
+
   try {
     // Sanitização estrita: apenas números e operadores básicos
     if (!/^[0-9+\-*/().\s]+$/.test(expr)) {
       throw new Error('Expressão contém caracteres inválidos.');
     }
 
-    // Avaliação segura da expressão via Function com escopo fechado
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    const rawVal = Function(`"use strict"; return (${expr});`)();
+    // Avaliação segura da expressão via parser local, evitando Code Injection (eval/Function)
+    const rawVal = safeEvaluate(expr);
     if (typeof rawVal !== 'number' || !Number.isFinite(rawVal)) {
       throw new Error('Resultado indefinido ou divisão por zero.');
     }
