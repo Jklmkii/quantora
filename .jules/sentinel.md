@@ -53,3 +53,8 @@
 **Vulnerability:** The local loopback HTTP server used for the Google OAuth callback lacked `Host` header validation. While `Origin` validation protected against CSRF, an attacker could still exploit this via a DNS Rebinding attack to trick the local application into serving its OAuth flow to a malicious external site.
 **Learning:** `Origin` header validation alone is insufficient for local loopback servers. A malicious domain can rebind its IP address to `127.0.0.1` after bypassing DNS caching. The attacker's browser will then send the `Host` header corresponding to the attacker's domain (e.g., `attacker.com:3000`) instead of `127.0.0.1:3000`.
 **Prevention:** Always validate the `Host` header (`req.headers.host`) on loopback servers against the expected local loopback address and port (e.g., `127.0.0.1:3000`) to completely neutralize DNS rebinding attacks.
+
+## 2023-11-09 - Code Injection via Implied Eval in Math Scanner
+**Vulnerability:** Code Injection via Implied Eval (`Function()`) in `src/core/math/equationScanner.ts` when parsing mathematical user expressions.
+**Learning:** Using `Function()` or `eval()` to parse and compute stringified mathematical expressions is widely considered an architectural flaw and triggers high severity static analysis warnings (CWE-94), because if the validation layers (regex) break down or bypasses are found, arbitrary JavaScript execution can occur (RCE in node or XSS in the browser).
+**Prevention:** Avoid string-to-code APIs for resolving mathematical equations. Always use an AST builder or a safe recursive descent evaluator (e.g. standard shunting-yard logic) to interpret math operations.
