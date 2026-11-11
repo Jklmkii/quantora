@@ -31,3 +31,6 @@
 ## 2025-03-03 - Boss Battle Explanation Toggle Accessibility
 **Learning:** Found an accessibility issue where the "Explicação do último problema" button at the end of a Boss Battle round did not provide standard ARIA states (`aria-expanded` and `aria-controls`), and lacked `focus-visible` styles. This makes it harder for screen-reader users to understand the component's state and prevents keyboard navigation.
 **Action:** Applied `aria-expanded` reflecting the UI state, `aria-controls` referencing the ID of the expanded content, and `focus-visible:ring-*` classes. This reinforces the pattern for all accordion-like toggles across gamification components.
+## 2025-03-03 - Missing focus styles in Notification Popover
+**Learning:** Found action buttons within the Notification Popover missing visible focus styles (`focus-visible:ring-*`), making them inaccessible for keyboard navigation.
+**Action:** Ensure all interactive elements, particularly actionable buttons inside popovers or overlays, have clear focus indicators matching the app's established design system.
