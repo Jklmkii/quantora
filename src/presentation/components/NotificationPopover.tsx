@@ -189,7 +189,7 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
                   onClose();
                   onNavigateToDaily();
                 }}
-                className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-200 border border-fuchsia-400/50 hover:border-fuchsia-300 flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+                className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-200 border border-fuchsia-400/50 hover:border-fuchsia-300 flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-500/50"
               >
                 <span>{t.notifications_daily_btn_solve}</span>
                 <ArrowRight size={12} />
@@ -242,7 +242,7 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
                   onClose();
                   onNavigateToMistakes();
                 }}
-                className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/50 hover:border-amber-300 flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+                className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/50 hover:border-amber-300 flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
               >
                 <span>{t.notifications_mistakes_btn_review}</span>
                 <ArrowRight size={12} />
@@ -325,7 +325,7 @@ export const NotificationPopover: React.FC<NotificationPopoverProps> = React.mem
             onClose();
             onOpenProfile();
           }}
-          className="text-xs font-bold text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1 transition-all cursor-pointer"
+          className="text-xs font-bold text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 rounded-sm"
         >
           <span>{t.notifications_btn_profile}</span>
           <ArrowRight size={13} />
